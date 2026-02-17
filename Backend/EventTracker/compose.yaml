@@ -2,8 +2,12 @@ services:
   postgres:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      - 'POSTGRES_DB=event_tracker_db'
+      - 'POSTGRES_PASSWORD=0na93rF6WB'
+      - 'POSTGRES_USER=EventAdmin'
     ports:
-      - '5432'
+      - '5250:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql
+volumes:
+  pgdata:
