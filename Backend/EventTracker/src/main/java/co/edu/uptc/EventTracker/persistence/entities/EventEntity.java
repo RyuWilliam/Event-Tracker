@@ -28,7 +28,7 @@ public class EventEntity {
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    private Boolean isActive;
+    private Boolean active;
 
     public EventEntity(){
 
@@ -83,10 +83,10 @@ public class EventEntity {
     }
 
     public Boolean getActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(Boolean active) {
-        isActive = active;
+        this.active = active;
     }
 }
