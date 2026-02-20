@@ -2,7 +2,6 @@ package co.edu.uptc.EventTracker.persistence.entities;
 
 
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
-import jakarta.annotation.Nullable;
 
 import jakarta.persistence.*;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "events")
-public class Event {
+public class EventEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +30,7 @@ public class Event {
 
     private Boolean isActive;
 
-    public Event(){
+    public EventEntity(){
 
     }
 
