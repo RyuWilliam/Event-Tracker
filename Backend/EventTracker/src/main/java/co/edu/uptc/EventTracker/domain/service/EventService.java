@@ -4,6 +4,7 @@ package co.edu.uptc.EventTracker.domain.service;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
+import co.edu.uptc.EventTracker.persistence.exceptions.EventNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,15 +23,28 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public EventEntity modify(Integer id, EventEntity event){
-        EventEntity eventToModify = eventRepository.findById(id).orElse(null);
-        if(eventToModify == null){
-            throw new RuntimeException();
+    public EventEntity modify(Integer id, EventEntity event) {
+
+        EventEntity eventToModify = eventRepository.findById(id)
+                .orElseThrow(() -> new EventNotFoundException(id));
+
+        if (event.getName() != null) {
+            eventToModify.setName(event.getName());
         }
-        eventToModify.setName(event.getName());
-        eventToModify.setDescription(event.getDescription());
-        eventToModify.setDate(event.getDate());
-        eventToModify.setStatus(event.getStatus());
+        if (event.getDescription() != null) {
+            eventToModify.setDescription(event.getDescription());
+        }
+        if (event.getDate() != null) {
+            eventToModify.setDate(event.getDate());
+        }
+        if (event.getStatus() != null) {
+            eventToModify.setStatus(event.getStatus());
+        }
+
+        if (event.getActive() != null) {
+            eventToModify.setActive(event.getActive());
+        }
+
         return eventRepository.save(eventToModify);
     }
 
@@ -45,13 +59,13 @@ public class EventService {
     public List<EventEntity> findAll(){
         return eventRepository.findActive();
     }
-    List<EventEntity> findByName(String name){
+    public List<EventEntity> findByName(String name){
         return eventRepository.findByName(name);
     }
-    List<EventEntity> findByStatus(EventStatus status){
+    public List<EventEntity> findByStatus(EventStatus status){
         return eventRepository.findByStatus(status);
     }
-    List<EventEntity> findByDateBetween(LocalDateTime start, LocalDateTime end){
+    public List<EventEntity> findByDateBetween(LocalDateTime start, LocalDateTime end){
         return eventRepository.findByDateBetween(start,end);
     }
 

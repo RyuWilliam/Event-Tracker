@@ -13,7 +13,6 @@ public interface EventJpaRepository extends JpaRepository<EventEntity, Integer> 
 
     List<EventEntity> findByNameContainingIgnoreCase(String name);
 
-    List<EventEntity> findByCategoryIgnoreCase(String category);
 
     List<EventEntity> findByStatus(EventStatus status);
 

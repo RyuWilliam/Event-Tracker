@@ -4,11 +4,14 @@ import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.persistence.crud.EventJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
+@Repository
 public class EventRepositoryImpl implements EventRepository {
 
     private final EventJpaRepository eventJpaRepository;
@@ -40,6 +43,7 @@ public class EventRepositoryImpl implements EventRepository {
             throw new RuntimeException();
         }
         event.setActive(false);
+        eventJpaRepository.save(event);
     }
 
     @Override
