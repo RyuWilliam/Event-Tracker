@@ -1,5 +1,6 @@
 package co.edu.uptc.EventTracker.web.controller;
 
+import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.service.EventService;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
@@ -20,13 +21,13 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EventEntity>> getAll() {
+    public ResponseEntity<List<Event>> getAll() {
         return ResponseEntity.ok(eventService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventEntity> getById(@PathVariable Integer id) {
-        EventEntity event = eventService.findById(id);
+    public ResponseEntity<Event> getById(@PathVariable Integer id) {
+        Event event = eventService.findById(id);
         if (event == null) {
             return ResponseEntity.notFound().build();
         }
@@ -34,14 +35,14 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<EventEntity> create(@RequestBody EventEntity event) {
+    public ResponseEntity<Event> create(@RequestBody Event event) {
         return ResponseEntity.ok(eventService.save(event));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EventEntity> update(
+    public ResponseEntity<Event> update(
             @PathVariable Integer id,
-            @RequestBody EventEntity event) {
+            @RequestBody Event event) {
         return ResponseEntity.ok(eventService.modify(id, event));
     }
 
@@ -52,19 +53,19 @@ public class EventController {
     }
 
     @GetMapping("/filter/name")
-    public ResponseEntity<List<EventEntity>> findByName(
+    public ResponseEntity<List<Event>> findByName(
             @RequestParam String name) {
         return ResponseEntity.ok(eventService.findByName(name));
     }
 
     @GetMapping("/filter/status")
-    public ResponseEntity<List<EventEntity>> findByStatus(
+    public ResponseEntity<List<Event>> findByStatus(
             @RequestParam EventStatus status) {
         return ResponseEntity.ok(eventService.findByStatus(status));
     }
 
     @GetMapping("/filter/date")
-    public ResponseEntity<List<EventEntity>> findByDateRange(
+    public ResponseEntity<List<Event>> findByDateRange(
             @RequestParam
             LocalDateTime start,
             @RequestParam
