@@ -6,36 +6,31 @@ This document provides structural and architectural context for LLM agents worki
 
 The frontend is built with:
 
-React (TypeScript)
+React 19 (TypeScript)
 
-Feature-based architecture
+Vite (build tool)
 
-Tailwind CSS for styling
+Tailwind CSS v4 for styling
 
 shadcn/ui as the component foundation
 
-Centralized design tokens
+Feature-based architecture
+
+Centralized design tokens (CSS-based)
 
 Role-based UI rendering (admin vs external users)
 
 The system is domain-oriented. Features are organized by business capability, not by technical layer.
 
 2. Architectural Philosophy
-   2.1 Feature-Based Architecture
 
 The codebase follows a feature-based (vertical slicing) architecture.
 
-Informal Definition
-
 Each business domain lives in its own isolated module containing UI, logic, state, services, and types.
-
-Technical Definition
 
 The system is organized around domain-driven feature modules that encapsulate presentation, business logic, state management, and API communication within cohesive boundaries, minimizing cross-feature coupling.
 
-Core Principle
-
-Structure by domain, not by file type.
+Core Principle: Structure by domain, not by file type.
 
 Wrong (layer-based):
 
@@ -46,31 +41,41 @@ services/
 Correct (feature-based):
 
 features/
-events/
-auth/
-users/ 3. Project Structure
-src/
-app/
-router/
-providers/
-features/
-events/
-pages/
-components/
-hooks/
-services/
-store/
-types/
-permissions/
-index.ts
-auth/
+  events/
+  auth/
 users/
-shared/
-ui/
-layout/
-theme/
-utils/
-types/ 4. Feature Module Structure
+
+3. Project Structure
+
+```
+src/
+├── app/                 # App-level configuration
+├── router/              # React Router setup
+├── providers/           # Context providers
+├── features/            # Feature-based modules
+│   ├── events/
+│   │   ├── pages/      # Page components
+│   │   ├── components/  # Feature-specific components
+│   │   ├── hooks/       # Feature-specific hooks
+│   │   ├── services/   # API services
+│   │   ├── store/      # State management
+│   │   ├── types/      # TypeScript types
+│   │   ├── permissions/# Permission logic
+│   │   └── index.ts    # Feature exports
+│   ├── auth/
+│   └── users/
+├── shared/              # Cross-domain shared layer
+│   ├── ui/             # Design system components
+│   ├── theme/          # Design tokens
+│   └── utils/          # Shared utilities
+├── core/                # App-level configuration
+│   ├── config/         # App constants
+│   ├── design/         # Extended design tokens
+│   └── layouts/        # Layout components
+└── lib/                # Library utilities
+```
+
+4. Feature Module Structure
 
 Example: features/events/
 
@@ -154,13 +159,13 @@ error
 
 success
 
-7. Design System Overview
+ 7. Design System Overview
 
 The UI is governed by a centralized design system built with:
 
-Tailwind CSS
+Tailwind CSS v4
 
-Design tokens in tailwind.config.js
+Design tokens in shared/theme/tokens.css (base tokens) and core/design/extended.css (extended tokens)
 
 shadcn/ui components
 
@@ -168,45 +173,50 @@ Custom shared UI primitives
 
 No inline arbitrary styling is allowed.
 
-8. Tailwind Design System Configuration
+ 8. Tailwind Design System Configuration
 
-All visual decisions are defined in tailwind.config.js.
+All visual decisions are defined in CSS using Tailwind v4's @theme directive.
 
-Controlled Tokens
+Controlled Tokens (in shared/theme/tokens.css)
 
 Colors
 
-Typography scale
-
-Spacing scale
+Typography (Inter, IBM Plex Sans)
 
 Border radius
 
+Extended tokens (in core/design/extended.css)
+
+Z-index scale
+
 Shadows
 
-Breakpoints
+Animation durations
+
+Extended spacing
 
 Example structure:
 
-theme: {
-extend: {
-colors: {
-primary: {...},
-secondary: {...},
-success: "...",
-danger: "...",
-neutral: {...}
-},
-fontSize: {...},
-spacing: {...},
-borderRadius: {...}
+shared/theme/tokens.css:
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --color-primary: #0F172A;
+  --color-secondary: #14B8A6;
+  --color-success: #22C55E;
 }
+
+core/design/extended.css:
+@theme {
+  --z-dropdown: 100;
+  --z-modal: 300;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 Hard Rules
 
 No arbitrary values like text-[17px]
 
-No inline hex colors
+No inline hex colors (use design tokens)
 
 No custom spacing outside defined scale
 
@@ -254,7 +264,7 @@ Layout containers
 
 Generic utilities
 
-Theme configuration
+Theme configuration (shared/theme/)
 
 Shared types (if domain-agnostic)
 
@@ -266,13 +276,46 @@ Feature-specific models
 
 Domain-specific components
 
+11. Core Layer
+
+core/ contains app-level configuration and extended design tokens.
+
+Allowed content:
+
+App constants and configuration (core/config/)
+
+Extended design tokens (core/design/)
+
+Layout components (core/layouts/)
+
+Not allowed:
+
+Feature-specific logic
+
+UI components (use shared/ui/)
+
 11. Routing Strategy
 
-Routing lives in app/router.
+Routing is centralized in app/router and uses React Router.
 
 Features may expose route definitions but must not control global routing directly.
 
-Protected routes must use a guard abstraction.
+All routes should be defined in a centralized route configuration that imports page components from features.
+
+Protected routes must use a guard abstraction (e.g., auth guards, role-based access).
+
+Example structure:
+
+app/
+router/
+index.tsx        # Main router configuration
+AppRoutes.tsx    # Route definitions
+Guard.tsx        # Route guard components
+
+features/
+events/
+pages/
+EventsListPage.tsx  # Exported for router import
 
 12. Consistency Enforcement
 

@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  
+  --color-primary: #0F172A;
+  --color-primary-foreground: #F1F5F9;
+  --color-secondary: #14B8A6;
+  --color-secondary-foreground: #0F172A;
+  --color-accent: #FB7185;
+  --color-accent-foreground: #FFFFFF;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  
+  --color-background: #F1F5F9;
+  --color-foreground: #334155;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #334155;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #334155;
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-border: #E2E8F0;
+  --color-input: #E2E8F0;
+  --color-ring: #14B8A6;
+  --color-destructive: #EF4444;
+}
+
+:root {
+  --radius: 0.5rem;
+  
+  --background: #F1F5F9;
+  --foreground: #334155;
+  
+  --primary: #0F172A;
+  --primary-foreground: #F1F5F9;
+  --secondary: #14B8A6;
+  --secondary-foreground: #0F172A;
+  --accent: #FB7185;
+  --accent-foreground: #FFFFFF;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --card: #FFFFFF;
+  --card-foreground: #334155;
+  --popover: #FFFFFF;
+  --popover-foreground: #334155;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #14B8A6;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --destructive: #EF4444;
+}
