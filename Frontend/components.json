@@ -12,10 +12,11 @@
   },
   "iconLibrary": "lucide",
   "rtl": false,
-"aliases": {
+  "aliases": {
     "components": "@/shared",
     "utils": "@/lib/utils",
     "ui": "@/shared/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
   }
+}
