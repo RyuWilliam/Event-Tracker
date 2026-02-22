@@ -48,7 +48,8 @@ Correct (feature-based):
 features/
 events/
 auth/
-users/ 3. Project Structure
+users/ 
+3. Project Structure
 src/
 app/
 router/
@@ -67,10 +68,14 @@ auth/
 users/
 shared/
 ui/
-layout/
 theme/
 utils/
-types/ 4. Feature Module Structure
+types/
+core/
+config/
+design/
+layouts/
+ 4. Feature Module Structure
 
 Example: features/events/
 
@@ -154,13 +159,13 @@ error
 
 success
 
-7. Design System Overview
+ 7. Design System Overview
 
 The UI is governed by a centralized design system built with:
 
-Tailwind CSS
+Tailwind CSS v4
 
-Design tokens in tailwind.config.js
+Design tokens in shared/theme/tokens.css (base tokens) and core/design/extended.css (extended tokens)
 
 shadcn/ui components
 
@@ -168,45 +173,50 @@ Custom shared UI primitives
 
 No inline arbitrary styling is allowed.
 
-8. Tailwind Design System Configuration
+ 8. Tailwind Design System Configuration
 
-All visual decisions are defined in tailwind.config.js.
+All visual decisions are defined in CSS using Tailwind v4's @theme directive.
 
-Controlled Tokens
+Controlled Tokens (in shared/theme/tokens.css)
 
 Colors
 
-Typography scale
-
-Spacing scale
+Typography (Inter, IBM Plex Sans)
 
 Border radius
 
+Extended tokens (in core/design/extended.css)
+
+Z-index scale
+
 Shadows
 
-Breakpoints
+Animation durations
+
+Extended spacing
 
 Example structure:
 
-theme: {
-extend: {
-colors: {
-primary: {...},
-secondary: {...},
-success: "...",
-danger: "...",
-neutral: {...}
-},
-fontSize: {...},
-spacing: {...},
-borderRadius: {...}
+shared/theme/tokens.css:
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --color-primary: #0F172A;
+  --color-secondary: #14B8A6;
+  --color-success: #22C55E;
 }
+
+core/design/extended.css:
+@theme {
+  --z-dropdown: 100;
+  --z-modal: 300;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 Hard Rules
 
 No arbitrary values like text-[17px]
 
-No inline hex colors
+No inline hex colors (use design tokens)
 
 No custom spacing outside defined scale
 
@@ -254,7 +264,7 @@ Layout containers
 
 Generic utilities
 
-Theme configuration
+Theme configuration (shared/theme/)
 
 Shared types (if domain-agnostic)
 
@@ -266,7 +276,23 @@ Feature-specific models
 
 Domain-specific components
 
-11. Routing Strategy
+11. Core Layer
+
+core/ contains app-level configuration and extended design tokens.
+
+Allowed content:
+
+App constants and configuration (core/config/)
+
+Extended design tokens (core/design/)
+
+Layout components (core/layouts/)
+
+Not allowed:
+
+Feature-specific logic
+
+UI components (use shared/ui/)
 
 Routing lives in app/router.
 
