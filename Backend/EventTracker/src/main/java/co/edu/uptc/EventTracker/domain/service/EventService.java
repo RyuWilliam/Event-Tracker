@@ -3,7 +3,6 @@ package co.edu.uptc.EventTracker.domain.service;
 
 import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
-import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 import co.edu.uptc.EventTracker.persistence.exceptions.EventNotActiveException;
 import co.edu.uptc.EventTracker.persistence.exceptions.EventNotFoundException;
