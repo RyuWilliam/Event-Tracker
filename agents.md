@@ -6,36 +6,31 @@ This document provides structural and architectural context for LLM agents worki
 
 The frontend is built with:
 
-React (TypeScript)
+React 19 (TypeScript)
 
-Feature-based architecture
+Vite (build tool)
 
-Tailwind CSS for styling
+Tailwind CSS v4 for styling
 
 shadcn/ui as the component foundation
 
-Centralized design tokens
+Feature-based architecture
+
+Centralized design tokens (CSS-based)
 
 Role-based UI rendering (admin vs external users)
 
 The system is domain-oriented. Features are organized by business capability, not by technical layer.
 
 2. Architectural Philosophy
-   2.1 Feature-Based Architecture
 
 The codebase follows a feature-based (vertical slicing) architecture.
 
-Informal Definition
-
 Each business domain lives in its own isolated module containing UI, logic, state, services, and types.
-
-Technical Definition
 
 The system is organized around domain-driven feature modules that encapsulate presentation, business logic, state management, and API communication within cohesive boundaries, minimizing cross-feature coupling.
 
-Core Principle
-
-Structure by domain, not by file type.
+Core Principle: Structure by domain, not by file type.
 
 Wrong (layer-based):
 
@@ -46,9 +41,9 @@ services/
 Correct (feature-based):
 
 features/
-events/
-auth/
-users/ 
+  events/
+  auth/
+  users/
 3. Project Structure
 src/
 app/
@@ -294,11 +289,28 @@ Feature-specific logic
 
 UI components (use shared/ui/)
 
-Routing lives in app/router.
+11. Routing Strategy
+
+Routing is centralized in app/router and uses React Router.
 
 Features may expose route definitions but must not control global routing directly.
 
-Protected routes must use a guard abstraction.
+All routes should be defined in a centralized route configuration that imports page components from features.
+
+Protected routes must use a guard abstraction (e.g., auth guards, role-based access).
+
+Example structure:
+
+app/
+router/
+index.tsx        # Main router configuration
+AppRoutes.tsx    # Route definitions
+Guard.tsx        # Route guard components
+
+features/
+events/
+pages/
+EventsListPage.tsx  # Exported for router import
 
 12. Consistency Enforcement
 
