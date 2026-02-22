@@ -13,6 +13,19 @@
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
+  
+  --color-background: #F1F5F9;
+  --color-foreground: #334155;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #334155;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #334155;
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-border: #E2E8F0;
+  --color-input: #E2E8F0;
+  --color-ring: #14B8A6;
+  --color-destructive: #EF4444;
 }
 
 :root {

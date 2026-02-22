@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { APP_CONFIG } from "@/core/config"
 
 interface MainLayoutProps {
