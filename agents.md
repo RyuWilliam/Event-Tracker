@@ -43,34 +43,39 @@ Correct (feature-based):
 features/
   events/
   auth/
-  users/
-3. Project Structure
-src/
-app/
-router/
-providers/
-features/
-events/
-pages/
-components/
-hooks/
-services/
-store/
-types/
-permissions/
-index.ts
-auth/
 users/
-shared/
-ui/
-theme/
-utils/
-types/
-core/
-config/
-design/
-layouts/
- 4. Feature Module Structure
+
+3. Project Structure
+
+```
+src/
+├── app/                 # App-level configuration
+├── router/              # React Router setup
+├── providers/           # Context providers
+├── features/            # Feature-based modules
+│   ├── events/
+│   │   ├── pages/      # Page components
+│   │   ├── components/  # Feature-specific components
+│   │   ├── hooks/       # Feature-specific hooks
+│   │   ├── services/   # API services
+│   │   ├── store/      # State management
+│   │   ├── types/      # TypeScript types
+│   │   ├── permissions/# Permission logic
+│   │   └── index.ts    # Feature exports
+│   ├── auth/
+│   └── users/
+├── shared/              # Cross-domain shared layer
+│   ├── ui/             # Design system components
+│   ├── theme/          # Design tokens
+│   └── utils/          # Shared utilities
+├── core/                # App-level configuration
+│   ├── config/         # App constants
+│   ├── design/         # Extended design tokens
+│   └── layouts/        # Layout components
+└── lib/                # Library utilities
+```
+
+4. Feature Module Structure
 
 Example: features/events/
 
