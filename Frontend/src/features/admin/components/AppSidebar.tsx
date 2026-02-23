@@ -37,11 +37,17 @@ export function AppSidebar() {
           {adminNavItems.map((item) => {
             const isActive = location.pathname === item.url
             return (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={isActive}>
+              <SidebarMenuItem
+                key={item.title}
+                className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+              >
+                <SidebarMenuButton
+                  className="group-data-[collapsible=icon]:w-auto"
+                  asChild
+                  isActive={isActive}
+                >
                   <Link
                     to={item.url}
-                    className="group-data-[collapsible=icon]:w-auto"
                   >
                     <item.icon className="size-4" />
                     <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
