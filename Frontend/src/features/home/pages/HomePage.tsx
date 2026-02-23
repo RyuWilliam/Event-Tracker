@@ -1,7 +1,7 @@
 import { MainLayout } from "@/core/layouts/MainLayout"
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, Badge, H1, H2, Body, Caption } from "@/shared/ui"
 
-function App() {
+export function HomePage() {
   return (
     <MainLayout>
       <section className="mb-8 space-y-4">
@@ -60,5 +60,3 @@ function App() {
     </MainLayout>
   )
 }
-
-export default App
