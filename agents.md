@@ -296,7 +296,7 @@ UI components (use shared/ui/)
 
 11. Routing Strategy
 
-Routing is centralized in app/router and uses React Router.
+Routing is centralized in app/router and uses React Router v7 (data-driven routing).
 
 Features may expose route definitions but must not control global routing directly.
 
@@ -308,14 +308,49 @@ Example structure:
 
 app/
 router/
-index.tsx        # Main router configuration
-AppRoutes.tsx    # Route definitions
-Guard.tsx        # Route guard components
+index.tsx        # createBrowserRouter + RouterProvider setup
+AppRoutes.tsx    # Route definitions (array of route objects)
 
 features/
 events/
 pages/
 EventsListPage.tsx  # Exported for router import
+
+11.1 React Router v7 Configuration
+
+React Router v7 uses a data-driven approach with createBrowserRouter outside React.
+
+Setup (app/router/index.tsx):
+import { createBrowserRouter } from "react-router"
+import { routes } from "./AppRoutes"
+
+export const router = createBrowserRouter(routes)
+
+Usage in main.tsx:
+import { RouterProvider } from "react-router"
+import { router } from "./app/router"
+
+<RouterProvider router={router} />
+
+Defining Routes (app/router/AppRoutes.tsx):
+import { HomePage } from "@/features/home"
+import { DashboardPage } from "@/features/admin"
+
+export const routes = [
+  {
+    path: "/",
+    Component: HomePage,
+  },
+  {
+    path: "/admin/dashboard",
+    Component: DashboardPage,
+  },
+]
+
+Adding a New Route:
+1. Create page component in features/<feature>/pages/
+2. Export from features/<feature>/index.ts
+3. Add route to AppRoutes.tsx
 
 12. Consistency Enforcement
 
