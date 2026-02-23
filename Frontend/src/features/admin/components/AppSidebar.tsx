@@ -6,6 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/shared/ui"
 import { adminNavItems } from "./nav-data"
 
@@ -13,7 +14,7 @@ export function AppSidebar() {
   const location = useLocation()
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -22,7 +23,7 @@ export function AppSidebar() {
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <span className="text-lg font-bold">E</span>
                 </div>
-                <div className="flex flex-col gap-0.5 leading-none">
+                <div className="flex flex-col gap-0.5 leadingcollapsible=icon-none group-data-[]:hidden">
                   <span className="font-medium">Event Tracker</span>
                   <span className="text-xs text-muted-foreground">Admin</span>
                 </div>
@@ -40,7 +41,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive}>
                   <Link to={item.url}>
                     <item.icon className="size-4" />
-                    <span>{item.title}</span>
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -48,6 +49,7 @@ export function AppSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   )
 }
