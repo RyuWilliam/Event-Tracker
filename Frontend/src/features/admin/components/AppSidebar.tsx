@@ -23,7 +23,7 @@ export function AppSidebar() {
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <span className="text-lg font-bold">E</span>
                 </div>
-                <div className="flex flex-col gap-0.5 leadingcollapsible=icon-none group-data-[]:hidden">
+                <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
                   <span className="font-medium">Event Tracker</span>
                   <span className="text-xs text-muted-foreground">Admin</span>
                 </div>
@@ -39,7 +39,10 @@ export function AppSidebar() {
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={isActive}>
-                  <Link to={item.url}>
+                  <Link
+                    to={item.url}
+                    className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+                  >
                     <item.icon className="size-4" />
                     <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                   </Link>
