@@ -1,9 +1,10 @@
 import { Home, Calendar, Users, Settings } from "lucide-react"
+import type { ElementType } from "react"
 
 export type NavItem = {
   title: string
   url: string
-  icon: React.ElementType
+  icon: ElementType
 }
 
 export const adminNavItems: NavItem[] = [
