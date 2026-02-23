@@ -9,6 +9,9 @@
     import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
     import java.time.LocalDateTime;
+    import java.util.HashSet;
+    import java.util.List;
+    import java.util.Set;
 
     @Entity
     @EntityListeners(AuditingEntityListener.class)
@@ -34,8 +37,26 @@
 
         private Boolean active;
 
+        private Integer likes;
+
+        @ManyToMany(fetch = FetchType.LAZY)
+        @JoinTable(
+                name = "event_category",
+                joinColumns = @JoinColumn(name = "event_id"),
+                inverseJoinColumns = @JoinColumn(name = "category_id")
+        )
+        private List<CategoryEntity> categories;
+
         public EventEntity(){
 
+        }
+
+        public Integer getLikes() {
+            return likes;
+        }
+
+        public void setLikes(Integer likes) {
+            this.likes = likes;
         }
 
         public Integer getEventId() {
@@ -82,15 +103,23 @@
             return lastUpdated;
         }
 
-        public void setLastUpdated(LocalDateTime lastUpdated) {
-            this.lastUpdated = lastUpdated;
-        }
-
         public Boolean getActive() {
             return active;
         }
 
         public void setActive(Boolean active) {
             this.active = active;
+        }
+
+        public List<CategoryEntity> getCategories() {
+            return categories;
+        }
+
+        public void setCategories(List<CategoryEntity> categories) {
+            this.categories = categories;
+        }
+
+        public void setLastUpdated(LocalDateTime lastUpdated) {
+            this.lastUpdated = lastUpdated;
         }
     }

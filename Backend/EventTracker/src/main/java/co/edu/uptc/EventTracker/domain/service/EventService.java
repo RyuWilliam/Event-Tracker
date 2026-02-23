@@ -45,7 +45,12 @@ public class EventService {
         if (event.getStatus() != null) {
             eventToModify.setStatus(event.getStatus());
         }
-
+        if(event.getCategories() != null){
+            eventToModify.setCategories(event.getCategories());
+        }
+        if(event.getLikes() != null){
+            eventToModify.setLikes(event.getLikes());
+        }
         return eventRepository.save(eventToModify);
     }
 
@@ -69,6 +74,10 @@ public class EventService {
     public List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end){
         return eventRepository.findByDateBetween(start,end);
     }
+    public void addLike(Integer id){
+        eventRepository.addLike(id);
+    }
+
 
 
 }

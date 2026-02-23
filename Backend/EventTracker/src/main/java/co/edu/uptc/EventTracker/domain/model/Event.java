@@ -3,6 +3,8 @@ package co.edu.uptc.EventTracker.domain.model;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 public class Event {
 
@@ -11,17 +13,21 @@ public class Event {
     private String description;
     private LocalDateTime date;
     private EventStatus status;
+    private List<EventCategory> categories;
+    private Integer likes;
 
-    private Event(){
+
+    public Event(){
 
     }
 
-    public Event(Integer id, String name, String description, LocalDateTime date, EventStatus status) {
+    public Event(Integer id, String name, String description, LocalDateTime date, EventStatus status, Integer likes) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.date = date;
         this.status = status;
+        this.likes = likes;
     }
 
     public Integer getId() {
@@ -62,5 +68,22 @@ public class Event {
 
     public void setStatus(EventStatus status) {
         this.status = status;
+    }
+
+
+    public Integer getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Integer likes) {
+        this.likes = likes;
+    }
+
+    public List<EventCategory> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<EventCategory> categories) {
+        this.categories = categories;
     }
 }
