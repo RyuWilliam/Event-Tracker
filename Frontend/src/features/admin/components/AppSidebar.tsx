@@ -41,7 +41,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive}>
                   <Link
                     to={item.url}
-                    className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+                    className="group-data-[collapsible=icon]:w-auto"
                   >
                     <item.icon className="size-4" />
                     <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
