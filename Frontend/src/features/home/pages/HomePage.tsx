@@ -15,7 +15,6 @@ export function HomePage() {
         <div className="flex gap-2 flex-wrap">
           <Button variant="default">Primary</Button>
           <Button variant="secondary">Secondary</Button>
-          <Button variant="accent">Accent</Button>
           <Button variant="outline">Outline</Button>
           <Button variant="ghost">Ghost</Button>
           <Button variant="destructive">Destructive</Button>
