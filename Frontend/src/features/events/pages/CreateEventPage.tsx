@@ -9,8 +9,11 @@ import type { CreateEventPayload } from "../types/event.types"
 export function CreateEventPage() {
   const { createEvent, isLoading, error, isSuccess, reset } = useCreateEvent()
 
-  const handleSubmit = async (data: CreateEventPayload) => {
-    await createEvent(data)
+  const handleSubmit = async (data: CreateEventPayload): Promise<void> => {
+    const success = await createEvent(data)
+    if (!success && !error) {
+      // Validation failed but error state not set - shouldn't happen but safety net
+    }
   }
 
   useEffect(() => {

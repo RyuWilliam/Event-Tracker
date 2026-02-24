@@ -26,7 +26,9 @@ export function EventForm({ onSubmit, isLoading }: EventFormProps) {
   const selectedStatus = watch("status")
 
   const onFormSubmit = async (data: CreateEventPayload) => {
+    console.log("[EventForm] Submitting with data:", data)
     const isoDate = new Date(data.date).toISOString()
+    console.log("[EventForm] Converted date to ISO:", isoDate)
     await onSubmit({ ...data, date: isoDate })
   }
 

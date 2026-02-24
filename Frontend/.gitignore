@@ -24,5 +24,4 @@ dist-ssr
 *.sln
 *.sw?
 
-agents.md
 opencode.json

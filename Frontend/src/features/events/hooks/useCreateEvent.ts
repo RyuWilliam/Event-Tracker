@@ -3,7 +3,7 @@ import type { CreateEventPayload, EventStatus } from "../types/event.types"
 import { createEvent } from "../services/eventsApi"
 
 interface UseCreateEventResult {
-  createEvent: (data: CreateEventPayload) => Promise<void>
+  createEvent: (data: CreateEventPayload) => Promise<boolean>
   isLoading: boolean
   error: string | null
   isSuccess: boolean
@@ -25,35 +25,45 @@ export function useCreateEvent(): UseCreateEventResult {
     if (!data.date) {
       return "Date is required"
     }
-    const now = new Date().toISOString()
-    if (data.date < now) {
+    const eventDate = new Date(data.date)
+    const now = new Date()
+    if (eventDate <= now) {
       return "Event date cannot be in the past"
     }
     return null
   }
 
-  const createEventHandler = async (data: CreateEventPayload): Promise<void> => {
+  const createEventHandler = async (data: CreateEventPayload): Promise<boolean> => {
+    console.log("[useCreateEvent] Received data:", data)
+    
     const payload: CreateEventPayload = {
       ...data,
       status: data.status || ("ACTIVE" as EventStatus),
     }
+    console.log("[useCreateEvent] Payload with default status:", payload)
 
     const validationError = validate(payload)
     if (validationError) {
+      console.log("[useCreateEvent] Validation failed:", validationError)
       setError(validationError)
-      return
+      return false
     }
 
+    console.log("[useCreateEvent] Validation passed, calling API...")
     setIsLoading(true)
     setError(null)
     setIsSuccess(false)
 
     try {
-      await createEvent(payload)
+      const result = await createEvent(payload)
+      console.log("[useCreateEvent] API response:", result)
       setIsSuccess(true)
+      return true
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create event"
+      console.log("[useCreateEvent] API error:", message)
       setError(message)
+      return false
     } finally {
       setIsLoading(false)
     }
