@@ -1,2 +1,5 @@
 export type { Event, EventStatus, CreateEventPayload } from "./types/event.types"
 export { useCreateEvent } from "./hooks/useCreateEvent"
+export { EventForm } from "./components/EventForm"
+export { EventsListPage } from "./pages/EventsListPage"
+export { CreateEventPage } from "./pages/CreateEventPage"
