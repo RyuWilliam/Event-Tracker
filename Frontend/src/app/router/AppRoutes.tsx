@@ -1,5 +1,6 @@
 import { HomePage } from "@/features/home"
 import { AdminLayout, DashboardPage } from "@/features/admin"
+import { EventsListPage, CreateEventPage } from "@/features/events"
 
 export const routes = [
   {
@@ -13,6 +14,19 @@ export const routes = [
       {
         index: true,
         Component: DashboardPage,
+      },
+      {
+        path: "events",
+        children: [
+          {
+            index: true,
+            Component: EventsListPage,
+          },
+          {
+            path: "create",
+            Component: CreateEventPage,
+          },
+        ],
       },
     ],
   },
