@@ -4,6 +4,18 @@ export { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./card"
 export { Badge, badgeVariants } from "./badge"
 export { H1, H2, H3, Body, Caption } from "./typography"
 export { Separator } from "./separator"
+export { Label } from "./label"
+export { Textarea } from "./textarea"
+export { Toaster } from "./sonner"
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./select"
 export {
   Sidebar,
   SidebarContent,
