@@ -82,3 +82,13 @@ export async function likeEvent(id: number): Promise<void> {
     throw new Error(`Failed to like event: ${response.status}`)
   }
 }
+
+export async function deleteEvent(id: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/events/${id}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete event: ${response.status}`)
+  }
+}

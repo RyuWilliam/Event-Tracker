@@ -1,7 +1,11 @@
 import { Link } from "react-router"
-import { PencilIcon, HeartIcon } from "lucide-react"
+import { useState } from "react"
+import { PencilIcon, HeartIcon, TrashIcon } from "lucide-react"
+import { toast } from "sonner"
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1 } from "@/shared/ui"
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
+import { deleteEvent } from "../services/eventsApi"
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString("en-US", {
@@ -28,6 +32,21 @@ function getStatusVariant(status: string) {
 
 export function EventsListPage() {
   const { events, isLoading, error, refetch } = useEvents()
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const handleDelete = async (eventId: number) => {
+    setDeletingId(eventId)
+    try {
+      await deleteEvent(eventId)
+      refetch()
+      toast.success("Event deleted successfully")
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete event"
+      toast.error(message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -87,6 +106,31 @@ export function EventsListPage() {
                         <PencilIcon className="h-4 w-4" />
                       </Link>
                     </Button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={deletingId === event.id}>
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-4">
+                          <p className="font-medium">Delete this event?</p>
+                          <p className="text-sm text-muted-foreground">
+                            This action cannot be undone.
+                          </p>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(event.id!)}
+                              disabled={deletingId === event.id}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
                   </div>
                 </CardTitle>
