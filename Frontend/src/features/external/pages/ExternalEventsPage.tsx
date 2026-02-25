@@ -7,7 +7,7 @@ import { useEvents, likeEvent } from "@/features/events"
 import { ExternalEventCard } from "../components/ExternalEventCard"
 
 export function ExternalEventsPage() {
-  const { events, isLoading, error, refetch } = useEvents()
+  const { events, isLoading, error } = useEvents()
   const [searchQuery, setSearchQuery] = useState("")
   const [likedEvents, setLikedEvents] = useState<Set<number>>(new Set())
 
@@ -32,7 +32,6 @@ export function ExternalEventsPage() {
     try {
       await likeEvent(eventId)
       setLikedEvents((prev) => new Set(prev).add(eventId))
-      refetch()
       toast.success("Event liked!")
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to like event"
