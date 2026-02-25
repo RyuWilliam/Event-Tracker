@@ -15,4 +15,4 @@ export interface Event {
   likes: number
 }
 
-export type CreateEventPayload = Omit<Event, "id">
+export type CreateEventPayload = Omit<Event, "id" | "likes">
