@@ -12,6 +12,7 @@ export interface Event {
   date: string
   status: EventStatus
   categories: EventCategory[]
+  likes: number
 }
 
-export type CreateEventPayload = Omit<Event, "id">
+export type CreateEventPayload = Omit<Event, "id" | "likes">
