@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { PencilIcon } from "lucide-react"
+import { PencilIcon, HeartIcon } from "lucide-react"
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1 } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
 
@@ -78,6 +78,10 @@ export function EventsListPage() {
                 <CardTitle className="flex items-center justify-between">
                   <span>{event.name}</span>
                   <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <HeartIcon className="h-4 w-4" />
+                      <span className="text-sm">{event.likes || 0}</span>
+                    </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link to={`/admin/events/${event.id}/edit`}>
                         <PencilIcon className="h-4 w-4" />
