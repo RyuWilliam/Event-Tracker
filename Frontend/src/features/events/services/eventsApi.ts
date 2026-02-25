@@ -1,6 +1,7 @@
 import type { CreateEventPayload, Event, EventCategory } from "../types/event.types"
+import { getApiBaseUrl } from "@/lib/apiConfig"
 
-const BASE_URL = "http://localhost:7022/tracker/api"
+const BASE_URL = getApiBaseUrl()
 
 export async function getCategories(): Promise<EventCategory[]> {
   const response = await fetch(`${BASE_URL}/categories`)
