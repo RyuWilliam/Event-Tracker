@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react"
 import { SearchIcon } from "lucide-react"
+import { toast } from "sonner"
 import { Input } from "@/shared/ui"
 import { MainLayout } from "@/core/layouts/MainLayout"
-import { useEvents } from "@/features/events"
+import { useEvents, likeEvent } from "@/features/events"
 import { ExternalEventCard } from "../components/ExternalEventCard"
 
 export function ExternalEventsPage() {
-  const { events, isLoading, error } = useEvents()
+  const { events, isLoading, error, refetch } = useEvents()
   const [searchQuery, setSearchQuery] = useState("")
+  const [likedEvents, setLikedEvents] = useState<Set<number>>(new Set())
 
   const filteredEvents = useMemo(() => {
     if (!events) return []
@@ -21,6 +23,22 @@ export function ExternalEventsPage() {
         event.categories?.some((cat) => cat.name.toLowerCase().includes(query))
     )
   }, [events, searchQuery])
+
+  const handleLike = async (eventId: number) => {
+    if (likedEvents.has(eventId)) {
+      return
+    }
+
+    try {
+      await likeEvent(eventId)
+      setLikedEvents((prev) => new Set(prev).add(eventId))
+      refetch()
+      toast.success("Event liked!")
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to like event"
+      toast.error(message)
+    }
+  }
 
   return (
     <MainLayout>
@@ -64,7 +82,12 @@ export function ExternalEventsPage() {
         {!isLoading && !error && filteredEvents.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredEvents.map((event) => (
-              <ExternalEventCard key={event.id} event={event} />
+              <ExternalEventCard
+                key={event.id}
+                event={event}
+                isLiked={likedEvents.has(event.id!)}
+                onLike={handleLike}
+              />
             ))}
           </div>
         )}

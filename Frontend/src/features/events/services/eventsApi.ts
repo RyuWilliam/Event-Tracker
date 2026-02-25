@@ -71,3 +71,13 @@ export async function updateEvent(id: number, data: CreateEventPayload): Promise
 
   return response.json()
 }
+
+export async function likeEvent(id: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/events/addLike/${id}`, {
+    method: "POST",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to like event: ${response.status}`)
+  }
+}

@@ -1,8 +1,11 @@
+import { HeartIcon } from "lucide-react"
 import type { Event } from "@/features/events"
-import { Badge } from "@/shared/ui"
+import { Badge, Button } from "@/shared/ui"
 
 interface ExternalEventCardProps {
   event: Event
+  isLiked: boolean
+  onLike: (eventId: number) => void
 }
 
 function formatEventDate(dateString: string) {
@@ -13,7 +16,7 @@ function formatEventDate(dateString: string) {
   return { day, month, year }
 }
 
-export function ExternalEventCard({ event }: ExternalEventCardProps) {
+export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardProps) {
   const { day, month, year } = formatEventDate(event.date)
 
   return (
@@ -25,9 +28,21 @@ export function ExternalEventCard({ event }: ExternalEventCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col justify-center gap-1">
-        <h3 className="font-semibold text-lg text-foreground line-clamp-1">
-          {event.name}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-lg text-foreground line-clamp-1 flex-1">
+            {event.name}
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => onLike(event.id!)}
+          >
+            <HeartIcon
+              className={`h-5 w-5 ${isLiked ? "fill-accent text-accent" : "text-muted-foreground"}`}
+            />
+          </Button>
+        </div>
         {event.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">
             {event.description}
