@@ -139,7 +139,10 @@ export function CategoriesSelector({ selected, onChange }: CategoriesSelectorPro
                 size="sm"
                 type="button"
                 className="w-full"
-                onClick={() => setIsCreatingCategory(true)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsCreatingCategory(true)
+                }}
               >
                 + Add new category
               </Button>
