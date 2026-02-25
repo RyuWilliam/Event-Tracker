@@ -1,14 +1,17 @@
 import { useForm } from "react-hook-form"
+import { useEffect } from "react"
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
 import { CategoriesSelector } from "./CategoriesSelector"
-import type { CreateEventPayload, EventStatus, EventCategory } from "../types/event.types"
+import type { CreateEventPayload, Event, EventStatus, EventCategory } from "../types/event.types"
 
 interface EventFormProps {
   onSubmit: (data: CreateEventPayload) => Promise<void>
   isLoading: boolean
+  initialData?: Event
+  submitLabel?: string
 }
 
-export function EventForm({ onSubmit, isLoading }: EventFormProps) {
+export function EventForm({ onSubmit, isLoading, initialData, submitLabel }: EventFormProps) {
   const {
     register,
     handleSubmit,
@@ -24,6 +27,17 @@ export function EventForm({ onSubmit, isLoading }: EventFormProps) {
       categories: [],
     },
   })
+
+  useEffect(() => {
+    if (initialData) {
+      setValue("name", initialData.name)
+      setValue("description", initialData.description || "")
+      const dateValue = initialData.date ? initialData.date.slice(0, 16) : ""
+      setValue("date", dateValue)
+      setValue("status", initialData.status)
+      setValue("categories", initialData.categories || [])
+    }
+  }, [initialData, setValue])
 
   const selectedStatus = watch("status")
   const selectedCategories = watch("categories")
@@ -100,7 +114,7 @@ export function EventForm({ onSubmit, isLoading }: EventFormProps) {
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Event"}
+          {isLoading ? (initialData ? "Updating..." : "Creating...") : (submitLabel || "Create Event")}
         </Button>
       </div>
     </form>
