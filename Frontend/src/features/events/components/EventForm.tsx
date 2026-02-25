@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form"
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
-import type { CreateEventPayload, EventStatus } from "../types/event.types"
+import { CategoriesSelector } from "./CategoriesSelector"
+import type { CreateEventPayload, EventStatus, EventCategory } from "../types/event.types"
 
 interface EventFormProps {
   onSubmit: (data: CreateEventPayload) => Promise<void>
@@ -25,6 +26,7 @@ export function EventForm({ onSubmit, isLoading }: EventFormProps) {
   })
 
   const selectedStatus = watch("status")
+  const selectedCategories = watch("categories")
 
   const onFormSubmit = async (data: CreateEventPayload) => {
     const isoDate = new Date(data.date).toISOString()
@@ -86,6 +88,14 @@ export function EventForm({ onSubmit, isLoading }: EventFormProps) {
             <SelectItem value="FINISHED">Finished</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Categories</Label>
+        <CategoriesSelector
+          selected={selectedCategories || []}
+          onChange={(categories: EventCategory[]) => setValue("categories", categories)}
+        />
       </div>
 
       <div className="flex gap-2">

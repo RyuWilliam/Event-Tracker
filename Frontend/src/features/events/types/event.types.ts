@@ -2,7 +2,7 @@ export type EventStatus = "ACTIVE" | "CANCELLED" | "FINISHED"
 
 export interface EventCategory {
   id: number
-  name?: string
+  name: string
 }
 
 export interface Event {
