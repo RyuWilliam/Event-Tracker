@@ -21,6 +21,7 @@ const badgeVariants = cva(
         success: "bg-success/10 text-success [a&]:hover:bg-success/20",
         warning: "bg-warning/10 text-warning [a&]:hover:bg-warning/20",
         error: "bg-destructive/10 text-destructive [a&]:hover:bg-destructive/20",
+        accent: "bg-accent/10 text-accent [a&]:hover:bg-accent/20",
       },
     },
     defaultVariants: {

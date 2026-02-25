@@ -84,6 +84,15 @@ export function EventsListPage() {
                   {event.description || "No description"}
                 </p>
                 <p className="text-sm">{formatDate(event.date)}</p>
+                {event.categories && event.categories.length > 0 && (
+                  <div className="flex gap-1 mt-2">
+                    {event.categories.map((category) => (
+                      <Badge key={category.id} variant="accent">
+                        {category.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
