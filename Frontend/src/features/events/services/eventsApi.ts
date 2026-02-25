@@ -1,6 +1,7 @@
 import type { CreateEventPayload, Event, EventCategory } from "../types/event.types"
+import { getApiBaseUrl } from "@/lib/apiConfig"
 
-const BASE_URL = "http://localhost:7022/tracker/api"
+const BASE_URL = getApiBaseUrl()
 
 export async function getCategories(): Promise<EventCategory[]> {
   const response = await fetch(`${BASE_URL}/categories`)
@@ -79,5 +80,15 @@ export async function likeEvent(id: number): Promise<void> {
 
   if (!response.ok) {
     throw new Error(`Failed to like event: ${response.status}`)
+  }
+}
+
+export async function deleteEvent(id: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/events/${id}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete event: ${response.status}`)
   }
 }
