@@ -10,6 +10,7 @@ const mockEvents: Event[] = [
     date: "2026-06-15T09:00:00",
     status: "ACTIVE",
     categories: [],
+    likes: 0,
   },
   {
     id: 2,
@@ -18,6 +19,7 @@ const mockEvents: Event[] = [
     date: "2026-04-20T14:00:00",
     status: "ACTIVE",
     categories: [],
+    likes: 0,
   },
   {
     id: 3,
@@ -26,6 +28,7 @@ const mockEvents: Event[] = [
     date: "2026-05-10T10:00:00",
     status: "FINISHED",
     categories: [],
+    likes: 0,
   },
 ]
 

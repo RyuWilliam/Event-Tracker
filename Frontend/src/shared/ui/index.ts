@@ -7,6 +7,8 @@ export { Separator } from "./separator"
 export { Label } from "./label"
 export { Textarea } from "./textarea"
 export { Toaster } from "./sonner"
+export { Checkbox } from "./checkbox"
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "./popover"
 export {
   Select,
   SelectContent,
