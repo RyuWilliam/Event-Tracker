@@ -1,36 +1,6 @@
 import { Link } from "react-router"
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1 } from "@/shared/ui"
-import type { Event } from "../types/event.types"
-
-const mockEvents: Event[] = [
-  {
-    id: 1,
-    name: "Tech Conference 2026",
-    description: "Annual technology conference featuring the latest innovations",
-    date: "2026-06-15T09:00:00",
-    status: "ACTIVE",
-    categories: [],
-    likes: 0,
-  },
-  {
-    id: 2,
-    name: "Team Workshop",
-    description: "Internal team building and skills workshop",
-    date: "2026-04-20T14:00:00",
-    status: "ACTIVE",
-    categories: [],
-    likes: 0,
-  },
-  {
-    id: 3,
-    name: "Product Launch",
-    description: "Launch event for our new product line",
-    date: "2026-05-10T10:00:00",
-    status: "FINISHED",
-    categories: [],
-    likes: 0,
-  },
-]
+import { useEvents } from "../hooks/useEvents"
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString("en-US", {
@@ -56,24 +26,52 @@ function getStatusVariant(status: string) {
 }
 
 export function EventsListPage() {
+  const { events, isLoading, error, refetch } = useEvents()
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <H1>Events</H1>
-        <Button asChild>
-          <Link to="/admin/events/create">Create Event</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => refetch()}>
+            Refresh
+          </Button>
+          <Button asChild>
+            <Link to="/admin/events/create">Create Event</Link>
+          </Button>
+        </div>
       </div>
 
-      {mockEvents.length === 0 ? (
+      {isLoading && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">Loading events...</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {error && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-destructive">Error: {error}</p>
+            <Button variant="outline" onClick={() => refetch()} className="mt-2">
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && !error && events && events.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">No events yet. Create your first event.</p>
           </CardContent>
         </Card>
-      ) : (
+      )}
+
+      {!isLoading && !error && events && events.length > 0 && (
         <div className="grid gap-4">
-          {mockEvents.map((event) => (
+          {events.map((event) => (
             <Card key={event.id}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">

@@ -20,6 +20,10 @@ export async function createCategory(name: string): Promise<EventCategory> {
   })
   if (!response.ok) {
     throw new Error(`Failed to create category: ${response.status}`)
+export async function getEvents(): Promise<Event[]> {
+  const response = await fetch(`${BASE_URL}/events`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch events: ${response.status}`)
   }
   return response.json()
 }
