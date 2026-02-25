@@ -73,7 +73,7 @@ export function CategoriesSelector({ selected, onChange }: CategoriesSelectorPro
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" type="button">
-          Categories {selected.length > 0 && `(${selected.length})`}
+          Set categories {selected.length > 0 && `(${selected.length})`}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start" sideOffset={4}>
@@ -126,6 +126,7 @@ export function CategoriesSelector({ selected, onChange }: CategoriesSelectorPro
                 />
                 <Button
                   size="sm"
+                  type="button"
                   onClick={handleCreateCategory}
                   disabled={!newCategoryName.trim() || isCreatingCategory}
                 >
@@ -136,6 +137,7 @@ export function CategoriesSelector({ selected, onChange }: CategoriesSelectorPro
               <Button
                 variant="outline"
                 size="sm"
+                type="button"
                 className="w-full"
                 onClick={() => setIsCreatingCategory(true)}
               >
