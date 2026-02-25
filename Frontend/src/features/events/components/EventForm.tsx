@@ -20,6 +20,7 @@ export function EventForm({ onSubmit, isLoading }: EventFormProps) {
       description: "",
       date: "",
       status: "ACTIVE",
+      categories: [],
     },
   })
 

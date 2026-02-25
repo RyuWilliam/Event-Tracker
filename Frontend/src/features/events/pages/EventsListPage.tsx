@@ -9,6 +9,7 @@ const mockEvents: Event[] = [
     description: "Annual technology conference featuring the latest innovations",
     date: "2026-06-15T09:00:00",
     status: "ACTIVE",
+    categories: [],
   },
   {
     id: 2,
@@ -16,6 +17,7 @@ const mockEvents: Event[] = [
     description: "Internal team building and skills workshop",
     date: "2026-04-20T14:00:00",
     status: "ACTIVE",
+    categories: [],
   },
   {
     id: 3,
@@ -23,6 +25,7 @@ const mockEvents: Event[] = [
     description: "Launch event for our new product line",
     date: "2026-05-10T10:00:00",
     status: "FINISHED",
+    categories: [],
   },
 ]
 
