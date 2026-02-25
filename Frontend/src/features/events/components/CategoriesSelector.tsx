@@ -58,7 +58,9 @@ export function CategoriesSelector({ selected, onChange }: CategoriesSelectorPro
     try {
       const newCategory = await createCategory(newCategoryName.trim())
       setCategories([...categories, newCategory])
-      onChange([...selected, newCategory])
+      if (!isCategorySelected(newCategory.id)) {
+        onChange([...selected, newCategory])
+      }
       setNewCategoryName("")
       setSearchQuery("")
     } catch (err) {
