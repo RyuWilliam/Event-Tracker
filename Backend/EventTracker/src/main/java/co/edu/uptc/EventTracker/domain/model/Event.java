@@ -15,6 +15,7 @@ public class Event {
     private EventStatus status;
     private List<EventCategory> categories;
     private Integer likes;
+    private String imageUrl;
 
 
     public Event(){
@@ -85,5 +86,13 @@ public class Event {
 
     public void setCategories(List<EventCategory> categories) {
         this.categories = categories;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

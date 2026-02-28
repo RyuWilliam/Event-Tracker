@@ -35,6 +35,7 @@ public class EventMapper {
         event.setLikes(entity.getLikes());
         event.setDescription(entity.getDescription());
         event.setCategories(categoryMapper.toCategories(entity.getCategories()));
+        event.setImageUrl(entity.getImageUrl());
         return event;
     }
     public List<Event> toEvents(List<EventEntity> entities){
@@ -60,6 +61,7 @@ public class EventMapper {
         entity.setStatus(event.getStatus());
         entity.setLikes(event.getLikes());
         entity.setDescription(event.getDescription());
+        entity.setImageUrl(event.getImageUrl());
 
         if (event.getCategories() != null) {
             entity.setCategories(

@@ -39,6 +39,9 @@
 
         private Integer likes;
 
+        @Column(name = "image_url")
+        private String imageUrl;
+
         @ManyToMany(fetch = FetchType.LAZY)
         @JoinTable(
                 name = "event_category",
@@ -119,7 +122,15 @@
             this.categories = categories;
         }
 
-        public void setLastUpdated(LocalDateTime lastUpdated) {
-            this.lastUpdated = lastUpdated;
-        }
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+}
