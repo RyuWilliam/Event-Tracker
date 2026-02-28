@@ -3,6 +3,7 @@ package co.edu.uptc.EventTracker.persistence;
 import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.EventCategory;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
+import co.edu.uptc.EventTracker.domain.service.ImageService;
 import co.edu.uptc.EventTracker.persistence.crud.EventJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.CategoryEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
@@ -23,14 +24,15 @@ public class EventRepositoryImpl implements EventRepository {
     private final EventMapper eventMapper;
     private final CategoryMapper categoryMapper;
     private final CategoryRepositoryImpl categoryRepository;
-
     private final EventJpaRepository eventJpaRepository;
+    private final ImageService imageService;
 
-    public EventRepositoryImpl(EventMapper eventMapper, CategoryMapper categoryMapper, CategoryRepositoryImpl categoryRepository, EventJpaRepository eventJpaRepository) {
+    public EventRepositoryImpl(EventMapper eventMapper, CategoryMapper categoryMapper, CategoryRepositoryImpl categoryRepository, EventJpaRepository eventJpaRepository, ImageService imageService) {
         this.eventMapper = eventMapper;
         this.categoryMapper = categoryMapper;
         this.categoryRepository = categoryRepository;
         this.eventJpaRepository = eventJpaRepository;
+        this.imageService = imageService;
     }
 
     @Override
@@ -71,6 +73,9 @@ public class EventRepositoryImpl implements EventRepository {
         EventEntity event = eventJpaRepository.findById(id).orElse(null);
         if(event == null){
             throw new RuntimeException();
+        }
+        if (event.getImageUrl() != null) {
+            imageService.deleteImageFile(event.getImageUrl());
         }
         event.setActive(false);
         eventJpaRepository.save(event);
