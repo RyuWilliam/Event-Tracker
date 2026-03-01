@@ -170,23 +170,23 @@ export function EventsListPage() {
       )}
 
       {!isLoading && !error && events && events.length > 0 && (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {events.map((event) => (
             <Card key={event.id}>
-              <div className="flex flex-col sm:flex-row">
+              <div className="flex flex-col">
                 {event.imageUrl && (
-                  <div className="w-full sm:w-48 h-32 sm:h-auto shrink-0">
+                  <div className="w-full aspect-video shrink-0">
                     <img
                       src={getImageUrl(event.imageUrl)!}
                       alt={event.name}
-                      className="w-full h-full object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
+                      className="w-full h-full object-cover rounded-t-lg"
                     />
                   </div>
                 )}
                 <div className="flex-1">
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      <span>{event.name}</span>
+                      <span className="line-clamp-1">{event.name}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <HeartIcon className="h-4 w-4" />
@@ -235,7 +235,7 @@ export function EventsListPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                       {event.description || "No description"}
                     </p>
                     <p className="text-sm">{formatDate(event.date)}</p>
