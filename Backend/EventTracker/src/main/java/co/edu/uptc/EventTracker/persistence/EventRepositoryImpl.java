@@ -23,7 +23,6 @@ public class EventRepositoryImpl implements EventRepository {
     private final EventMapper eventMapper;
     private final CategoryMapper categoryMapper;
     private final CategoryRepositoryImpl categoryRepository;
-
     private final EventJpaRepository eventJpaRepository;
 
     public EventRepositoryImpl(EventMapper eventMapper, CategoryMapper categoryMapper, CategoryRepositoryImpl categoryRepository, EventJpaRepository eventJpaRepository) {

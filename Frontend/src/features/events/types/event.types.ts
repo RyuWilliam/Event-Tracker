@@ -13,6 +13,7 @@ export interface Event {
   status: EventStatus
   categories: EventCategory[]
   likes: number
+  imageUrl?: string | null
 }
 
 export type CreateEventPayload = Omit<Event, "id" | "likes">

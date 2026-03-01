@@ -1,24 +1,38 @@
-import { useEffect } from "react"
-import { Link } from "react-router"
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { Button, Card, CardContent, H1 } from "@/shared/ui"
 import { EventForm } from "../components/EventForm"
 import { useCreateEvent } from "../hooks/useCreateEvent"
+import { uploadEventImage } from "../services/eventsApi"
 import type { CreateEventPayload } from "../types/event.types"
 
 export function CreateEventPage() {
   const { createEvent, isLoading, error, isSuccess, reset } = useCreateEvent()
+  const navigate = useNavigate()
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
 
   const handleSubmit = async (data: CreateEventPayload) => {
-    await createEvent(data)
+    const createdEvent = await createEvent(data)
+    
+    if (createdEvent && selectedImageFile) {
+      try {
+        await uploadEventImage(createdEvent.id!, selectedImageFile)
+        toast.success("Image uploaded successfully!")
+      } catch (err) {
+        toast.error("Event created but failed to upload image")
+      }
+    }
   }
 
   useEffect(() => {
     if (isSuccess) {
       toast.success("Event created successfully!")
       reset()
+      setSelectedImageFile(null)
+      navigate("/admin/events")
     }
-  }, [isSuccess, reset])
+  }, [isSuccess, reset, navigate])
 
   useEffect(() => {
     if (error) {
@@ -37,7 +51,12 @@ export function CreateEventPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <EventForm onSubmit={handleSubmit} isLoading={isLoading} />
+          <EventForm 
+            onSubmit={handleSubmit} 
+            isLoading={isLoading} 
+            selectedImageFile={selectedImageFile}
+            onImageFileChange={setSelectedImageFile}
+          />
         </CardContent>
       </Card>
     </div>

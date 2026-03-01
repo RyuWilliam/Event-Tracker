@@ -1,9 +1,9 @@
 import { useState } from "react"
-import type { CreateEventPayload, EventStatus } from "../types/event.types"
+import type { CreateEventPayload, Event, EventStatus } from "../types/event.types"
 import { createEvent } from "../services/eventsApi"
 
 interface UseCreateEventResult {
-  createEvent: (data: CreateEventPayload) => Promise<void>
+  createEvent: (data: CreateEventPayload) => Promise<Event | null>
   isLoading: boolean
   error: string | null
   isSuccess: boolean
@@ -32,7 +32,7 @@ export function useCreateEvent(): UseCreateEventResult {
     return null
   }
 
-  const createEventHandler = async (data: CreateEventPayload): Promise<void> => {
+  const createEventHandler = async (data: CreateEventPayload): Promise<Event | null> => {
     const payload: CreateEventPayload = {
       ...data,
       status: data.status || ("ACTIVE" as EventStatus),
@@ -41,7 +41,7 @@ export function useCreateEvent(): UseCreateEventResult {
     const validationError = validate(payload)
     if (validationError) {
       setError(validationError)
-      return
+      return null
     }
 
     setIsLoading(true)
@@ -49,11 +49,13 @@ export function useCreateEvent(): UseCreateEventResult {
     setIsSuccess(false)
 
     try {
-      await createEvent(payload)
+      const createdEvent = await createEvent(payload)
       setIsSuccess(true)
+      return createdEvent
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create event"
       setError(message)
+      return null
     } finally {
       setIsLoading(false)
     }
