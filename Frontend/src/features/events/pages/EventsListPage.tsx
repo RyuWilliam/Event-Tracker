@@ -56,7 +56,17 @@ export function EventsListPage() {
   const [categories, setCategories] = useState<EventCategory[]>([])
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(console.error)
+    const fetchCategories = async () => {
+      try {
+        const result = await getCategories()
+        setCategories(result)
+      } catch (err) {
+        console.error(err)
+        toast.error("Failed to load categories. The category filter may be unavailable.")
+      }
+    }
+
+    fetchCategories()
   }, [])
 
   const filteredEvents = useMemo(() => {
