@@ -183,73 +183,73 @@ export function EventsListPage() {
                     />
                   </div>
                 )}
-                <div className="flex-1">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="line-clamp-1">{event.name}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <HeartIcon className="h-4 w-4" />
-                          <span className="text-sm">{event.likes || 0}</span>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <HeartIcon className="h-4 w-4" />
+                      <span className="text-sm">{event.likes || 0}</span>
+                    </div>
+                  </div>
+                  <CardTitle className="line-clamp-1">{event.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                    {event.description || "No description"}
+                  </p>
+                  <p className="text-sm mb-2">{formatDate(event.date)}</p>
+                  {event.categories && event.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {event.categories.map((category) => (
+                        <Badge key={category.id} variant="accent" className="text-xs">
+                          {category.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+                <CardContent className="pt-0 flex justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openImageDialog(event.id!, event.imageUrl)}
+                  >
+                    <ImageIcon className="h-4 w-4 mr-1" />
+                    Image
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/admin/events/${event.id}/edit`}>
+                      <PencilIcon className="h-4 w-4 mr-1" />
+                      Edit
+                    </Link>
+                  </Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={deletingId === event.id}>
+                        <TrashIcon className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <div className="space-y-4">
+                        <p className="font-medium">Delete this event?</p>
+                        <p className="text-sm text-muted-foreground">
+                          This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(event.id!)}
+                            disabled={deletingId === event.id}
+                          >
+                            Delete
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openImageDialog(event.id!, event.imageUrl)}
-                          title="Change image"
-                        >
-                          <ImageIcon className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/admin/events/${event.id}/edit`}>
-                            <PencilIcon className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" disabled={deletingId === event.id}>
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80">
-                            <div className="space-y-4">
-                              <p className="font-medium">Delete this event?</p>
-                              <p className="text-sm text-muted-foreground">
-                                This action cannot be undone.
-                              </p>
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDelete(event.id!)}
-                                  disabled={deletingId === event.id}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                        <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
                       </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                      {event.description || "No description"}
-                    </p>
-                    <p className="text-sm">{formatDate(event.date)}</p>
-                    {event.categories && event.categories.length > 0 && (
-                      <div className="flex gap-1 mt-2">
-                        {event.categories.map((category) => (
-                          <Badge key={category.id} variant="accent">
-                            {category.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </div>
+                    </PopoverContent>
+                  </Popover>
+                </CardContent>
               </div>
             </Card>
           ))}
