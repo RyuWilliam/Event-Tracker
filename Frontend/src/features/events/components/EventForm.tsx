@@ -14,9 +14,11 @@ interface EventFormProps {
   isLoading: boolean
   initialData?: Event
   submitLabel?: string
+  selectedImageFile?: File | null
+  onImageFileChange?: (file: File | null) => void
 }
 
-export function EventForm({ onSubmit, isLoading, initialData, submitLabel }: EventFormProps) {
+export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selectedImageFile, onImageFileChange }: EventFormProps) {
   const {
     register,
     handleSubmit,
@@ -34,10 +36,17 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel }: Eve
   })
 
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(selectedImageFile || null)
   const [uploading, setUploading] = useState(false)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (selectedImageFile) {
+      setSelectedFile(selectedImageFile)
+      setImagePreview(URL.createObjectURL(selectedImageFile))
+    }
+  }, [selectedImageFile])
 
   useEffect(() => {
     if (initialData) {
@@ -69,6 +78,7 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel }: Eve
     setSelectedFile(file)
     setImagePreview(URL.createObjectURL(file))
     setImageDialogOpen(false)
+    onImageFileChange?.(file)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -114,18 +124,6 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel }: Eve
   }
 
   const onFormSubmit = async (data: CreateEventPayload) => {
-    if (selectedFile && initialData?.id) {
-      setUploading(true)
-      try {
-        await uploadEventImage(initialData.id, selectedFile)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to upload image"
-        toast.error(message)
-        return
-      } finally {
-        setUploading(false)
-      }
-    }
     const isoDate = new Date(data.date).toISOString()
     await onSubmit({ ...data, date: isoDate })
   }
