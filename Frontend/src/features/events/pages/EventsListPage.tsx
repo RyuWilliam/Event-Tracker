@@ -2,7 +2,7 @@ import { Link } from "react-router"
 import { useState, useRef, useMemo, useEffect } from "react"
 import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
-import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
+import { Button, Card, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
@@ -245,83 +245,84 @@ export function EventsListPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredEvents.map((event) => (
             <Card key={event.id}>
-              <div className="flex flex-col">
-                {event.imageUrl && (
-                  <div className="w-full aspect-video shrink-0">
+              <div className="flex">
+                <div className="w-48 h-32 shrink-0">
+                  {event.imageUrl ? (
                     <img
                       src={getImageUrl(event.imageUrl)!}
                       alt={event.name}
-                      className="w-full h-full object-cover rounded-t-lg"
+                      className="w-full h-full object-cover rounded-l-lg"
                     />
-                  </div>
-                )}
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <HeartIcon className="h-4 w-4" />
-                      <span className="text-sm">{event.likes || 0}</span>
-                    </div>
-                  </div>
-                  <CardTitle className="line-clamp-1">{event.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                    {event.description || "No description"}
-                  </p>
-                  <p className="text-sm mb-2">{formatDate(event.date)}</p>
-                  {event.categories && event.categories.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {event.categories.map((category) => (
-                        <Badge key={category.id} variant="accent" className="text-xs">
-                          {category.name}
-                        </Badge>
-                      ))}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted rounded-l-lg">
+                      <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
                     </div>
                   )}
-                </CardContent>
-                <CardContent className="pt-0 flex justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openImageDialog(event.id!, event.imageUrl)}
-                  >
-                    <ImageIcon className="h-4 w-4 mr-1" />
-                    Image
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/admin/events/${event.id}/edit`}>
-                      <PencilIcon className="h-4 w-4 mr-1" />
-                      Edit
-                    </Link>
-                  </Button>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={deletingId === event.id}>
-                        <TrashIcon className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">
-                      <div className="space-y-4">
-                        <p className="font-medium">Delete this event?</p>
-                        <p className="text-sm text-muted-foreground">
-                          This action cannot be undone.
-                        </p>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(event.id!)}
-                            disabled={deletingId === event.id}
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                </div>
+                <div className="flex-1 flex">
+                  <div className="flex-1 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <HeartIcon className="h-4 w-4" />
+                        <span className="text-sm">{event.likes || 0}</span>
                       </div>
-                    </PopoverContent>
-                  </Popover>
-                </CardContent>
+                    </div>
+                    <CardTitle className="line-clamp-1 mb-1">{event.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                      {event.description || "No description"}
+                    </p>
+                    <p className="text-sm mb-2">{formatDate(event.date)}</p>
+                    {event.categories && event.categories.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {event.categories.map((category) => (
+                          <Badge key={category.id} variant="accent" className="text-xs">
+                            {category.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col justify-center gap-1 p-2 border-l">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openImageDialog(event.id!, event.imageUrl)}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/admin/events/${event.id}/edit`}>
+                        <PencilIcon className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={deletingId === event.id}>
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-4">
+                          <p className="font-medium">Delete this event?</p>
+                          <p className="text-sm text-muted-foreground">
+                            This action cannot be undone.
+                          </p>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(event.id!)}
+                              disabled={deletingId === event.id}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
               </div>
             </Card>
           ))}
