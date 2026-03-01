@@ -14,7 +14,8 @@ function formatEventDate(dateString: string) {
   const day = date.getDate()
   const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase()
   const year = date.getFullYear()
-  return { day, month, year }
+  const time = date.toLocaleString("en-US", { hour: "2-digit", minute: "2-digit" })
+  return { day, month, year, time }
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
@@ -24,7 +25,7 @@ function getImageUrl(imageUrl: string | null | undefined): string | null {
 }
 
 export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardProps) {
-  const { day, month, year } = formatEventDate(event.date)
+  const { day, month, year, time } = formatEventDate(event.date)
   const imageUrl = getImageUrl(event.imageUrl)
 
   return (
@@ -49,6 +50,7 @@ export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardP
             <span className="text-lg font-bold text-primary">{day}</span>
             <span className="text-[10px] font-medium text-secondary">{month}</span>
             <span className="text-[10px] text-muted-foreground">{year}</span>
+            <span className="text-[10px] font-medium text-secondary mt-1">{time}</span>
           </div>
 
           <div className="flex-1 min-w-0">

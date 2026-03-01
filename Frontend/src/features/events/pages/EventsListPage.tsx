@@ -1,13 +1,15 @@
 import { Link } from "react-router"
-import { useState, useRef } from "react"
-import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon } from "lucide-react"
+import { useState, useRef, useMemo, useEffect } from "react"
+import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
-import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1 } from "@/shared/ui"
+import { Button, Card, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
-import { deleteEvent, uploadEventImage, deleteEventImage } from "../services/eventsApi"
+import { deleteEvent, uploadEventImage, deleteEventImage, getCategories } from "../services/eventsApi"
 import { getImageBaseUrl } from "@/lib/apiConfig"
+import type { EventCategory } from "../types/event.types"
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString("en-US", {
@@ -47,6 +49,45 @@ export function EventsListPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [categories, setCategories] = useState<EventCategory[]>([])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await getCategories()
+        setCategories(result)
+      } catch (err) {
+        console.error(err)
+        toast.error("Failed to load categories. The category filter may be unavailable.")
+      }
+    }
+
+    fetchCategories()
+  }, [])
+
+  const filteredEvents = useMemo(() => {
+    if (!events) return []
+
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+
+    return events.filter((event) => {
+      const matchesSearch =
+        normalizedQuery === "" ||
+        event.name.toLowerCase().includes(normalizedQuery) ||
+        event.description?.toLowerCase().includes(normalizedQuery)
+
+      const matchesStatus = statusFilter === "all" || event.status === statusFilter
+
+      const matchesCategory =
+        categoryFilter === "all" ||
+        event.categories?.some((cat) => cat.id.toString() === categoryFilter)
+      return matchesSearch && matchesStatus && matchesCategory
+    })
+  }, [events, searchQuery, statusFilter, categoryFilter])
 
   const handleDelete = async (eventId: number) => {
     setDeletingId(eventId)
@@ -142,6 +183,42 @@ export function EventsListPage() {
         </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-width-select-sm">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="ACTIVE">Active</SelectItem>
+            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+            <SelectItem value="FINISHED">Finished</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-width-select-md">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id.toString()}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading && (
         <Card>
           <CardContent className="py-8 text-center">
@@ -169,86 +246,95 @@ export function EventsListPage() {
         </Card>
       )}
 
-      {!isLoading && !error && events && events.length > 0 && (
-        <div className="grid gap-4">
-          {events.map((event) => (
-            <Card key={event.id}>
-              <div className="flex flex-col sm:flex-row">
-                {event.imageUrl && (
-                  <div className="w-full sm:w-48 h-32 sm:h-auto shrink-0">
+      {!isLoading && !error && filteredEvents && filteredEvents.length === 0 && events && events.length > 0 && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No events match the selected filters.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && !error && filteredEvents && filteredEvents.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredEvents.map((event) => (
+            <Card key={event.id} className="p-0">
+              <div className="flex">
+                <div className="w-48 h-32 shrink-0 m-2">
+                  {event.imageUrl ? (
                     <img
                       src={getImageUrl(event.imageUrl)!}
                       alt={event.name}
-                      className="w-full h-full object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
+                      className="w-full h-full object-cover rounded-lg"
                     />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{event.name}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <HeartIcon className="h-4 w-4" />
-                          <span className="text-sm">{event.likes || 0}</span>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openImageDialog(event.id!, event.imageUrl)}
-                          title="Change image"
-                        >
-                          <ImageIcon className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/admin/events/${event.id}/edit`}>
-                            <PencilIcon className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" disabled={deletingId === event.id}>
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80">
-                            <div className="space-y-4">
-                              <p className="font-medium">Delete this event?</p>
-                              <p className="text-sm text-muted-foreground">
-                                This action cannot be undone.
-                              </p>
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDelete(event.id!)}
-                                  disabled={deletingId === event.id}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                        <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
+                      <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 flex">
+                  <div className="flex-1 p-4 pl-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <HeartIcon className="h-4 w-4" />
+                        <span className="text-sm">{event.likes || 0}</span>
                       </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">
+                    </div>
+                    <CardTitle className="line-clamp-1 mb-1">{event.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                       {event.description || "No description"}
                     </p>
-                    <p className="text-sm">{formatDate(event.date)}</p>
+                    <p className="text-sm mb-2">{formatDate(event.date)}</p>
                     {event.categories && event.categories.length > 0 && (
-                      <div className="flex gap-1 mt-2">
+                      <div className="flex flex-wrap gap-1">
                         {event.categories.map((category) => (
-                          <Badge key={category.id} variant="accent">
+                          <Badge key={category.id} variant="accent" className="text-xs">
                             {category.name}
                           </Badge>
                         ))}
                       </div>
                     )}
-                  </CardContent>
+                  </div>
+                  <div className="flex flex-col justify-center gap-1 p-2 pl-3 border-l">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openImageDialog(event.id!, event.imageUrl)}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/admin/events/${event.id}/edit`}>
+                        <PencilIcon className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={deletingId === event.id}>
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-4">
+                          <p className="font-medium">Delete this event?</p>
+                          <p className="text-sm text-muted-foreground">
+                            This action cannot be undone.
+                          </p>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(event.id!)}
+                              disabled={deletingId === event.id}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
               </div>
             </Card>
