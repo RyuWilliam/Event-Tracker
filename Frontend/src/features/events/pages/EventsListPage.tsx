@@ -246,15 +246,15 @@ export function EventsListPage() {
           {filteredEvents.map((event) => (
             <Card key={event.id} className="p-0">
               <div className="flex">
-                <div className="w-48 h-32 shrink-0">
+                <div className="w-48 h-32 shrink-0 m-2">
                   {event.imageUrl ? (
                     <img
                       src={getImageUrl(event.imageUrl)!}
                       alt={event.name}
-                      className="w-full h-full object-cover rounded-l-lg"
+                      className="w-full h-full object-cover rounded-lg"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted rounded-l-lg">
+                    <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
                       <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
                     </div>
                   )}
