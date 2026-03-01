@@ -92,3 +92,36 @@ export async function deleteEvent(id: number): Promise<void> {
     throw new Error(`Failed to delete event: ${response.status}`)
   }
 }
+
+export async function uploadEventImage(
+  eventId: number,
+  file: File
+): Promise<{ imageUrl: string }> {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const response = await fetch(
+    `${BASE_URL}/images/upload?eventId=${eventId}`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error || "Failed to upload image")
+  }
+
+  return response.json()
+}
+
+export async function deleteEventImage(eventId: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/images/${eventId}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete image: ${response.status}`)
+  }
+}
