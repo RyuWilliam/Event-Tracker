@@ -194,7 +194,7 @@ export function EventsListPage() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[150px]">
+          <SelectTrigger className="w-full sm:w-width-select-sm">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
@@ -205,7 +205,7 @@ export function EventsListPage() {
           </SelectContent>
         </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-width-select-md">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
