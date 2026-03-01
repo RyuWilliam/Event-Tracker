@@ -61,17 +61,20 @@ export function EventsListPage() {
 
   const filteredEvents = useMemo(() => {
     if (!events) return []
-    
+
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+
     return events.filter((event) => {
-      const matchesSearch = searchQuery.trim() === "" || 
-        event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      
+      const matchesSearch =
+        normalizedQuery === "" ||
+        event.name.toLowerCase().includes(normalizedQuery) ||
+        event.description?.toLowerCase().includes(normalizedQuery)
+
       const matchesStatus = statusFilter === "all" || event.status === statusFilter
-      
-      const matchesCategory = categoryFilter === "all" || 
-        event.categories?.some(cat => cat.id.toString() === categoryFilter)
-      
+
+      const matchesCategory =
+        categoryFilter === "all" ||
+        event.categories?.some((cat) => cat.id.toString() === categoryFilter)
       return matchesSearch && matchesStatus && matchesCategory
     })
   }, [events, searchQuery, statusFilter, categoryFilter])
