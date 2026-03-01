@@ -1,13 +1,15 @@
 import { Link } from "react-router"
-import { useState, useRef } from "react"
-import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon } from "lucide-react"
+import { useState, useRef, useMemo, useEffect } from "react"
+import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
-import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1 } from "@/shared/ui"
+import { Button, Card, CardHeader, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
-import { deleteEvent, uploadEventImage, deleteEventImage } from "../services/eventsApi"
+import { deleteEvent, uploadEventImage, deleteEventImage, getCategories } from "../services/eventsApi"
 import { getImageBaseUrl } from "@/lib/apiConfig"
+import type { EventCategory } from "../types/event.types"
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString("en-US", {
@@ -47,6 +49,32 @@ export function EventsListPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [categories, setCategories] = useState<EventCategory[]>([])
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(console.error)
+  }, [])
+
+  const filteredEvents = useMemo(() => {
+    if (!events) return []
+    
+    return events.filter((event) => {
+      const matchesSearch = searchQuery.trim() === "" || 
+        event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      const matchesStatus = statusFilter === "all" || event.status === statusFilter
+      
+      const matchesCategory = categoryFilter === "all" || 
+        event.categories?.some(cat => cat.id.toString() === categoryFilter)
+      
+      return matchesSearch && matchesStatus && matchesCategory
+    })
+  }, [events, searchQuery, statusFilter, categoryFilter])
 
   const handleDelete = async (eventId: number) => {
     setDeletingId(eventId)
@@ -142,6 +170,42 @@ export function EventsListPage() {
         </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="ACTIVE">Active</SelectItem>
+            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+            <SelectItem value="FINISHED">Finished</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id.toString()}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading && (
         <Card>
           <CardContent className="py-8 text-center">
@@ -169,9 +233,17 @@ export function EventsListPage() {
         </Card>
       )}
 
-      {!isLoading && !error && events && events.length > 0 && (
+      {!isLoading && !error && filteredEvents && filteredEvents.length === 0 && events && events.length > 0 && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No events match the selected filters.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && !error && filteredEvents && filteredEvents.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <Card key={event.id}>
               <div className="flex flex-col">
                 {event.imageUrl && (
