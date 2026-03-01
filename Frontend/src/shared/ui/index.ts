@@ -10,6 +10,18 @@ export { Toaster } from "./sonner"
 export { Checkbox } from "./checkbox"
 export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "./popover"
 export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from "./dialog"
+export {
   Select,
   SelectContent,
   SelectGroup,
