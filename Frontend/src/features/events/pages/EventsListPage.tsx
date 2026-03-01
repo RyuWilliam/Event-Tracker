@@ -244,7 +244,7 @@ export function EventsListPage() {
       {!isLoading && !error && filteredEvents && filteredEvents.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredEvents.map((event) => (
-            <Card key={event.id}>
+            <Card key={event.id} className="p-0">
               <div className="flex">
                 <div className="w-48 h-32 shrink-0">
                   {event.imageUrl ? (
@@ -260,7 +260,7 @@ export function EventsListPage() {
                   )}
                 </div>
                 <div className="flex-1 flex">
-                  <div className="flex-1 p-4">
+                  <div className="flex-1 p-4 pl-0">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
                       <div className="flex items-center gap-1 text-muted-foreground">
@@ -283,7 +283,7 @@ export function EventsListPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col justify-center gap-1 p-2 border-l">
+                  <div className="flex flex-col justify-center gap-1 p-2 pl-3 border-l">
                     <Button
                       variant="outline"
                       size="sm"
