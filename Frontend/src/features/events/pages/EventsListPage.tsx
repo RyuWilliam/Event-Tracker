@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
 import { deleteEvent, uploadEventImage, deleteEventImage } from "../services/eventsApi"
-import { getApiBaseUrl } from "@/lib/apiConfig"
+import { getImageBaseUrl } from "@/lib/apiConfig"
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString("en-US", {
@@ -34,7 +34,7 @@ function getStatusVariant(status: string) {
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
   if (!imageUrl) return null
-  const baseUrl = getApiBaseUrl()
+  const baseUrl = getImageBaseUrl()
   return `${baseUrl}${imageUrl}`
 }
 

@@ -7,7 +7,7 @@ import { UploadIcon, ImageIcon } from "lucide-react"
 import { toast } from "sonner"
 import type { CreateEventPayload, Event, EventStatus, EventCategory } from "../types/event.types"
 import { uploadEventImage, deleteEventImage } from "../services/eventsApi"
-import { getApiBaseUrl } from "@/lib/apiConfig"
+import { getImageBaseUrl } from "@/lib/apiConfig"
 
 interface EventFormProps {
   onSubmit: (data: CreateEventPayload) => Promise<void>
@@ -56,8 +56,8 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
       setValue("date", dateValue)
       setValue("status", initialData.status)
       setValue("categories", initialData.categories || [])
-      if (initialData.imageUrl) {
-        setImagePreview(`${getApiBaseUrl()}${initialData.imageUrl}`)
+        if (initialData.imageUrl) {
+        setImagePreview(`${getImageBaseUrl()}${initialData.imageUrl}`)
       }
     }
   }, [initialData, setValue])
@@ -95,7 +95,7 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
     setUploading(true)
     try {
       const result = await uploadEventImage(initialData.id, selectedFile)
-      setImagePreview(`${getApiBaseUrl()}${result.imageUrl}`)
+      setImagePreview(`${getImageBaseUrl()}${result.imageUrl}`)
       setSelectedFile(null)
       toast.success("Image uploaded successfully")
     } catch (err) {

@@ -1,7 +1,7 @@
 import { HeartIcon, ImageIcon } from "lucide-react"
 import type { Event } from "@/features/events"
 import { Badge, Button } from "@/shared/ui"
-import { getApiBaseUrl } from "@/lib/apiConfig"
+import { getImageBaseUrl } from "@/lib/apiConfig"
 
 interface ExternalEventCardProps {
   event: Event
@@ -19,7 +19,7 @@ function formatEventDate(dateString: string) {
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
   if (!imageUrl) return null
-  const baseUrl = getApiBaseUrl()
+  const baseUrl = getImageBaseUrl()
   return `${baseUrl}${imageUrl}`
 }
 

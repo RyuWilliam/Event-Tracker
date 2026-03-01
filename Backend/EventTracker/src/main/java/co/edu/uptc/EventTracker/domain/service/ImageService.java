@@ -15,7 +15,7 @@ import java.util.UUID;
 @Service
 public class ImageService {
 
-    private static final long MAX_SIZE = 5242880; // 5MB
+    private static final long MAX_SIZE = 5242880;
     private static final List<String> ALLOWED_TYPES = List.of(
             "image/jpeg",
             "image/png",
@@ -57,8 +57,9 @@ public class ImageService {
     public void deleteImageFile(String imageUrl) {
         try {
             String filename = imageUrl.replace("/images/", "");
-            Path path = Paths.get(uploadDir, "events", filename);
-            Files.deleteIfExists(path);
+            Path basePath = Paths.get("").toAbsolutePath();
+            Path uploadPath = basePath.resolve(uploadDir).resolve("events").resolve(filename);
+            Files.deleteIfExists(uploadPath);
         } catch (IOException e) {
             throw new RuntimeException("Failed to delete image file: " + imageUrl, e);
         }
@@ -74,6 +75,7 @@ public class ImageService {
         }
         
         String contentType = file.getContentType();
+        
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
             throw new IllegalArgumentException("File type not allowed. Allowed types: JPEG, PNG, WebP");
         }
@@ -92,11 +94,12 @@ public class ImageService {
 
     private void saveFile(MultipartFile file, String filename) {
         try {
-            Path uploadPath = Paths.get(uploadDir, "events");
+            Path basePath = Paths.get("").toAbsolutePath();
+            Path uploadPath = basePath.resolve(uploadDir).resolve("events");
             Files.createDirectories(uploadPath);
             
             Path filePath = uploadPath.resolve(filename);
-            file.transferTo(filePath.toFile());
+            Files.write(filePath, file.getBytes());
         } catch (IOException e) {
             throw new RuntimeException("Failed to save image", e);
         }

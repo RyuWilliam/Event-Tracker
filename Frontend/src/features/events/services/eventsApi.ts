@@ -108,12 +108,20 @@ export async function uploadEventImage(
     }
   )
 
+  const responseText = await response.text()
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.error || "Failed to upload image")
+    let errorMessage = "Failed to upload image"
+    try {
+      const errorJson = JSON.parse(responseText)
+      errorMessage = errorJson.error || errorMessage
+    } catch {
+      errorMessage = responseText || errorMessage
+    }
+    throw new Error(errorMessage)
   }
 
-  return response.json()
+  return JSON.parse(responseText)
 }
 
 export async function deleteEventImage(eventId: number): Promise<void> {
