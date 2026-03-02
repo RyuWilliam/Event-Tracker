@@ -7,6 +7,7 @@ import co.edu.uptc.EventTracker.persistence.crud.EventJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.CategoryEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
+import co.edu.uptc.EventTracker.persistence.exceptions.EventNotFoundException;
 import co.edu.uptc.EventTracker.persistence.mapper.CategoryMapper;
 import co.edu.uptc.EventTracker.persistence.mapper.EventMapper;
 import org.springframework.stereotype.Repository;
@@ -119,8 +120,39 @@ public class EventRepositoryImpl implements EventRepository {
         }
     }
 
-    public EventEntity saveRaw(EventEntity event){
-        return eventJpaRepository.save(event);
+    @Override
+    public Event modify(Integer id, Event event) {
+
+        EventEntity entity = eventJpaRepository.findById(id)
+                .orElseThrow(() -> new EventNotFoundException(id));
+
+        if (event.getName() != null) {
+            entity.setName(event.getName());
+        }
+
+        if (event.getDescription() != null) {
+            entity.setDescription(event.getDescription());
+        }
+
+        if (event.getDate() != null) {
+            entity.setDate(event.getDate());
+        }
+
+        if (event.getStatus() != null) {
+            entity.setStatus(event.getStatus());
+        }
+
+        if (event.getCategories() != null) {
+            entity.setCategories(categoryMapper.toEntities(event.getCategories()));
+        }
+
+        if (event.getLikes() != null) {
+            entity.setLikes(event.getLikes());
+        }
+        EventEntity updated = eventJpaRepository.save(entity);
+        return eventMapper.toEvent(updated);
     }
+
+
 
 }

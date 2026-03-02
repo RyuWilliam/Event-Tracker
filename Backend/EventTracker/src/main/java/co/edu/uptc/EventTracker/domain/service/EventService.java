@@ -25,33 +25,7 @@ public class EventService {
     }
 
     public Event modify(Integer id, Event event) {
-
-        Event eventToModify = eventRepository.findById(id)
-                .orElseThrow(() -> new EventNotFoundException(id));
-
-        if(!eventRepository.isActive(id)){
-            throw new EventNotActiveException(id);
-        }
-
-        if (event.getName() != null) {
-            eventToModify.setName(event.getName());
-        }
-        if (event.getDescription() != null) {
-            eventToModify.setDescription(event.getDescription());
-        }
-        if (event.getDate() != null) {
-            eventToModify.setDate(event.getDate());
-        }
-        if (event.getStatus() != null) {
-            eventToModify.setStatus(event.getStatus());
-        }
-        if(event.getCategories() != null){
-            eventToModify.setCategories(event.getCategories());
-        }
-        if(event.getLikes() != null){
-            eventToModify.setLikes(event.getLikes());
-        }
-        return eventRepository.save(eventToModify);
+        return eventRepository.modify(id, event);
     }
 
     public void deleteEvent (Integer id){

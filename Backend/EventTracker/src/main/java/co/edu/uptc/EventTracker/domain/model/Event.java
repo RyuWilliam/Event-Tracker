@@ -4,7 +4,6 @@ import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 public class Event {
 

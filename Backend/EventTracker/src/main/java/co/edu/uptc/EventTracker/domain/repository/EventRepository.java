@@ -1,7 +1,6 @@
 package co.edu.uptc.EventTracker.domain.repository;
 
 import co.edu.uptc.EventTracker.domain.model.Event;
-import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 
 import java.time.LocalDateTime;
@@ -14,6 +13,7 @@ public interface EventRepository {
     Optional<Event> findById(Integer id);
     List<Event> findAll();
     void deleteById(Integer id);
+    Event modify(Integer id, Event event);
     boolean existById(Integer id);
     List<Event> findActive();
     List<Event> findByName(String name);
