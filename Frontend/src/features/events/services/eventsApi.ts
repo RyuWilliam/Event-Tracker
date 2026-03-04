@@ -1,10 +1,13 @@
 import type { CreateEventPayload, Event, EventCategory } from "../types/event.types"
 import { getApiBaseUrl } from "@/lib/apiConfig"
+import { getAuthHeaders } from "@/features/auth"
 
 const BASE_URL = getApiBaseUrl()
 
 export async function getCategories(): Promise<EventCategory[]> {
-  const response = await fetch(`${BASE_URL}/categories`)
+  const response = await fetch(`${BASE_URL}/categories`, {
+    headers: getAuthHeaders(),
+  })
   if (!response.ok) {
     throw new Error(`Failed to fetch categories: ${response.status}`)
   }
@@ -16,6 +19,7 @@ export async function createCategory(name: string): Promise<EventCategory> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeaders(),
     },
     body: JSON.stringify({ name }),
   })
@@ -26,7 +30,9 @@ export async function createCategory(name: string): Promise<EventCategory> {
 }
 
 export async function getEvents(): Promise<Event[]> {
-  const response = await fetch(`${BASE_URL}/events`)
+  const response = await fetch(`${BASE_URL}/events`, {
+    headers: getAuthHeaders(),
+  })
   if (!response.ok) {
     throw new Error(`Failed to fetch events: ${response.status}`)
   }
@@ -38,6 +44,7 @@ export async function createEvent(data: CreateEventPayload): Promise<Event> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeaders(),
     },
     body: JSON.stringify(data),
   })
@@ -50,7 +57,9 @@ export async function createEvent(data: CreateEventPayload): Promise<Event> {
 }
 
 export async function getEvent(id: number): Promise<Event> {
-  const response = await fetch(`${BASE_URL}/events/${id}`)
+  const response = await fetch(`${BASE_URL}/events/${id}`, {
+    headers: getAuthHeaders(),
+  })
   if (!response.ok) {
     throw new Error(`Failed to fetch event: ${response.status}`)
   }
@@ -62,6 +71,7 @@ export async function updateEvent(id: number, data: CreateEventPayload): Promise
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeaders(),
     },
     body: JSON.stringify(data),
   })
@@ -76,6 +86,7 @@ export async function updateEvent(id: number, data: CreateEventPayload): Promise
 export async function likeEvent(id: number): Promise<void> {
   const response = await fetch(`${BASE_URL}/events/addLike/${id}`, {
     method: "POST",
+    headers: getAuthHeaders(),
   })
 
   if (!response.ok) {
@@ -86,6 +97,7 @@ export async function likeEvent(id: number): Promise<void> {
 export async function deleteEvent(id: number): Promise<void> {
   const response = await fetch(`${BASE_URL}/events/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   })
 
   if (!response.ok) {
@@ -105,6 +117,7 @@ export async function uploadEventImage(
     {
       method: "POST",
       body: formData,
+      headers: getAuthHeaders(),
     }
   )
 
@@ -127,6 +140,7 @@ export async function uploadEventImage(
 export async function deleteEventImage(eventId: number): Promise<void> {
   const response = await fetch(`${BASE_URL}/images/${eventId}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   })
 
   if (!response.ok) {
