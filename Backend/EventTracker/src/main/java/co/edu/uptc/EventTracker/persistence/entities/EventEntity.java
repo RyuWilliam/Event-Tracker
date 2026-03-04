@@ -26,6 +26,8 @@
         @Column(nullable = false)
         private String name;
         private String description;
+        @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<Favorite> favorites;
         private LocalDateTime date;
 
         @Enumerated(EnumType.STRING)
@@ -36,8 +38,6 @@
         private LocalDateTime lastUpdated;
 
         private Boolean active;
-
-        private Integer likes;
 
         @Column(name = "image_url")
         private String imageUrl;
@@ -52,14 +52,6 @@
 
         public EventEntity(){
 
-        }
-
-        public Integer getLikes() {
-            return likes;
-        }
-
-        public void setLikes(Integer likes) {
-            this.likes = likes;
         }
 
         public Integer getEventId() {
@@ -122,15 +114,19 @@
             this.categories = categories;
         }
 
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
-    public String getImageUrl() {
+        public String getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
+        public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-}
+
+        public List<Favorite> getFavorites() {
+            return favorites;
+        }
+
+        public void setFavorites(List<Favorite> favorites) {
+            this.favorites = favorites;
+        }
+    }

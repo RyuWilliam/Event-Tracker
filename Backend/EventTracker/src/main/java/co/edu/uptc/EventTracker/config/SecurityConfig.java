@@ -47,7 +47,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // 🛡 Security Rules
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -59,6 +58,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // auth endpoints libres
                         .requestMatchers("/auth/**").permitAll()
+
+                        // ✅ Favoritos requieren autenticación (cualquier rol)
+                        .requestMatchers("/users/favorites/**").authenticated()
 
                         // GET requiere login
                         .requestMatchers(HttpMethod.GET, "/**").authenticated()

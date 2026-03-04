@@ -13,7 +13,6 @@ public class Event {
     private LocalDateTime date;
     private EventStatus status;
     private List<EventCategory> categories;
-    private Integer likes;
     private String imageUrl;
 
 
@@ -27,7 +26,6 @@ public class Event {
         this.description = description;
         this.date = date;
         this.status = status;
-        this.likes = likes;
     }
 
     public Integer getId() {
@@ -68,15 +66,6 @@ public class Event {
 
     public void setStatus(EventStatus status) {
         this.status = status;
-    }
-
-
-    public Integer getLikes() {
-        return likes;
-    }
-
-    public void setLikes(Integer likes) {
-        this.likes = likes;
     }
 
     public List<EventCategory> getCategories() {

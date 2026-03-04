@@ -54,9 +54,6 @@ public class EventService {
     public List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end){
         return eventRepository.findByDateBetween(start,end);
     }
-    public void addLike(Integer id){
-        eventRepository.addLike(id);
-    }
 
 
 

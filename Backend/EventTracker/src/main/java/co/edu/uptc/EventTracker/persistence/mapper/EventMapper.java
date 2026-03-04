@@ -32,7 +32,6 @@ public class EventMapper {
         event.setDate(entity.getDate());
         event.setName(entity.getName());
         event.setStatus(entity.getStatus());
-        event.setLikes(entity.getLikes());
         event.setDescription(entity.getDescription());
         event.setCategories(categoryMapper.toCategories(entity.getCategories()));
         event.setImageUrl(entity.getImageUrl());
@@ -59,7 +58,6 @@ public class EventMapper {
         entity.setDate(event.getDate());
         entity.setName(event.getName());
         entity.setStatus(event.getStatus());
-        entity.setLikes(event.getLikes());
         entity.setDescription(event.getDescription());
         entity.setImageUrl(event.getImageUrl());
 

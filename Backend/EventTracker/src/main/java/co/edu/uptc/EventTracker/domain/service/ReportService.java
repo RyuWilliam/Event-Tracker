@@ -16,6 +16,7 @@ public class ReportService {
         this.eventRepository = eventRepository;
     }
 
+    /*
     public Map<String, Integer> generateReport(){
         List<Event> events = new ArrayList<>(eventRepository.findActive());
         Map<String, Integer> report = new LinkedHashMap<>();
@@ -31,4 +32,5 @@ public class ReportService {
         }
         return report;
     }
+    */
 }

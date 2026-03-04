@@ -22,7 +22,7 @@ public class Token {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
     public enum TokenType {
         BEARER
@@ -32,7 +32,7 @@ public class Token {
 
     }
 
-    public Token(Integer id, String token, TokenType tokenType, Boolean isRevoked, Boolean isExpired, User user) {
+    public Token(Integer id, String token, TokenType tokenType, Boolean isRevoked, Boolean isExpired, UserEntity user) {
         this.id = id;
         this.token = token;
         this.tokenType = tokenType;
@@ -81,11 +81,11 @@ public class Token {
         isExpired = expired;
     }
 
-    public User getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserEntity user) {
         this.user = user;
     }
 }

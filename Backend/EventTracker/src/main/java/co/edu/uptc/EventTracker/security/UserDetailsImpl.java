@@ -1,6 +1,6 @@
 package co.edu.uptc.EventTracker.security;
 
-import co.edu.uptc.EventTracker.persistence.entities.User;
+import co.edu.uptc.EventTracker.persistence.entities.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,10 +10,18 @@ import java.util.List;
 
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private final UserEntity user;
 
-    public UserDetailsImpl(User user) {
+    public UserDetailsImpl(UserEntity user) {
         this.user = user;
+    }
+
+    public Integer getId() {
+        return user.getId();
+    }
+
+    public UserEntity getUser() {
+        return user;
     }
 
     @Override

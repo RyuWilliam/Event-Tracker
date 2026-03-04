@@ -37,7 +37,6 @@ public class EventRepositoryImpl implements EventRepository {
     public Event save(Event event) {
         EventEntity entity = eventMapper.toEntity(event);
         entity.setActive(true);
-        entity.setLikes(0);
         List<CategoryEntity> categoryEntities = new ArrayList<>();
 
         for(EventCategory category: event.getCategories()){
@@ -110,14 +109,7 @@ public class EventRepositoryImpl implements EventRepository {
         return false;
     }
 
-    @Override
-    public void addLike(Integer id) {
-        EventEntity entity = eventJpaRepository.findById(id).orElse(null);
-        if(entity != null){
-            entity.setLikes(entity.getLikes()+1);
-            eventJpaRepository.save(entity);
-        }
-    }
+
 
     @Override
     public Event modify(Integer id, Event event) {
@@ -145,9 +137,6 @@ public class EventRepositoryImpl implements EventRepository {
             entity.setCategories(categoryMapper.toEntities(event.getCategories()));
         }
 
-        if (event.getLikes() != null) {
-            entity.setLikes(event.getLikes());
-        }
         EventEntity updated = eventJpaRepository.save(entity);
         return eventMapper.toEvent(updated);
     }

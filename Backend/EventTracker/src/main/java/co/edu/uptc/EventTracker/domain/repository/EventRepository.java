@@ -20,5 +20,4 @@ public interface EventRepository {
     List<Event> findByStatus(EventStatus status);
     List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
     boolean isActive(Integer id);
-    void addLike(Integer id);
 }

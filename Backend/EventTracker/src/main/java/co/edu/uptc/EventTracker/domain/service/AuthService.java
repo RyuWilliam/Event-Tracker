@@ -1,7 +1,7 @@
 package co.edu.uptc.EventTracker.domain.service;
 
-import co.edu.uptc.EventTracker.persistence.crud.UserRepository;
-import co.edu.uptc.EventTracker.persistence.entities.User;
+import co.edu.uptc.EventTracker.persistence.crud.UserJpaRepository;
+import co.edu.uptc.EventTracker.persistence.entities.UserEntity;
 import co.edu.uptc.EventTracker.persistence.enums.Role;
 import co.edu.uptc.EventTracker.security.JwtService;
 import co.edu.uptc.EventTracker.web.dto.AuthResponse;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     public AuthService(
-            UserRepository userRepository,
+            UserJpaRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthenticationManager authenticationManager
@@ -38,11 +38,11 @@ public class AuthService {
             throw new RuntimeException("Email already registered");
         }
 
-        User user = new User(
+        UserEntity user = new UserEntity(
                 request.getName(),
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
-                Role.ROLE_ADMIN
+                Role.ROLE_USER
         );
 
         userRepository.save(user);
@@ -69,7 +69,7 @@ public class AuthService {
                 )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
+        UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = jwtService.generateToken(
