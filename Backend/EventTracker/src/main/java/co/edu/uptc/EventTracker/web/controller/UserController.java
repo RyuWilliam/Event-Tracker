@@ -1,5 +1,6 @@
 package co.edu.uptc.EventTracker.web.controller;
 
+import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.User;
 import co.edu.uptc.EventTracker.domain.service.UserService;
 import co.edu.uptc.EventTracker.security.UserDetailsImpl;
@@ -46,6 +47,12 @@ public class UserController {
     @GetMapping("/favorites/report")
     public Map<Integer, Long> getFavoriteReport() {
         return userService.getFavoriteReport();
+    }
+
+    @GetMapping("/myFavorites/{userId}")
+    public List<Event> getFavorites(){
+        Integer userId = getAuthenticatedUserId();
+        return userService.getFavorites(userId);
     }
 
 

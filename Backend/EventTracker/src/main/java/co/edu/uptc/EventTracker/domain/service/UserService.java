@@ -1,5 +1,6 @@
 package co.edu.uptc.EventTracker.domain.service;
 
+import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.User;
 import co.edu.uptc.EventTracker.domain.repository.UserRepository;
 import co.edu.uptc.EventTracker.persistence.exceptions.UserNotFoundException;
@@ -50,6 +51,15 @@ public class UserService {
         }
 
         userRepository.removeFavorite(userId, eventId);
+    }
+
+    public List<Event> getFavorites(Integer id){
+
+        User user  = userRepository.findById(id).orElse(null);
+        if(user == null){
+            throw new UserNotFoundException("user not found");
+        }
+        return user.getFavoriteEvents();
     }
 
     public Map<Integer, Long> getFavoriteReport() {
