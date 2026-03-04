@@ -76,10 +76,5 @@ public class EventController {
         return ResponseEntity.ok(eventService.findByDateBetween(start, end));
     }
 
-    @PostMapping("/addLike/{id}")
-    public ResponseEntity<Void> addLike(@PathVariable Integer id){
-        eventService.addLike(id);
-        return ResponseEntity.noContent().build();
-    }
 
 }

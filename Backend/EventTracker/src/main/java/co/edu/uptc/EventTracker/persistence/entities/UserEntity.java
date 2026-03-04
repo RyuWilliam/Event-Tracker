@@ -4,7 +4,7 @@ import co.edu.uptc.EventTracker.persistence.enums.Role;
 import jakarta.persistence.*; import java.util.List;
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -19,21 +19,24 @@ public class User {
     private Role role;
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorite> favorites;
 
-    public User() {
+    public UserEntity() {
 
     }
 
-    public User(Integer id, String name, String email, String password, Role role, List<Token> tokens) {
+    public UserEntity(Integer id, String name, String email, String password, Role role, List<Token> tokens, List<Favorite> favorites) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
         this.tokens = tokens;
+        this.favorites = favorites;
     }
 
-    public User(String name, String email, String password, Role role) {
+    public UserEntity(String name, String email, String password, Role role) {
         this.name = name;
         this.email = email;
         this.role = role;
@@ -86,5 +89,13 @@ public class User {
 
     public void setTokens(List<Token> tokens) {
         this.tokens = tokens;
+    }
+
+    public List<Favorite> getFavorites() {
+        return favorites;
+    }
+
+    public void setFavorites(List<Favorite> favorites) {
+        this.favorites = favorites;
     }
 }

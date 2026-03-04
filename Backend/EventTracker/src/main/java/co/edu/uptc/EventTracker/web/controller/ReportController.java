@@ -19,8 +19,10 @@ public class ReportController {
         this.reportService = reportService;
     }
 
+    /*
     @GetMapping("/generate")
     public ResponseEntity<Map<String, Integer>> generateReport(){
         return ResponseEntity.ok(reportService.generateReport());
     }
+     */
 }

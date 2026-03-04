@@ -1,15 +1,15 @@
 package co.edu.uptc.EventTracker.security;
 
-import co.edu.uptc.EventTracker.persistence.crud.UserRepository;
+import co.edu.uptc.EventTracker.persistence.crud.UserJpaRepository;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository repository;
+    private final UserJpaRepository repository;
 
-    public UserDetailsServiceImpl(UserRepository repository) {
+    public UserDetailsServiceImpl(UserJpaRepository repository) {
         this.repository = repository;
     }
 

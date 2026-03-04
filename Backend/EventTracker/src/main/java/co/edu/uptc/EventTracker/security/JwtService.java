@@ -21,7 +21,6 @@ public class JwtService {
     private long jwtExpiration;
 
     private SecretKey getSigningKey() {
-        // Tu key NO está en base64, así que usamos bytes directos
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
