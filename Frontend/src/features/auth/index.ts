@@ -1,0 +1,6 @@
+export type { RegisterRequest, AuthResponse, AuthState } from "./types/auth.types"
+export { useRegister } from "./hooks/useRegister"
+export { AuthProvider, useAuth } from "./store/authContext"
+export { register } from "./services/authApi"
+export { RegisterForm } from "./components/RegisterForm"
+export { RegisterPage } from "./pages/RegisterPage"
