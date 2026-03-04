@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client"
 import { RouterProvider } from "react-router"
 import { router } from "./app/router"
 import { Toaster } from "@/shared/ui"
+import { AuthProvider } from "@/features/auth"
 import "./index.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
-    <Toaster />
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <Toaster />
+    </AuthProvider>
   </StrictMode>
 )
