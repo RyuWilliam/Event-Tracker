@@ -1,7 +1,7 @@
 import { AdminLayout, DashboardPage } from "@/features/admin"
 import { EventsListPage, CreateEventPage, EditEventPage } from "@/features/events"
 import { ExternalEventsPage } from "@/features/external"
-import { RegisterPage } from "@/features/auth"
+import { RegisterPage, LoginPage } from "@/features/auth"
 
 export const routes = [
   {
@@ -11,6 +11,10 @@ export const routes = [
   {
     path: "/register",
     Component: RegisterPage,
+  },
+  {
+    path: "/login",
+    Component: LoginPage,
   },
   {
     path: "/events",
