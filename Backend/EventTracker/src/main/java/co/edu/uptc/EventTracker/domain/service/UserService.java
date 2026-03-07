@@ -24,7 +24,7 @@ public class UserService {
 
     public User findById(Integer id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public List<User> findAll() {
@@ -38,7 +38,7 @@ public class UserService {
     public void addFavorite(Integer userId, Integer eventId) {
 
         if (!userRepository.findById(userId).isPresent()) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException(userId);
         }
 
         userRepository.addFavorite(userId, eventId);
@@ -47,7 +47,7 @@ public class UserService {
     public void removeFavorite(Integer userId, Integer eventId) {
 
         if (!userRepository.findById(userId).isPresent()) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException(userId);
         }
 
         userRepository.removeFavorite(userId, eventId);
@@ -57,12 +57,12 @@ public class UserService {
 
         User user  = userRepository.findById(id).orElse(null);
         if(user == null){
-            throw new UserNotFoundException("user not found");
+            throw new UserNotFoundException(id);
         }
         return user.getFavoriteEvents();
     }
 
-    public Map<Integer, Long> getFavoriteReport() {
+    public Map<String, Long> getFavoriteReport() {
         return userRepository.getFavoriteReport();
     }
 }

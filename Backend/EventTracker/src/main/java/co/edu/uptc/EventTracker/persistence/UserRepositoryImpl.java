@@ -11,6 +11,7 @@ import co.edu.uptc.EventTracker.persistence.mapper.UserMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,9 +81,6 @@ public class UserRepositoryImpl implements UserRepository {
         userJpaRepository.deleteById(id);
     }
 
-    // =============================
-    // FAVORITES
-    // =============================
 
     @Override
     public void addFavorite(Integer userId, Integer eventId) {
@@ -95,12 +93,14 @@ public class UserRepositoryImpl implements UserRepository {
                 .anyMatch(f -> f.getEvent().getEventId().equals(eventId));
 
         if (alreadyExists) {
-            return; // idempotente
+            return;
         }
 
         EventEntity event = eventJpaRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
-
+        if(event.getActive() == false){
+            throw new RuntimeException("Event not active");
+        }
         Favorite favorite = new Favorite();
         favorite.setUser(user);
         favorite.setEvent(event);
@@ -123,14 +123,23 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Map<Integer, Long> getFavoriteReport() {
+    public Map<String, Long> getFavoriteReport() {
 
         return userJpaRepository.findAll()
                 .stream()
                 .flatMap(user -> user.getFavorites().stream())
                 .collect(Collectors.groupingBy(
-                        f -> f.getEvent().getEventId(),
+                        f -> f.getEvent().getName(),
                         Collectors.counting()
+                ))
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
                 ));
     }
 }

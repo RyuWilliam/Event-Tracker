@@ -28,7 +28,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/favorites/{eventId}")
+    @PostMapping("/favorites/add/{eventId}")
     public void addFavorite(@PathVariable Integer eventId) {
 
         Integer userId = getAuthenticatedUserId();
@@ -36,7 +36,7 @@ public class UserController {
         userService.addFavorite(userId, eventId);
     }
 
-    @DeleteMapping("/favorites/{eventId}")
+    @DeleteMapping("/favorites/remove/{eventId}")
     public void removeFavorite(@PathVariable Integer eventId) {
 
         Integer userId = getAuthenticatedUserId();
@@ -45,11 +45,11 @@ public class UserController {
     }
 
     @GetMapping("/favorites/report")
-    public Map<Integer, Long> getFavoriteReport() {
+    public Map<String, Long> getFavoriteReport() {
         return userService.getFavoriteReport();
     }
 
-    @GetMapping("/myFavorites/{userId}")
+    @GetMapping("/favorites/{userId}")
     public List<Event> getFavorites(){
         Integer userId = getAuthenticatedUserId();
         return userService.getFavorites(userId);

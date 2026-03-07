@@ -27,13 +27,11 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
-    // 🔐 Password Encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 🔎 Authentication Provider
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
@@ -41,7 +39,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    // 🔑 Authentication Manager
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -56,16 +53,13 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // auth endpoints libres
+
                         .requestMatchers("/auth/**").permitAll()
 
-                        // ✅ Favoritos requieren autenticación (cualquier rol)
                         .requestMatchers("/users/favorites/**").authenticated()
 
-                        // GET requiere login
                         .requestMatchers(HttpMethod.GET, "/**").authenticated()
 
-                        // POST/PUT/DELETE requieren ADMIN
                         .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")

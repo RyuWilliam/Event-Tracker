@@ -22,5 +22,5 @@ public interface UserRepository {
 
     void removeFavorite(Integer userId, Integer eventId);
 
-    Map<Integer, Long> getFavoriteReport();
+    Map<String, Long> getFavoriteReport();
 }
