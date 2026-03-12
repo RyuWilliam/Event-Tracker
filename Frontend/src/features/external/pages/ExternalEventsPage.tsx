@@ -1,15 +1,26 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Input } from "@/shared/ui"
 import { MainLayout } from "@/core/layouts/MainLayout"
-import { useEvents, likeEvent } from "@/features/events"
+import { useEvents, likeEvent, unlikeEvent, getMyFavorites } from "@/features/events"
 import { ExternalEventCard } from "../components/ExternalEventCard"
 
 export function ExternalEventsPage() {
   const { events, isLoading, error } = useEvents()
   const [searchQuery, setSearchQuery] = useState("")
   const [likedEvents, setLikedEvents] = useState<Set<number>>(new Set())
+
+  // Pre-populate liked events from the server on mount
+  useEffect(() => {
+    getMyFavorites()
+      .then((favorites) => {
+        setLikedEvents(new Set(favorites.map((e) => e.id!)))
+      })
+      .catch(() => {
+        // silently ignore — user just won't see pre-filled hearts
+      })
+  }, [])
 
   const filteredEvents = useMemo(() => {
     if (!events) return []
@@ -25,16 +36,24 @@ export function ExternalEventsPage() {
   }, [events, searchQuery])
 
   const handleLike = async (eventId: number) => {
-    if (likedEvents.has(eventId)) {
-      return
-    }
+    const alreadyLiked = likedEvents.has(eventId)
 
     try {
-      await likeEvent(eventId)
-      setLikedEvents((prev) => new Set(prev).add(eventId))
-      toast.success("Event liked!")
+      if (alreadyLiked) {
+        await unlikeEvent(eventId)
+        setLikedEvents((prev) => {
+          const next = new Set(prev)
+          next.delete(eventId)
+          return next
+        })
+        toast.success("Removed from favorites")
+      } else {
+        await likeEvent(eventId)
+        setLikedEvents((prev) => new Set(prev).add(eventId))
+        toast.success("Added to favorites!")
+      }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to like event"
+      const message = err instanceof Error ? err.message : "Failed to update favorite"
       toast.error(message)
     }
   }

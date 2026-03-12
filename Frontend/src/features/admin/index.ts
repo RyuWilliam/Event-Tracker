@@ -1,3 +1,5 @@
 export { DashboardPage } from "./pages/DashboardPage"
+export { UsersPage } from "./pages/UsersPage"
+export { RegisterAdminPage } from "./pages/RegisterAdminPage"
 export { AdminLayout } from "./components/AdminLayout"
 export { AppSidebar } from "./components/AppSidebar"

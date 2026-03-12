@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { useState, useRef, useMemo, useEffect } from "react"
-import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
+import { PencilIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Button, Card, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
@@ -274,12 +274,8 @@ export function EventsListPage() {
                 </div>
                 <div className="flex-1 flex">
                   <div className="flex-1 p-4 pl-0">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center mb-2">
                       <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <HeartIcon className="h-4 w-4" />
-                        <span className="text-sm">{event.likes || 0}</span>
-                      </div>
                     </div>
                     <CardTitle className="line-clamp-1 mb-1">{event.name}</CardTitle>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-2">

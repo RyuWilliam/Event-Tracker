@@ -60,6 +60,33 @@ public class AuthService {
         return new AuthResponse(token);
     }
 
+    public AuthResponse registerAdmin(RegisterRequest request) {
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        UserEntity user = new UserEntity(
+                request.getName(),
+                request.getEmail(),
+                passwordEncoder.encode(request.getPassword()),
+                Role.ROLE_ADMIN
+        );
+
+        userRepository.save(user);
+
+        String token = jwtService.generateToken(
+                new org.springframework.security.core.userdetails.User(
+                        user.getEmail(),
+                        user.getPassword(),
+                        java.util.List.of(
+                                new org.springframework.security.core.authority.SimpleGrantedAuthority(user.getRole().name())
+                        )
+                )
+        );
+
+        return new AuthResponse(token);
+    }
     public AuthResponse login(LoginRequest request) {
 
         authenticationManager.authenticate(

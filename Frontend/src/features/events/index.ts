@@ -2,7 +2,7 @@ export type { Event, EventCategory, EventStatus, CreateEventPayload } from "./ty
 export { useCreateEvent } from "./hooks/useCreateEvent"
 export { useEvents } from "./hooks/useEvents"
 export { useEvent, useUpdateEvent } from "./hooks/useEvent"
-export { getEvents, likeEvent, deleteEvent } from "./services/eventsApi"
+export { getEvents, likeEvent, unlikeEvent, deleteEvent, getMyFavorites } from "./services/eventsApi"
 export { EventForm } from "./components/EventForm"
 export { EventsListPage } from "./pages/EventsListPage"
 export { CreateEventPage } from "./pages/CreateEventPage"

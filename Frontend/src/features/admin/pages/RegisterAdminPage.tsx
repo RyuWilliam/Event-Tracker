@@ -1,25 +1,14 @@
-import { useEffect } from "react"
 import { Calendar } from "lucide-react"
-import { Link, useNavigate } from "react-router"
-import { useLogin } from "../hooks/useLogin"
-import { useAuth } from "../store/authContext"
-import { LoginForm } from "../components/LoginForm"
-import type { LoginRequest } from "../types/auth.types"
+import { Link } from "react-router"
+import { useRegisterAdmin } from "@/features/auth/hooks/useRegisterAdmin"
+import { RegisterForm } from "@/features/auth"
+import type { RegisterRequest } from "@/features/auth"
 
-export function LoginPage() {
-  const { loginUser, isLoading, error } = useLogin()
-  const { isAuthenticated, role } = useAuth()
-  const navigate = useNavigate()
+export function RegisterAdminPage() {
+  const { registerAdminUser, isLoading, error, success } = useRegisterAdmin()
 
-  // Redirect after successful login
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(role === "ROLE_ADMIN" ? "/admin" : "/events", { replace: true })
-    }
-  }, [isAuthenticated, role, navigate])
-
-  const handleSubmit = async (data: LoginRequest) => {
-    await loginUser(data)
+  const handleSubmit = async (data: RegisterRequest) => {
+    await registerAdminUser(data)
   }
 
   return (
@@ -44,12 +33,17 @@ export function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-primary">Welcome Back</h2>
+            <h2 className="text-3xl font-bold text-primary">Admin Registration</h2>
             <p className="text-muted-foreground mt-2">
-              Sign in to manage your events
+              Create a new administrator account
             </p>
           </div>
-          <LoginForm
+          {success && (
+            <div className="mb-4 p-3 text-sm text-green-700 bg-green-100 rounded-md border border-green-200">
+              Admin account created successfully!
+            </div>
+          )}
+          <RegisterForm
             onSubmit={handleSubmit}
             isLoading={isLoading}
             error={error}

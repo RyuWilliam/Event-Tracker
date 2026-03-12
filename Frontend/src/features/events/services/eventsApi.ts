@@ -84,13 +84,24 @@ export async function updateEvent(id: number, data: CreateEventPayload): Promise
 }
 
 export async function likeEvent(id: number): Promise<void> {
-  const response = await fetch(`${BASE_URL}/events/addLike/${id}`, {
+  const response = await fetch(`${BASE_URL}/users/favorites/add/${id}`, {
     method: "POST",
     headers: getAuthHeaders(),
   })
 
   if (!response.ok) {
     throw new Error(`Failed to like event: ${response.status}`)
+  }
+}
+
+export async function unlikeEvent(id: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/users/favorites/remove/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to unlike event: ${response.status}`)
   }
 }
 
@@ -146,4 +157,17 @@ export async function deleteEventImage(eventId: number): Promise<void> {
   if (!response.ok) {
     throw new Error(`Failed to delete image: ${response.status}`)
   }
+}
+
+export async function getMyFavorites(): Promise<Event[]> {
+  // The backend reads the userId from the JWT token; the path variable is ignored.
+  const response = await fetch(`${BASE_URL}/users/favorites/0`, {
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch favorites: ${response.status}`)
+  }
+
+  return response.json()
 }

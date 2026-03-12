@@ -27,6 +27,23 @@ export async function register(data: RegisterRequest): Promise<AuthResponse> {
   return response.json()
 }
 
+export async function registerAdmin(data: RegisterRequest): Promise<AuthResponse> {
+  const response = await fetch(`${BASE_URL}/auth/register/admin`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || "Admin registration failed")
+  }
+
+  return response.json()
+}
+
 export async function login(data: LoginRequest): Promise<AuthResponse> {
   const response = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",

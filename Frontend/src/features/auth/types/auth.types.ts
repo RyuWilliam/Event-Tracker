@@ -13,7 +13,10 @@ export interface AuthResponse {
   accessToken: string
 }
 
+export type UserRole = "ROLE_ADMIN" | "ROLE_USER"
+
 export interface AuthState {
   token: string | null
   isAuthenticated: boolean
+  role: UserRole | null
 }

@@ -1,47 +1,85 @@
-import { AdminLayout, DashboardPage } from "@/features/admin"
+import { Navigate } from "react-router"
+import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage } from "@/features/admin"
 import { EventsListPage, CreateEventPage, EditEventPage } from "@/features/events"
-import { ExternalEventsPage } from "@/features/external"
+import { ExternalEventsPage, FavoritesPage } from "@/features/external"
 import { RegisterPage, LoginPage } from "@/features/auth"
+import { ProtectedRoute, GuestRoute } from "./ProtectedRoute"
 
 export const routes = [
+  // Root → login
   {
     path: "/",
-    Component: ExternalEventsPage,
+    element: <Navigate to="/login" replace />,
   },
+
+  // Public admin registration (secret route)
   {
-    path: "/register",
-    Component: RegisterPage,
+    path: "/et-admin-setup",
+    Component: RegisterAdminPage,
   },
+
+  // Guest-only routes (redirect away if already logged in)
   {
-    path: "/login",
-    Component: LoginPage,
-  },
-  {
-    path: "/events",
-    Component: ExternalEventsPage,
-  },
-  {
-    path: "/admin",
-    Component: AdminLayout,
+    element: <GuestRoute />,
     children: [
       {
-        index: true,
-        Component: DashboardPage,
+        path: "/login",
+        Component: LoginPage,
       },
       {
-        path: "events",
+        path: "/register",
+        Component: RegisterPage,
+      },
+    ],
+  },
+
+  // User routes (ROLE_USER)
+  {
+    element: <ProtectedRoute requiredRole="ROLE_USER" />,
+    children: [
+      {
+        path: "/events",
+        Component: ExternalEventsPage,
+      },
+      {
+        path: "/favorites",
+        Component: FavoritesPage,
+      },
+    ],
+  },
+
+  // Admin routes (ROLE_ADMIN)
+  {
+    element: <ProtectedRoute requiredRole="ROLE_ADMIN" />,
+    children: [
+      {
+        path: "/admin",
+        Component: AdminLayout,
         children: [
           {
             index: true,
-            Component: EventsListPage,
+            Component: DashboardPage,
           },
           {
-            path: "create",
-            Component: CreateEventPage,
+            path: "users",
+            Component: UsersPage,
           },
           {
-            path: ":id/edit",
-            Component: EditEventPage,
+            path: "events",
+            children: [
+              {
+                index: true,
+                Component: EventsListPage,
+              },
+              {
+                path: "create",
+                Component: CreateEventPage,
+              },
+              {
+                path: ":id/edit",
+                Component: EditEventPage,
+              },
+            ],
           },
         ],
       },

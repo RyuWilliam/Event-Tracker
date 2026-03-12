@@ -10,6 +10,10 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
+      '/tracker/api': {
+        target: 'http://localhost:7022',
+        changeOrigin: true,
+      },
       '/images': {
         target: 'http://localhost:7022/tracker/api',
         changeOrigin: true,
