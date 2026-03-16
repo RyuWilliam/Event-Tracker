@@ -28,6 +28,7 @@ export function useLogin(): UseLoginResult {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed"
       setError(message)
+      throw err
     } finally {
       setIsLoading(false)
     }
