@@ -29,6 +29,8 @@
         @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<Favorite> favorites;
         private LocalDateTime date;
+        @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<EventTicketEntity> tickets;
 
         @Enumerated(EnumType.STRING)
         private EventStatus status;
@@ -128,5 +130,17 @@
 
         public void setFavorites(List<Favorite> favorites) {
             this.favorites = favorites;
+        }
+
+        public void setLastUpdated(LocalDateTime lastUpdated) {
+            this.lastUpdated = lastUpdated;
+        }
+
+        public List<EventTicketEntity> getTickets() {
+            return tickets;
+        }
+
+        public void setTickets(List<EventTicketEntity> tickets) {
+            this.tickets = tickets;
         }
     }
