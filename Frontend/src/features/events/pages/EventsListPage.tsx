@@ -1,5 +1,5 @@
-import { Link } from "react-router"
 import { useState, useRef, useMemo, useEffect } from "react"
+import { Link } from "react-router"
 import { PencilIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Button, Card, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
+import { CreateEventDialog } from "../components/CreateEventDialog"
 import { deleteEvent, uploadEventImage, deleteEventImage, getCategories } from "../services/eventsApi"
 import { getImageBaseUrl } from "@/lib/apiConfig"
 import type { EventCategory } from "../types/event.types"
@@ -44,6 +45,7 @@ export function EventsListPage() {
   const { events, isLoading, error, refetch } = useEvents()
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -177,8 +179,8 @@ export function EventsListPage() {
           <Button variant="outline" onClick={() => refetch()}>
             Refresh
           </Button>
-          <Button asChild>
-            <Link to="/admin/events/create">Create Event</Link>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            Create Event
           </Button>
         </div>
       </div>
@@ -406,6 +408,12 @@ export function EventsListPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CreateEventDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={refetch}
+      />
     </div>
   )
 }
