@@ -18,13 +18,21 @@ export function ExternalEventsPage() {
       setLikedEvents(new Set())
       return
     }
+    let cancelled = false
     getMyFavorites()
       .then((favorites) => {
-        setLikedEvents(new Set(favorites.map((e) => e.id!)))
+        if (!cancelled) {
+          setLikedEvents(new Set(favorites.map((e) => e.id!)))
+        }
       })
       .catch(() => {
-        setLikedEvents(new Set())
+        if (!cancelled) {
+          setLikedEvents(new Set())
+        }
       })
+    return () => {
+      cancelled = true
+    }
   }, [isAuthenticated])
 
   const filteredEvents = useMemo(() => {
