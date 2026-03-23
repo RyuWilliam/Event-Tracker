@@ -370,8 +370,8 @@ export function EventForm({
             {hasExternalUpload ? (
               <Button
                 type="button"
-                onClick={() => {
-                  handleUploadImage()
+                onClick={async () => {
+                  await handleUploadImage()
                   setImageDialogOpen(false)
                 }}
                 disabled={!selectedFile || uploading}
