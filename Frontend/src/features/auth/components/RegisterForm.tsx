@@ -10,9 +10,10 @@ interface RegisterFormProps {
   onSubmit: (data: RegisterRequest) => Promise<void>
   isLoading: boolean
   error: string | null
+  onSuccess?: () => void
 }
 
-export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) {
+export function RegisterForm({ onSubmit, isLoading, error, onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const {
     register,
@@ -24,6 +25,7 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
     try {
       await onSubmit(data)
       toast.success("Account created successfully!")
+      onSuccess?.()
     } catch {
       // Error is handled by parent
     }

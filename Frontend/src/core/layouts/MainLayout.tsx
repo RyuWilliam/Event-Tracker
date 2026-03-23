@@ -1,8 +1,8 @@
 import type { ReactNode } from "react"
 import { useNavigate, NavLink } from "react-router"
-import { LogOut, HeartIcon, CalendarDays } from "lucide-react"
+import { LogOut, HeartIcon, CalendarDays, LogIn } from "lucide-react"
 import { APP_CONFIG } from "@/core/config"
-import { useAuth } from "@/features/auth"
+import { useAuth, useAuthPrompt } from "@/features/auth"
 import { Button } from "@/shared/ui"
 
 interface MainLayoutProps {
@@ -10,12 +10,13 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-  const { logout } = useAuth()
+  const { isAuthenticated, logout } = useAuth()
+  const { open: openAuthPopup } = useAuthPrompt()
   const navigate = useNavigate()
 
   const handleLogout = () => {
     logout()
-    navigate("/login", { replace: true })
+    navigate("/events", { replace: true })
   }
 
   return (
@@ -35,21 +36,30 @@ export function MainLayout({ children }: MainLayoutProps) {
               <CalendarDays className="h-4 w-4" />
               Events
             </NavLink>
-            <NavLink
-              to="/favorites"
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`
-              }
-            >
-              <HeartIcon className="h-4 w-4" />
-              My Favorites
-            </NavLink>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <NavLink
+                  to="/favorites"
+                  className={({ isActive }) =>
+                    `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`
+                  }
+                >
+                  <HeartIcon className="h-4 w-4" />
+                  My Favorites
+                </NavLink>
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button variant="default" size="sm" onClick={openAuthPopup} className="ml-2">
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+            )}
           </nav>
         </div>
       </header>

@@ -6,5 +6,7 @@ export { register, login, registerAdmin, getAuthHeaders } from "./services/authA
 export { useRegisterAdmin } from "./hooks/useRegisterAdmin"
 export { RegisterForm } from "./components/RegisterForm"
 export { LoginForm } from "./components/LoginForm"
+export { AuthPopup } from "./components/AuthPopup"
+export { AuthPromptProvider, useAuthPrompt, useRequireAuth } from "./hooks/useAuthPrompt"
 export { RegisterPage } from "./pages/RegisterPage"
 export { LoginPage } from "./pages/LoginPage"
