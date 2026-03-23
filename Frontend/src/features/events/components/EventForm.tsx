@@ -1,13 +1,12 @@
 import { useForm } from "react-hook-form"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { CategoriesSelector } from "./CategoriesSelector"
 import { UploadIcon, ImageIcon } from "lucide-react"
 import { toast } from "sonner"
-import type { CreateEventPayload, Event, EventStatus, EventCategory } from "../types/event.types"
-import { uploadEventImage, deleteEventImage } from "../services/eventsApi"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import type { CreateEventPayload, EventStatus, EventCategory } from "../types/event.types"
+import type { Event } from "../types/event.types"
 
 interface EventFormProps {
   onSubmit: (data: CreateEventPayload) => Promise<void>
@@ -16,9 +15,26 @@ interface EventFormProps {
   submitLabel?: string
   selectedImageFile?: File | null
   onImageFileChange?: (file: File | null) => void
+  onUploadImage?: (file: File) => Promise<void>
+  onDeleteImage?: () => Promise<void>
+  isUploading?: boolean
+  imagePreview?: string | null
+  onImagePreviewChange?: (url: string | null) => void
 }
 
-export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selectedImageFile, onImageFileChange }: EventFormProps) {
+export function EventForm({
+  onSubmit,
+  isLoading,
+  initialData,
+  submitLabel,
+  selectedImageFile,
+  onImageFileChange,
+  onUploadImage,
+  onDeleteImage,
+  isUploading: externalUploading,
+  imagePreview: externalImagePreview,
+  onImagePreviewChange,
+}: EventFormProps) {
   const {
     register,
     handleSubmit,
@@ -35,11 +51,23 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
     },
   })
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(selectedImageFile || null)
-  const [uploading, setUploading] = useState(false)
+  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null)
+  const [localSelectedFile, setLocalSelectedFile] = useState<File | null>(null)
+  const [localUploading, setLocalUploading] = useState(false)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const isControlled = onUploadImage !== undefined
+  const imagePreview = isControlled ? externalImagePreview : localImagePreview
+  const setImagePreview = isControlled 
+    ? (onImagePreviewChange ?? (() => {})) 
+    : setLocalImagePreview
+  const selectedFile = isControlled ? null : localSelectedFile
+  const setSelectedFile = isControlled ? () => {} : setLocalSelectedFile
+  const uploading = isControlled ? externalUploading ?? false : localUploading
+  const setUploading = isControlled ? () => {} : setLocalUploading
+
+  const hasExternalUpload = !!onUploadImage
 
   useEffect(() => {
     if (selectedImageFile) {
@@ -56,23 +84,31 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
       setValue("date", dateValue)
       setValue("status", initialData.status)
       setValue("categories", initialData.categories || [])
-        if (initialData.imageUrl) {
-        setImagePreview(`${getImageBaseUrl()}${initialData.imageUrl}`)
+      if (initialData.imageUrl) {
+        const baseUrl = typeof window !== 'undefined' ? (window as any).__IMAGE_BASE_URL__ || '' : ''
+        setImagePreview(`${baseUrl}${initialData.imageUrl}`)
       }
     }
-  }, [initialData, setValue])
+  }, [initialData, setValue, setImagePreview])
 
   const selectedStatus = watch("status")
   const selectedCategories = watch("categories")
 
-  const handleFileSelect = (file: File) => {
+  const validateFile = (file: File): string | null => {
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB")
-      return
+      return "File size must be less than 5MB"
     }
     const validTypes = ["image/jpeg", "image/png", "image/webp"]
     if (!validTypes.includes(file.type)) {
-      toast.error("File must be JPEG, PNG or WebP")
+      return "File must be JPEG, PNG or WebP"
+    }
+    return null
+  }
+
+  const handleFileSelect = (file: File) => {
+    const error = validateFile(file)
+    if (error) {
+      toast.error(error)
       return
     }
     setSelectedFile(file)
@@ -90,36 +126,38 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
   }
 
   const handleUploadImage = async () => {
-    if (!selectedFile || !initialData?.id) return
+    if (!selectedFile) return
 
-    setUploading(true)
-    try {
-      const result = await uploadEventImage(initialData.id, selectedFile)
-      setImagePreview(`${getImageBaseUrl()}${result.imageUrl}`)
-      setSelectedFile(null)
-      toast.success("Image uploaded successfully")
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to upload image"
-      toast.error(message)
-    } finally {
-      setUploading(false)
+    if (hasExternalUpload && onUploadImage) {
+      setUploading(true)
+      try {
+        await onUploadImage(selectedFile)
+        setImagePreview(URL.createObjectURL(selectedFile))
+        setSelectedFile(null)
+        toast.success("Image uploaded successfully")
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to upload image"
+        toast.error(message)
+      } finally {
+        setUploading(false)
+      }
     }
   }
 
   const handleDeleteImage = async () => {
-    if (!initialData?.id) return
-
-    setUploading(true)
-    try {
-      await deleteEventImage(initialData.id)
-      setImagePreview(null)
-      setSelectedFile(null)
-      toast.success("Image deleted successfully")
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to delete image"
-      toast.error(message)
-    } finally {
-      setUploading(false)
+    if (hasExternalUpload && onDeleteImage) {
+      setUploading(true)
+      try {
+        await onDeleteImage()
+        setImagePreview(null)
+        setSelectedFile(null)
+        toast.success("Image deleted successfully")
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to delete image"
+        toast.error(message)
+      } finally {
+        setUploading(false)
+      }
     }
   }
 
@@ -305,7 +343,7 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
               >
                 Select Image
               </Button>
-              {imagePreview && (
+              {imagePreview && hasExternalUpload && (
                 <Button
                   type="button"
                   variant="outline"
@@ -331,18 +369,25 @@ export function EventForm({ onSubmit, isLoading, initialData, submitLabel, selec
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                if (selectedFile) {
+            {hasExternalUpload ? (
+              <Button
+                type="button"
+                onClick={() => {
                   handleUploadImage()
-                }
-                setImageDialogOpen(false)
-              }}
-              disabled={!selectedFile || uploading}
-            >
-              {uploading ? "Uploading..." : "Save"}
-            </Button>
+                  setImageDialogOpen(false)
+                }}
+                disabled={!selectedFile || uploading}
+              >
+                {uploading ? "Uploading..." : "Save"}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={() => setImageDialogOpen(false)}
+              >
+                Close
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

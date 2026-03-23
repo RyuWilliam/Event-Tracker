@@ -178,9 +178,6 @@ export function EventsListPage() {
       <div className="flex justify-between items-center">
         <H1>Events</H1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}>
-            Refresh
-          </Button>
           <Button onClick={() => setCreateDialogOpen(true)}>
             Create Event
           </Button>
