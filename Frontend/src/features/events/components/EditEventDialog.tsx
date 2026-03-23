@@ -15,8 +15,9 @@ interface EditEventDialogProps {
 }
 
 export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: EditEventDialogProps) {
-  const { event, isLoading: isLoadingEvent, error: eventError } = useEvent(eventId ?? 0)
-  const { updateEvent, isLoading: isUpdating, error: updateError, isSuccess, reset } = useUpdateEvent(eventId ?? 0)
+  const validEventId = eventId && eventId > 0 ? eventId : null
+  const { event, isLoading: isLoadingEvent, error: eventError } = useEvent(validEventId ?? 0)
+  const { updateEvent, isLoading: isUpdating, error: updateError, isSuccess, reset } = useUpdateEvent(validEventId ?? 0)
 
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -34,13 +35,25 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
   }
 
   const handleUploadImage = async (file: File) => {
-    if (!eventId) return
+    if (!validEventId) {
+      console.error("Invalid eventId:", eventId, "validEventId:", validEventId)
+      throw new Error("Invalid event ID")
+    }
 
     setIsUploading(true)
     try {
-      const result = await uploadEventImage(eventId, file)
+      const result = await uploadEventImage(validEventId, file)
+      console.log("Upload result:", result)
+      
+      if (!result.imageUrl || result.imageUrl.includes("example.com")) {
+        console.error("Invalid response - default URL detected:", result.imageUrl)
+        throw new Error("Image upload failed - server returned default URL")
+      }
+      
       setImagePreview(`${getImageBaseUrl()}${result.imageUrl}`)
+      toast.success("Image uploaded successfully")
     } catch (err) {
+      console.error("Upload error:", err)
       const message = err instanceof Error ? err.message : "Failed to upload image"
       throw new Error(message)
     } finally {
@@ -49,11 +62,11 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
   }
 
   const handleDeleteImage = async () => {
-    if (!eventId) return
+    if (!validEventId) return
 
     setIsUploading(true)
     try {
-      await deleteEventImage(eventId)
+      await deleteEventImage(validEventId)
       setImagePreview(null)
       toast.success("Image deleted successfully")
     } catch (err) {

@@ -128,16 +128,19 @@ export function EventForm({
   }
 
   const handleUploadImage = async (): Promise<boolean> => {
+    console.log("handleUploadImage called, selectedFile:", selectedFile?.name, "hasExternalUpload:", hasExternalUpload)
     if (!selectedFile) return false
 
     if (hasExternalUpload && onUploadImage) {
       setUploading(true)
       try {
+        console.log("Calling onUploadImage with file:", selectedFile.name)
         await onUploadImage(selectedFile)
         setSelectedFile(null)
         onImageUploadSuccess?.()
         return true
       } catch (err) {
+        console.error("Upload error in EventForm:", err)
         const message = err instanceof Error ? err.message : "Failed to upload image"
         toast.error(message)
         return false
