@@ -124,7 +124,7 @@ export async function uploadEventImage(
   formData.append("file", file)
 
   const response = await fetch(
-    `${BASE_URL}/images/upload?eventId=${eventId}`,
+    `${BASE_URL}/events/${eventId}/image`,
     {
       method: "POST",
       body: formData,
@@ -149,7 +149,7 @@ export async function uploadEventImage(
 }
 
 export async function deleteEventImage(eventId: number): Promise<void> {
-  const response = await fetch(`${BASE_URL}/images/${eventId}`, {
+  const response = await fetch(`${BASE_URL}/events/${eventId}/image`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   })
