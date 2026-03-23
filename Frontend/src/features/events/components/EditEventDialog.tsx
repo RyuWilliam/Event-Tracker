@@ -112,6 +112,7 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
             isUploading={isUploading}
             imagePreview={imagePreview}
             onImagePreviewChange={setImagePreview}
+            onImageUploadSuccess={onSuccess}
           />
         )}
       </DialogContent>

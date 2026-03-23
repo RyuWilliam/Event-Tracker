@@ -20,6 +20,7 @@ interface EventFormProps {
   isUploading?: boolean
   imagePreview?: string | null
   onImagePreviewChange?: (url: string | null) => void
+  onImageUploadSuccess?: () => void
 }
 
 export function EventForm({
@@ -34,6 +35,7 @@ export function EventForm({
   isUploading: externalUploading,
   imagePreview: externalImagePreview,
   onImagePreviewChange,
+  onImageUploadSuccess,
 }: EventFormProps) {
   const {
     register,
@@ -133,6 +135,7 @@ export function EventForm({
       try {
         await onUploadImage(selectedFile)
         setSelectedFile(null)
+        onImageUploadSuccess?.()
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to upload image"
         toast.error(message)
