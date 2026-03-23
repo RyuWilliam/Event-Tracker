@@ -5,22 +5,27 @@ import { Input } from "@/shared/ui"
 import { MainLayout } from "@/core/layouts/MainLayout"
 import { useEvents, likeEvent, unlikeEvent, getMyFavorites } from "@/features/events"
 import { ExternalEventCard } from "../components/ExternalEventCard"
+import { useAuth } from "@/features/auth"
 
 export function ExternalEventsPage() {
   const { events, isLoading, error } = useEvents()
+  const { isAuthenticated } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [likedEvents, setLikedEvents] = useState<Set<number>>(new Set())
 
-  // Pre-populate liked events from the server on mount
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLikedEvents(new Set())
+      return
+    }
     getMyFavorites()
       .then((favorites) => {
         setLikedEvents(new Set(favorites.map((e) => e.id!)))
       })
       .catch(() => {
-        // silently ignore — user just won't see pre-filled hearts
+        setLikedEvents(new Set())
       })
-  }, [])
+  }, [isAuthenticated])
 
   const filteredEvents = useMemo(() => {
     if (!events) return []

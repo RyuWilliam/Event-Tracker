@@ -10,9 +10,10 @@ interface LoginFormProps {
   onSubmit: (data: LoginRequest) => Promise<void>
   isLoading: boolean
   error: string | null
+  onSuccess?: () => void
 }
 
-export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
+export function LoginForm({ onSubmit, isLoading, error, onSuccess }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const {
     register,
@@ -24,6 +25,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
     try {
       await onSubmit(data)
       toast.success("Welcome back!")
+      onSuccess?.()
     } catch {
       // Error is handled by parent
     }

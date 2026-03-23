@@ -2,6 +2,8 @@ import { HeartIcon, ImageIcon } from "lucide-react"
 import type { Event } from "@/features/events"
 import { Badge, Button } from "@/shared/ui"
 import { getImageBaseUrl } from "@/lib/apiConfig"
+import { useAuth } from "@/features/auth"
+import { useAuthPrompt } from "@/features/auth"
 
 interface ExternalEventCardProps {
   event: Event
@@ -25,8 +27,18 @@ function getImageUrl(imageUrl: string | null | undefined): string | null {
 }
 
 export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardProps) {
+  const { isAuthenticated } = useAuth()
+  const { open: openAuthPopup } = useAuthPrompt()
   const { day, month, year, time } = formatEventDate(event.date)
   const imageUrl = getImageUrl(event.imageUrl)
+
+  const handleLikeClick = () => {
+    if (!isAuthenticated) {
+      openAuthPopup()
+      return
+    }
+    onLike(event.id!)
+  }
 
   return (
     <div className="group relative flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md">
@@ -77,7 +89,7 @@ export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardP
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0 shrink-0"
-            onClick={() => onLike(event.id!)}
+            onClick={handleLikeClick}
           >
             <HeartIcon
               className={`h-5 w-5 ${isLiked ? "fill-accent text-accent" : "text-muted-foreground"}`}
