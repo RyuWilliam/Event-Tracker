@@ -30,15 +30,19 @@ export function useAuthPrompt() {
   return context
 }
 
-export function useRequireAuth(callback?: () => void) {
+export function useRequireAuth(isAuthenticated: boolean, callback?: () => void) {
   const { open } = useAuthPrompt()
 
   const requireAuth = useCallback(() => {
-    if (callback) {
-      callback()
+    if (isAuthenticated) {
+      if (callback) {
+        callback()
+      }
+      return
     }
+
     open()
-  }, [callback, open])
+  }, [callback, isAuthenticated, open])
 
   return { requireAuth }
 }
