@@ -62,8 +62,8 @@ export function EventForm({
   const setImagePreview = isControlled 
     ? (onImagePreviewChange ?? (() => {})) 
     : setLocalImagePreview
-  const selectedFile = isControlled ? null : localSelectedFile
-  const setSelectedFile = isControlled ? () => {} : setLocalSelectedFile
+  const selectedFile = localSelectedFile
+  const setSelectedFile = setLocalSelectedFile
   const uploading = isControlled ? externalUploading ?? false : localUploading
   const setUploading = isControlled ? () => {} : setLocalUploading
 
@@ -132,9 +132,7 @@ export function EventForm({
       setUploading(true)
       try {
         await onUploadImage(selectedFile)
-        setImagePreview(URL.createObjectURL(selectedFile))
         setSelectedFile(null)
-        toast.success("Image uploaded successfully")
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to upload image"
         toast.error(message)
