@@ -40,11 +40,9 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
     try {
       const result = await uploadEventImage(eventId, file)
       setImagePreview(`${getImageBaseUrl()}${result.imageUrl}`)
-      toast.success("Image uploaded successfully")
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to upload image"
-      toast.error(message)
-      throw err
+      throw new Error(message)
     } finally {
       setIsUploading(false)
     }

@@ -127,8 +127,8 @@ export function EventForm({
     }
   }
 
-  const handleUploadImage = async () => {
-    if (!selectedFile) return
+  const handleUploadImage = async (): Promise<boolean> => {
+    if (!selectedFile) return false
 
     if (hasExternalUpload && onUploadImage) {
       setUploading(true)
@@ -136,13 +136,16 @@ export function EventForm({
         await onUploadImage(selectedFile)
         setSelectedFile(null)
         onImageUploadSuccess?.()
+        return true
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to upload image"
         toast.error(message)
+        return false
       } finally {
         setUploading(false)
       }
     }
+    return false
   }
 
   const handleDeleteImage = async () => {
@@ -374,8 +377,10 @@ export function EventForm({
               <Button
                 type="button"
                 onClick={async () => {
-                  await handleUploadImage()
-                  setImageDialogOpen(false)
+                  const success = await handleUploadImage()
+                  if (success) {
+                    setImageDialogOpen(false)
+                  }
                 }}
                 disabled={!selectedFile || uploading}
               >
