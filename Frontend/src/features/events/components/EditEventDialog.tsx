@@ -19,8 +19,8 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
   const { event, isLoading: isLoadingEvent, error: eventError } = useEvent(validEventId ?? 0)
   const { updateEvent, isLoading: isUpdating, error: updateError, isSuccess, reset } = useUpdateEvent(validEventId ?? 0)
 
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (event?.imageUrl) {
@@ -28,53 +28,40 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
     } else {
       setImagePreview(null)
     }
+    setSelectedImageFile(null)
   }, [event])
 
-  const handleSubmit = async (data: CreateEventPayload): Promise<void> => {
-    await updateEvent(data)
+  const handleImageFileChange = (file: File | null) => {
+    setSelectedImageFile(file)
+    if (file) {
+      setImagePreview(URL.createObjectURL(file))
+    }
   }
 
-  const handleUploadImage = async (file: File) => {
-    if (!validEventId) {
-      console.error("Invalid eventId:", eventId, "validEventId:", validEventId)
-      throw new Error("Invalid event ID")
-    }
+  const handleSubmit = async (data: CreateEventPayload) => {
+    const success = await updateEvent(data)
 
-    setIsUploading(true)
-    try {
-      const result = await uploadEventImage(validEventId, file)
-      console.log("Upload result:", result)
-      
-      if (!result.imageUrl || result.imageUrl.includes("example.com")) {
-        console.error("Invalid response - default URL detected:", result.imageUrl)
-        throw new Error("Image upload failed - server returned default URL")
+    if (success && selectedImageFile && validEventId) {
+      try {
+        await uploadEventImage(validEventId, selectedImageFile)
+        toast.success("Image uploaded successfully")
+      } catch (err) {
+        toast.error("Event updated but failed to upload image")
       }
-      
-      setImagePreview(`${getImageBaseUrl()}${result.imageUrl}`)
-      toast.success("Image uploaded successfully")
-    } catch (err) {
-      console.error("Upload error:", err)
-      const message = err instanceof Error ? err.message : "Failed to upload image"
-      throw new Error(message)
-    } finally {
-      setIsUploading(false)
     }
   }
 
   const handleDeleteImage = async () => {
     if (!validEventId) return
 
-    setIsUploading(true)
     try {
       await deleteEventImage(validEventId)
       setImagePreview(null)
+      setSelectedImageFile(null)
       toast.success("Image deleted successfully")
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to delete image"
       toast.error(message)
-      throw err
-    } finally {
-      setIsUploading(false)
     }
   }
 
@@ -97,6 +84,7 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
     if (!newOpen) {
       reset()
       setImagePreview(event?.imageUrl ? `${getImageBaseUrl()}${event.imageUrl}` : null)
+      setSelectedImageFile(null)
     }
     onOpenChange(newOpen)
   }
@@ -118,12 +106,11 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
             isLoading={isUpdating}
             initialData={event || undefined}
             submitLabel="Update Event"
-            onUploadImage={handleUploadImage}
-            onDeleteImage={handleDeleteImage}
-            isUploading={isUploading}
+            selectedImageFile={selectedImageFile}
+            onImageFileChange={handleImageFileChange}
             imagePreview={imagePreview}
             onImagePreviewChange={setImagePreview}
-            onImageUploadSuccess={onSuccess}
+            onDeleteImage={validEventId ? handleDeleteImage : undefined}
           />
         )}
       </DialogContent>

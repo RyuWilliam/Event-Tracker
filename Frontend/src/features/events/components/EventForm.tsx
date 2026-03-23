@@ -15,12 +15,9 @@ interface EventFormProps {
   submitLabel?: string
   selectedImageFile?: File | null
   onImageFileChange?: (file: File | null) => void
-  onUploadImage?: (file: File) => Promise<void>
   onDeleteImage?: () => Promise<void>
-  isUploading?: boolean
   imagePreview?: string | null
   onImagePreviewChange?: (url: string | null) => void
-  onImageUploadSuccess?: () => void
 }
 
 export function EventForm({
@@ -30,12 +27,9 @@ export function EventForm({
   submitLabel,
   selectedImageFile,
   onImageFileChange,
-  onUploadImage,
   onDeleteImage,
-  isUploading: externalUploading,
   imagePreview: externalImagePreview,
   onImagePreviewChange,
-  onImageUploadSuccess,
 }: EventFormProps) {
   const {
     register,
@@ -55,21 +49,13 @@ export function EventForm({
 
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null)
   const [localSelectedFile, setLocalSelectedFile] = useState<File | null>(null)
-  const [localUploading, setLocalUploading] = useState(false)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const isControlled = onUploadImage !== undefined
-  const imagePreview = isControlled ? externalImagePreview : localImagePreview
-  const setImagePreview = isControlled 
-    ? (onImagePreviewChange ?? (() => {})) 
-    : setLocalImagePreview
+  const imagePreview = externalImagePreview ?? localImagePreview
+  const setImagePreview = externalImagePreview ? onImagePreviewChange ?? (() => {}) : setLocalImagePreview
   const selectedFile = localSelectedFile
   const setSelectedFile = setLocalSelectedFile
-  const uploading = isControlled ? externalUploading ?? false : localUploading
-  const setUploading = isControlled ? () => {} : setLocalUploading
-
-  const hasExternalUpload = !!onUploadImage
 
   useEffect(() => {
     if (selectedImageFile) {
@@ -127,33 +113,8 @@ export function EventForm({
     }
   }
 
-  const handleUploadImage = async (): Promise<boolean> => {
-    console.log("handleUploadImage called, selectedFile:", selectedFile?.name, "hasExternalUpload:", hasExternalUpload)
-    if (!selectedFile) return false
-
-    if (hasExternalUpload && onUploadImage) {
-      setUploading(true)
-      try {
-        console.log("Calling onUploadImage with file:", selectedFile.name)
-        await onUploadImage(selectedFile)
-        setSelectedFile(null)
-        onImageUploadSuccess?.()
-        return true
-      } catch (err) {
-        console.error("Upload error in EventForm:", err)
-        const message = err instanceof Error ? err.message : "Failed to upload image"
-        toast.error(message)
-        return false
-      } finally {
-        setUploading(false)
-      }
-    }
-    return false
-  }
-
   const handleDeleteImage = async () => {
-    if (hasExternalUpload && onDeleteImage) {
-      setUploading(true)
+    if (onDeleteImage) {
       try {
         await onDeleteImage()
         setImagePreview(null)
@@ -162,8 +123,6 @@ export function EventForm({
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to delete image"
         toast.error(message)
-      } finally {
-        setUploading(false)
       }
     }
   }
@@ -256,7 +215,6 @@ export function EventForm({
                   variant="outline"
                   size="sm"
                   onClick={() => setImageDialogOpen(true)}
-                  disabled={uploading}
                 >
                   Change
                 </Button>
@@ -265,7 +223,6 @@ export function EventForm({
                   variant="outline"
                   size="sm"
                   onClick={handleDeleteImage}
-                  disabled={uploading}
                 >
                   Delete
                 </Button>
@@ -287,7 +244,7 @@ export function EventForm({
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={isLoading || uploading}>
+        <Button type="submit" disabled={isLoading}>
           {isLoading ? (initialData ? "Updating..." : "Creating...") : (submitLabel || "Create Event")}
         </Button>
       </div>
@@ -341,25 +298,23 @@ export function EventForm({
               }}
             />
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                Select Image
-              </Button>
-              {imagePreview && hasExternalUpload && (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleDeleteImage}
-                  disabled={uploading}
+                  className="flex-1"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  Delete
+                  Select Image
                 </Button>
-              )}
+                {imagePreview && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDeleteImage}
+                  >
+                    Delete
+                  </Button>
+                )}
             </div>
           </div>
           <DialogFooter>
@@ -372,31 +327,15 @@ export function EventForm({
                 }
                 setImageDialogOpen(false)
               }}
-              disabled={uploading}
             >
               Cancel
             </Button>
-            {hasExternalUpload ? (
-              <Button
-                type="button"
-                onClick={async () => {
-                  const success = await handleUploadImage()
-                  if (success) {
-                    setImageDialogOpen(false)
-                  }
-                }}
-                disabled={!selectedFile || uploading}
-              >
-                {uploading ? "Uploading..." : "Save"}
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={() => setImageDialogOpen(false)}
-              >
-                Close
-              </Button>
-            )}
+            <Button
+              type="button"
+              onClick={() => setImageDialogOpen(false)}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
