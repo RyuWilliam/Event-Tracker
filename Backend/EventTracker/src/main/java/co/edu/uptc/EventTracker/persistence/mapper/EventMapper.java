@@ -18,9 +18,11 @@ import java.util.List;
 public class EventMapper {
 
     private final CategoryMapper categoryMapper;
+    private final TicketMapper ticketMapper;
 
-    public EventMapper(CategoryMapper categoryMapper) {
+    public EventMapper(CategoryMapper categoryMapper, TicketMapper ticketMapper) {
         this.categoryMapper = categoryMapper;
+        this.ticketMapper = ticketMapper;
     }
 
     public Event toEvent (EventEntity entity){
@@ -34,6 +36,7 @@ public class EventMapper {
         event.setStatus(entity.getStatus());
         event.setDescription(entity.getDescription());
         event.setCategories(categoryMapper.toCategories(entity.getCategories()));
+        event.setTickets(ticketMapper.toEventTickets(entity.getTickets()));
         event.setImageUrl(entity.getImageUrl());
         return event;
     }
