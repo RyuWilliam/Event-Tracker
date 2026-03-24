@@ -1,12 +1,13 @@
 package co.edu.uptc.EventTracker.domain.model;
 
-public class Ticket {
+public class TicketPurchase {
     private Integer id;
     private EventTicket eventTicket;
     private User user;
     private Integer quantity;
 
-    public Ticket(){
+
+    public TicketPurchase(){
 
     }
 
