@@ -1,6 +1,6 @@
 import { Navigate } from "react-router"
 import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage } from "@/features/admin"
-import { EventsListPage, CreateEventPage, EditEventPage } from "@/features/events"
+import { EventsListPage } from "@/features/events"
 import { ExternalEventsPage, FavoritesPage } from "@/features/external"
 import { RegisterPage, LoginPage } from "@/features/auth"
 import { ProtectedRoute, GuestRoute } from "./ProtectedRoute"
@@ -70,23 +70,15 @@ export const routes = [
                 path: "users",
                 Component: UsersPage,
               },
-              {
-                path: "events",
-                children: [
-                  {
-                    index: true,
-                    Component: EventsListPage,
+{
+                    path: "events",
+                    children: [
+                      {
+                        index: true,
+                        Component: EventsListPage,
+                      },
+                    ],
                   },
-                  {
-                    path: "create",
-                    Component: CreateEventPage,
-                  },
-                  {
-                    path: ":id/edit",
-                    Component: EditEventPage,
-                  },
-                ],
-              },
             ],
           },
         ],
