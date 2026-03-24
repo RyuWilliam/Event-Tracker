@@ -1,17 +1,19 @@
 import { useEffect } from "react"
 import { Calendar } from "lucide-react"
 import { Link, useNavigate } from "react-router"
-import { useLogin } from "../hooks/useLogin"
+import { useAuthAction } from "../hooks/useAuthAction"
+import { login } from "../services/authApi"
 import { useAuth } from "../store/authContext"
 import { LoginForm } from "../components/LoginForm"
-import type { LoginRequest } from "../types/auth.types"
+import type { LoginRequest, AuthResponse } from "../types/auth.types"
 
 export function LoginPage() {
-  const { loginUser, isLoading, error } = useLogin()
+  const { execute: loginUser, isLoading, error } = useAuthAction<LoginRequest, AuthResponse>(login, {
+    shouldThrowError: true,
+  })
   const { isAuthenticated, role } = useAuth()
   const navigate = useNavigate()
 
-  // Redirect after successful login
   useEffect(() => {
     if (isAuthenticated) {
       navigate(role === "ROLE_ADMIN" ? "/admin" : "/events", { replace: true })

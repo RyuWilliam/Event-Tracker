@@ -1,11 +1,12 @@
 import { Calendar } from "lucide-react"
 import { Link } from "react-router"
-import { useRegister } from "../hooks/useRegister"
+import { useAuthAction } from "../hooks/useAuthAction"
+import { register } from "../services/authApi"
 import { RegisterForm } from "../components/RegisterForm"
-import type { RegisterRequest } from "../types/auth.types"
+import type { RegisterRequest, AuthResponse } from "../types/auth.types"
 
 export function RegisterPage() {
-  const { registerUser, isLoading, error } = useRegister()
+  const { execute: registerUser, isLoading, error } = useAuthAction<RegisterRequest, AuthResponse>(register)
 
   const handleSubmit = async (data: RegisterRequest) => {
     await registerUser(data)

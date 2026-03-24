@@ -1,11 +1,11 @@
 import { Calendar } from "lucide-react"
 import { Link } from "react-router"
-import { useRegisterAdmin } from "@/features/auth/hooks/useRegisterAdmin"
-import { RegisterForm } from "@/features/auth"
-import type { RegisterRequest } from "@/features/auth"
+import { useAuthAction } from "@/features/auth/hooks/useAuthAction"
+import { registerAdmin, RegisterForm } from "@/features/auth"
+import type { RegisterRequest, AuthResponse } from "@/features/auth"
 
 export function RegisterAdminPage() {
-  const { registerAdminUser, isLoading, error, success } = useRegisterAdmin()
+  const { execute: registerAdminUser, isLoading, error, success } = useAuthAction<RegisterRequest, AuthResponse>(registerAdmin)
 
   const handleSubmit = async (data: RegisterRequest) => {
     await registerAdminUser(data)

@@ -3,18 +3,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui"
 import { Button } from "@/shared/ui"
 import { LoginForm } from "./LoginForm"
 import { RegisterForm } from "./RegisterForm"
-import { useLogin } from "../hooks/useLogin"
-import { useRegister } from "../hooks/useRegister"
+import { useAuthAction } from "../hooks/useAuthAction"
+import { login, register } from "../services/authApi"
 import { useAuthPrompt } from "../hooks/useAuthPrompt"
 import { LogIn, UserPlus } from "lucide-react"
+import type { LoginRequest, RegisterRequest, AuthResponse } from "../types/auth.types"
 
 type AuthTab = "login" | "register"
 
 export function AuthPopup() {
   const { isOpen, close } = useAuthPrompt()
   const [activeTab, setActiveTab] = useState<AuthTab>("login")
-  const login = useLogin()
-  const register = useRegister()
+  const loginAction = useAuthAction<LoginRequest, AuthResponse>(login, { shouldThrowError: true })
+  const registerAction = useAuthAction<RegisterRequest, AuthResponse>(register)
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
@@ -46,16 +47,16 @@ export function AuthPopup() {
 
         {activeTab === "login" ? (
           <LoginForm
-            onSubmit={login.loginUser}
-            isLoading={login.isLoading}
-            error={login.error}
+            onSubmit={loginAction.execute}
+            isLoading={loginAction.isLoading}
+            error={loginAction.error}
             onSuccess={close}
           />
         ) : (
           <RegisterForm
-            onSubmit={register.registerUser}
-            isLoading={register.isLoading}
-            error={register.error}
+            onSubmit={registerAction.execute}
+            isLoading={registerAction.isLoading}
+            error={registerAction.error}
             onSuccess={close}
           />
         )}
