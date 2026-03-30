@@ -27,6 +27,16 @@ public class EventTicketEntity {
     @Column(nullable = false)
     private Double price;
 
+    public EventTicketEntity(Integer totalQuantity, TicketTypeEntity ticketType, Double price, EventEntity event) {
+        this.totalQuantity = totalQuantity;
+        this.ticketType = ticketType;
+        this.price = price;
+        this.event = event;
+    }
+    public EventTicketEntity(){
+
+    }
+
     public Integer getAvailableQuantity() {
         return totalQuantity - soldQuantity;
     }

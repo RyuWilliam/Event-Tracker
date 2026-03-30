@@ -25,6 +25,25 @@ INSERT INTO categories (name)
 SELECT 'Business'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name='Business');
 
+-- =========================
+-- TICKET TYPES
+-- =========================
+INSERT INTO ticket_types (name)
+SELECT 'VIP'
+WHERE NOT EXISTS (SELECT 1 FROM ticket_types WHERE name='VIP');
+
+INSERT INTO ticket_types (name)
+SELECT 'General'
+WHERE NOT EXISTS (SELECT 1 FROM ticket_types WHERE name='General');
+
+INSERT INTO ticket_types (name)
+SELECT 'Oro'
+WHERE NOT EXISTS (SELECT 1 FROM ticket_types WHERE name='Oro');
+
+INSERT INTO ticket_types (name)
+SELECT 'Plata'
+WHERE NOT EXISTS (SELECT 1 FROM ticket_types WHERE name='Plata');
+
 
 -- =========================
 -- EVENTS
@@ -193,3 +212,14 @@ AND NOT EXISTS (
 SELECT 1 FROM event_category ec
 WHERE ec.event_id=e.event_id AND ec.category_id=c.category_id
 );
+
+
+INSERT INTO event_tickets (event_id, ticket_type_id, total_quantity, sold_quantity, price)
+SELECT e.event_id, t.id, 100, 0, 100.0
+FROM events e, ticket_types t
+WHERE e.name='Rock Festival' AND t.name='VIP';
+
+INSERT INTO event_tickets (event_id, ticket_type_id, total_quantity, sold_quantity, price)
+SELECT e.event_id, t.id, 200, 0, 50.0
+FROM events e, ticket_types t
+WHERE e.name='Rock Festival' AND t.name='General';

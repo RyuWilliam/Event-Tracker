@@ -14,6 +14,7 @@ public class Event {
     private EventStatus status;
     private List<EventCategory> categories;
     private String imageUrl;
+    private List<EventTicket> tickets;
 
 
     public Event(){
@@ -82,5 +83,13 @@ public class Event {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public List<EventTicket> getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(List<EventTicket> tickets) {
+        this.tickets = tickets;
     }
 }
