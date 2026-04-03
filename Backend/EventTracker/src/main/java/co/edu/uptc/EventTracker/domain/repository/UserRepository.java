@@ -1,5 +1,6 @@
 package co.edu.uptc.EventTracker.domain.repository;
 
+import co.edu.uptc.EventTracker.domain.model.TicketResume;
 import co.edu.uptc.EventTracker.domain.model.User;
 
 import java.util.List;
@@ -23,4 +24,5 @@ public interface UserRepository {
     void removeFavorite(Integer userId, Integer eventId);
 
     Map<String, Long> getFavoriteReport();
+
 }

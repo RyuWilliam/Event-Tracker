@@ -61,6 +61,13 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public Event findByEventTicketId(Integer id) {
+        return eventJpaRepository.findByTicketsId(id)
+                .map(eventMapper::toEvent)
+                .orElseThrow(() -> new EventNotFoundException(id));
+    }
+
+    @Override
     public List<Event> findAll() {
         return eventMapper.toEvents(eventJpaRepository.findAll());
     }

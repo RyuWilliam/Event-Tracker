@@ -11,6 +11,12 @@ public class TicketPurchase {
 
     }
 
+    public TicketPurchase(Integer quantity, User user, EventTicket eventTicket) {
+        this.quantity = quantity;
+        this.user = user;
+        this.eventTicket = eventTicket;
+    }
+
     public Integer getId() {
         return id;
     }

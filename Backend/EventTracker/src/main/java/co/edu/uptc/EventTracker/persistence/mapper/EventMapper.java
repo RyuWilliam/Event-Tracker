@@ -6,6 +6,7 @@ import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.EventCategory;
 import co.edu.uptc.EventTracker.persistence.entities.CategoryEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
+import co.edu.uptc.EventTracker.persistence.entities.EventTicketEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -56,13 +57,29 @@ public class EventMapper {
             return null;
         }
 
+
         EventEntity entity = new EventEntity();
+
+
+
+
         entity.setEventId(event.getId());
         entity.setDate(event.getDate());
         entity.setName(event.getName());
         entity.setStatus(event.getStatus());
         entity.setDescription(event.getDescription());
         entity.setImageUrl(event.getImageUrl());
+        if (event.getTickets() != null) {
+            List<EventTicketEntity> ticketEntities =
+                    ticketMapper.toEntities(event.getTickets());
+            for (EventTicketEntity ticket : ticketEntities) {
+                ticket.setEvent(entity);
+            }
+
+            entity.setTickets(ticketEntities);
+        } else {
+            entity.setTickets(new ArrayList<>());
+        }
 
         if (event.getCategories() != null) {
             entity.setCategories(
@@ -71,6 +88,7 @@ public class EventMapper {
         } else {
             entity.setCategories(new ArrayList<>());
         }
+
 
         return entity;
 
