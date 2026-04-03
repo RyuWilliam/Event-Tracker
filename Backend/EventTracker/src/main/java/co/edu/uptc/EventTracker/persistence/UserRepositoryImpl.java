@@ -1,12 +1,16 @@
 package co.edu.uptc.EventTracker.persistence;
 
-import co.edu.uptc.EventTracker.domain.model.User;
+import co.edu.uptc.EventTracker.domain.model.*;
 import co.edu.uptc.EventTracker.domain.repository.UserRepository;
 import co.edu.uptc.EventTracker.persistence.crud.EventJpaRepository;
+import co.edu.uptc.EventTracker.persistence.crud.PurchaseJpaRepository;
 import co.edu.uptc.EventTracker.persistence.crud.UserJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.Favorite;
+import co.edu.uptc.EventTracker.persistence.entities.TicketPurchaseEntity;
 import co.edu.uptc.EventTracker.persistence.entities.UserEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
+import co.edu.uptc.EventTracker.persistence.mapper.EventMapper;
+import co.edu.uptc.EventTracker.persistence.mapper.PurchaseMapper;
 import co.edu.uptc.EventTracker.persistence.mapper.UserMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +29,12 @@ public class UserRepositoryImpl implements UserRepository {
     private final EventJpaRepository eventJpaRepository;
     private final UserMapper userMapper;
 
-    public UserRepositoryImpl(UserJpaRepository userJpaRepository,
-                              EventJpaRepository eventJpaRepository,
-                              UserMapper userMapper) {
+    public UserRepositoryImpl(UserJpaRepository userJpaRepository, EventJpaRepository eventJpaRepository, UserMapper userMapper) {
         this.userJpaRepository = userJpaRepository;
         this.eventJpaRepository = eventJpaRepository;
         this.userMapper = userMapper;
     }
+
 
     @Override
     public Optional<User> findById(Integer id) {
@@ -142,4 +145,6 @@ public class UserRepositoryImpl implements UserRepository {
                         LinkedHashMap::new
                 ));
     }
+
+
 }

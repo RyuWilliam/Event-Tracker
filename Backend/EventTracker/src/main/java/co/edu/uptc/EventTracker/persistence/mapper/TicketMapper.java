@@ -20,6 +20,7 @@ public class TicketMapper {
 
     public EventTicketEntity toEntity(EventTicket ticket){
         EventTicketEntity entity = new EventTicketEntity();
+        entity.setId(ticket.getId());
         entity.setPrice(ticket.getPrice());
         entity.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
         entity.setTotalQuantity(ticket.getTotalQuantity());
@@ -45,12 +46,14 @@ public class TicketMapper {
         return ticket;
     }
 
-    public List<EventTicket> toEventTickets(List<EventTicketEntity> entities){
-        List<EventTicket> tickets = new ArrayList<>();
-        for(EventTicketEntity entity: entities){
-            tickets.add(toEventTicket(entity));
+    public List<EventTicket> toEventTickets(List<EventTicketEntity> entities) {
+        if (entities == null) {
+            return List.of();
         }
-        return tickets;
+
+        return entities.stream()
+                .map(this::toEventTicket)
+                .toList();
     }
 
 
