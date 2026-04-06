@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { toast } from "sonner"
 import { Dialog, DialogContent } from "@/shared/ui"
 import { EventForm } from "../components/EventForm"
 import { useEvent, useUpdateEvent } from "../hooks/useEvent"
-import { uploadEventImage, deleteEventImage } from "../services/eventsApi"
-import { getImageBaseUrl } from "@/lib/apiConfig"
 import type { CreateEventPayload } from "../types/event.types"
 
 interface EditEventDialogProps {
@@ -19,50 +17,8 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
   const { event, isLoading: isLoadingEvent, error: eventError } = useEvent(validEventId ?? 0)
   const { updateEvent, isLoading: isUpdating, error: updateError, isSuccess, reset } = useUpdateEvent(validEventId ?? 0)
 
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (event?.imageUrl) {
-      setImagePreview(`${getImageBaseUrl()}${event.imageUrl}`)
-    } else {
-      setImagePreview(null)
-    }
-    setSelectedImageFile(null)
-  }, [event])
-
-  const handleImageFileChange = (file: File | null) => {
-    setSelectedImageFile(file)
-    if (file) {
-      setImagePreview(URL.createObjectURL(file))
-    }
-  }
-
   const handleSubmit = async (data: CreateEventPayload) => {
-    const success = await updateEvent(data)
-
-    if (success && selectedImageFile && validEventId) {
-      try {
-        await uploadEventImage(validEventId, selectedImageFile)
-        toast.success("Image uploaded successfully")
-      } catch (err) {
-        toast.error("Event updated but failed to upload image")
-      }
-    }
-  }
-
-  const handleDeleteImage = async () => {
-    if (!validEventId) return
-
-    try {
-      await deleteEventImage(validEventId)
-      setImagePreview(null)
-      setSelectedImageFile(null)
-      toast.success("Image deleted successfully")
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to delete image"
-      toast.error(message)
-    }
+    await updateEvent(data)
   }
 
   useEffect(() => {
@@ -83,8 +39,6 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
   const handleClose = (newOpen: boolean) => {
     if (!newOpen) {
       reset()
-      setImagePreview(event?.imageUrl ? `${getImageBaseUrl()}${event.imageUrl}` : null)
-      setSelectedImageFile(null)
     }
     onOpenChange(newOpen)
   }
@@ -106,11 +60,6 @@ export function EditEventDialog({ eventId, open, onOpenChange, onSuccess }: Edit
             isLoading={isUpdating}
             initialData={event || undefined}
             submitLabel="Update Event"
-            selectedImageFile={selectedImageFile}
-            onImageFileChange={handleImageFileChange}
-            imagePreview={imagePreview}
-            onImagePreviewChange={setImagePreview}
-            onDeleteImage={validEventId ? handleDeleteImage : undefined}
           />
         )}
       </DialogContent>

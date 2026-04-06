@@ -39,7 +39,7 @@ public class TicketController {
     public ResponseEntity<List<TicketType>> getTypes(){
         return ResponseEntity.ok(ticketService.findAll());
     }
-    @PutMapping("/type/modify")
+    @PutMapping("/type/modify/{id}")
     public ResponseEntity<TicketType> modifyType(@RequestParam Integer id, @RequestParam String name){
         return ResponseEntity.ok(ticketService.modifyType(id,name));
     }

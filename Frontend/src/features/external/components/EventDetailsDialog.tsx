@@ -4,7 +4,7 @@ import { AlertCircle } from "lucide-react"
 import { EventTicketsView } from "@/features/events"
 import type { Event } from "@/features/events"
 import type { TicketResume } from "@/features/tickets"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { resolveImageUrl } from "@/lib/image"
 
 interface EventDetailsDialogProps {
   open: boolean
@@ -14,9 +14,7 @@ interface EventDetailsDialogProps {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  const baseUrl = getImageBaseUrl()
-  return `${baseUrl}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 function formatEventDate(dateString: string): string {

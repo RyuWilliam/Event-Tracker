@@ -10,10 +10,16 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 const TOKEN_KEY = "auth_token"
 
+function decodeBase64Url(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/")
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=")
+  return atob(padded)
+}
+
 function decodePayload(token: string): Record<string, unknown> | null {
   try {
     const payload = token.split(".")[1]
-    return JSON.parse(atob(payload))
+    return JSON.parse(decodeBase64Url(payload))
   } catch {
     return null
   }
@@ -29,9 +35,11 @@ function decodeRole(token: string): UserRole | null {
   const payload = decodePayload(token)
   if (!payload) return null
 
-  // Try different possible locations where the role might be stored
+  const isKnownRole = (value: unknown): value is UserRole =>
+    value === "ROLE_ADMIN" || value === "ROLE_USER"
+
   // 1. Direct role field
-  if (payload.role) return (payload.role as UserRole) ?? null
+  if (isKnownRole(payload.role)) return payload.role
 
   // 2. authorities array (Spring Security standard)
   if (Array.isArray(payload.authorities)) {

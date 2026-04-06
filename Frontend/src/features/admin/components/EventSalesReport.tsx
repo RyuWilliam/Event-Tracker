@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Card, CardContent } from "@/shared/ui"
-import { X } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Card, CardContent } from "@/shared/ui"
 import type { Event } from "@/features/events/types/event.types"
 
 interface EventSalesReportProps {
@@ -19,17 +18,7 @@ export function EventSalesReport({ event, open, onOpenChange }: EventSalesReport
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <DialogTitle>{event.name} - Sales Report</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="absolute right-4 top-4"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle>{event.name} - Sales Report</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

@@ -102,7 +102,6 @@ export function EventEditForm({
     try {
       setIsSaving(true)
       await onSave(event)
-      toast.success("Event saved successfully!")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save event")
     } finally {

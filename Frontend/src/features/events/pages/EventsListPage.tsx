@@ -9,7 +9,7 @@ import { useEvents } from "../hooks/useEvents"
 import { CreateEventDialog } from "../components/CreateEventDialog"
 import { EditEventDialog } from "../components/EditEventDialog"
 import { deleteEvent, uploadEventImage, deleteEventImage, getCategories } from "../services/eventsApi"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { resolveImageUrl } from "@/lib/image"
 import type { EventCategory } from "../types/event.types"
 
 function formatDate(dateString: string): string {
@@ -36,9 +36,7 @@ function getStatusVariant(status: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  const baseUrl = getImageBaseUrl()
-  return `${baseUrl}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 export function EventsListPage() {

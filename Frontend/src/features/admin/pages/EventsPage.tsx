@@ -8,6 +8,7 @@ import { EventSalesReport } from "@/features/admin/components/EventSalesReport"
 import type { Event, EventCategory, TicketType } from "@/features/events/types/event.types"
 import { getAllCategories } from "@/features/events/services/eventsApi"
 import { getTicketTypes } from "@/features/tickets/services/ticketsApi"
+import { resolveImageUrl } from "@/lib/image"
 
 interface EditingEventState {
   id: number | null
@@ -22,6 +23,8 @@ export function EventsPage() {
   const [editingEvent, setEditingEvent] = useState<EditingEventState | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
+  const [dateFrom, setDateFrom] = useState("")
+  const [dateTo, setDateTo] = useState("")
   const [reportEvent, setReportEvent] = useState<Event | null>(null)
   const [showReport, setShowReport] = useState(false)
 
@@ -97,7 +100,16 @@ export function EventsPage() {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === null || 
       event.categories?.some(cat => cat.id === selectedCategory)
-    return matchesSearch && matchesCategory
+
+    const eventDate = new Date(event.date)
+    const hasValidDate = !Number.isNaN(eventDate.getTime())
+    const fromDate = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null
+    const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null
+
+    const matchesFrom = !fromDate || (hasValidDate && eventDate >= fromDate)
+    const matchesTo = !toDate || (hasValidDate && eventDate <= toDate)
+
+    return matchesSearch && matchesCategory && matchesFrom && matchesTo
   })
 
   const handleDeleteEvent = async () => {
@@ -166,7 +178,7 @@ export function EventsPage() {
           </Button>
         </div>
 
-        <div className="flex gap-3 items-end">
+        <div className="grid gap-3 items-end md:grid-cols-4">
           <div className="flex-1">
             <label className="text-sm font-medium block mb-2">Search by Name</label>
             <div className="relative">
@@ -194,6 +206,22 @@ export function EventsPage() {
               ))}
             </select>
           </div>
+          <div className="flex-1">
+            <label className="text-sm font-medium block mb-2">Date From</label>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-sm font-medium block mb-2">Date To</label>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
@@ -207,7 +235,7 @@ export function EventsPage() {
       {!loading && filteredEvents.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            <p>{searchQuery || selectedCategory ? "No events match your filters" : "No events found"}</p>
+            <p>{searchQuery || selectedCategory || dateFrom || dateTo ? "No events match your filters" : "No events found"}</p>
           </CardContent>
         </Card>
       )}
@@ -220,7 +248,7 @@ export function EventsPage() {
                 {event.imageUrl && (
                   <div className="shrink-0">
                     <img
-                      src={event.imageUrl}
+                      src={resolveImageUrl(event.imageUrl) || ""}
                       alt={event.name}
                       className="w-32 h-32 object-cover rounded-md"
                     />

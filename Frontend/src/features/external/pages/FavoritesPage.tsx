@@ -5,7 +5,7 @@ import { MainLayout } from "@/core/layouts/MainLayout"
 import { Badge, Button } from "@/shared/ui"
 import { getMyFavorites, unlikeEvent } from "@/features/events"
 import type { Event } from "@/features/events"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { resolveImageUrl } from "@/lib/image"
 
 function formatEventDate(dateString: string) {
   const date = new Date(dateString)
@@ -17,8 +17,7 @@ function formatEventDate(dateString: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  return `${getImageBaseUrl()}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 export function FavoritesPage() {

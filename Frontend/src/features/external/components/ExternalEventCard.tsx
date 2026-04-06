@@ -1,9 +1,9 @@
 import { HeartIcon, ImageIcon, TicketIcon } from "lucide-react"
 import type { Event } from "@/features/events"
 import { Badge, Button } from "@/shared/ui"
-import { getImageBaseUrl } from "@/lib/apiConfig"
 import { useAuth } from "@/features/auth"
 import { useAuthPrompt } from "@/features/auth"
+import { resolveImageUrl } from "@/lib/image"
 
 interface ExternalEventCardProps {
   event: Event
@@ -22,9 +22,7 @@ function formatEventDate(dateString: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  const baseUrl = getImageBaseUrl()
-  return `${baseUrl}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 export function ExternalEventCard({

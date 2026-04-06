@@ -1,23 +1,17 @@
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useEffect, useRef, useState } from "react"
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { CategoriesSelector } from "./CategoriesSelector"
-import { UploadIcon, ImageIcon } from "lucide-react"
 import { toast } from "sonner"
 import type { CreateEventPayload, EventStatus, EventCategory } from "../types/event.types"
 import type { Event } from "../types/event.types"
+import { resolveImageUrl } from "@/lib/image"
 
 interface EventFormProps {
   onSubmit: (data: CreateEventPayload) => Promise<void>
   isLoading: boolean
   initialData?: Event
   submitLabel?: string
-  selectedImageFile?: File | null
-  onImageFileChange?: (file: File | null) => void
-  onDeleteImage?: () => Promise<void>
-  imagePreview?: string | null
-  onImagePreviewChange?: (url: string | null) => void
 }
 
 export function EventForm({
@@ -25,11 +19,6 @@ export function EventForm({
   isLoading,
   initialData,
   submitLabel,
-  selectedImageFile,
-  onImageFileChange,
-  onDeleteImage,
-  imagePreview: externalImagePreview,
-  onImagePreviewChange,
 }: EventFormProps) {
   const {
     register,
@@ -44,25 +33,9 @@ export function EventForm({
       date: "",
       status: "ACTIVE",
       categories: [],
+      imageUrl: "",
     },
   })
-
-  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null)
-  const [localSelectedFile, setLocalSelectedFile] = useState<File | null>(null)
-  const [imageDialogOpen, setImageDialogOpen] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const imagePreview = externalImagePreview ?? localImagePreview
-  const setImagePreview = externalImagePreview ? onImagePreviewChange ?? (() => {}) : setLocalImagePreview
-  const selectedFile = localSelectedFile
-  const setSelectedFile = setLocalSelectedFile
-
-  useEffect(() => {
-    if (selectedImageFile) {
-      setSelectedFile(selectedImageFile)
-      setImagePreview(URL.createObjectURL(selectedImageFile))
-    }
-  }, [selectedImageFile])
 
   useEffect(() => {
     if (initialData) {
@@ -72,64 +45,23 @@ export function EventForm({
       setValue("date", dateValue)
       setValue("status", initialData.status)
       setValue("categories", initialData.categories || [])
-      if (initialData.imageUrl) {
-        const baseUrl = typeof window !== 'undefined' ? (window as any).__IMAGE_BASE_URL__ || '' : ''
-        setImagePreview(`${baseUrl}${initialData.imageUrl}`)
-      }
     }
-  }, [initialData, setValue, setImagePreview])
+    setValue("imageUrl", initialData?.imageUrl || "")
+  }, [initialData, setValue])
 
   const selectedStatus = watch("status")
   const selectedCategories = watch("categories")
 
-  const validateFile = (file: File): string | null => {
-    if (file.size > 5 * 1024 * 1024) {
-      return "File size must be less than 5MB"
-    }
-    const validTypes = ["image/jpeg", "image/png", "image/webp"]
-    if (!validTypes.includes(file.type)) {
-      return "File must be JPEG, PNG or WebP"
-    }
-    return null
-  }
-
-  const handleFileSelect = (file: File) => {
-    const error = validateFile(file)
-    if (error) {
-      toast.error(error)
-      return
-    }
-    setSelectedFile(file)
-    setImagePreview(URL.createObjectURL(file))
-    setImageDialogOpen(false)
-    onImageFileChange?.(file)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file) {
-      handleFileSelect(file)
-    }
-  }
-
-  const handleDeleteImage = async () => {
-    if (onDeleteImage) {
-      try {
-        await onDeleteImage()
-        setImagePreview(null)
-        setSelectedFile(null)
-        toast.success("Image deleted successfully")
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to delete image"
-        toast.error(message)
-      }
-    }
-  }
+  const watchedImageUrl = watch("imageUrl")
+  const imagePreview = resolveImageUrl(watchedImageUrl)
 
   const onFormSubmit = async (data: CreateEventPayload) => {
     const isoDate = new Date(data.date).toISOString()
-    await onSubmit({ ...data, date: isoDate })
+    await onSubmit({
+      ...data,
+      date: isoDate,
+      imageUrl: data.imageUrl?.trim() || null,
+    })
   }
 
   return (
@@ -156,6 +88,28 @@ export function EventForm({
           placeholder="Event description"
           {...register("description")}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="imageUrl">Image URL</Label>
+        <Input
+          id="imageUrl"
+          type="url"
+          placeholder="https://example.com/image.jpg"
+          {...register("imageUrl")}
+        />
+        <p className="text-xs text-muted-foreground">
+          Paste the public image URL. The backend will store the URL only.
+        </p>
+        {imagePreview && (
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+            <img
+              src={imagePreview}
+              alt="Event preview"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -197,148 +151,11 @@ export function EventForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label>Event Image (optional)</Label>
-        <div className="rounded-lg border p-4">
-          {imagePreview ? (
-            <div className="space-y-3">
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                <img
-                  src={imagePreview}
-                  alt="Event preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setImageDialogOpen(true)}
-                >
-                  Change
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDeleteImage}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div
-              className="flex flex-col items-center justify-center py-6 rounded-lg border-2 border-dashed border-muted-foreground/25 cursor-pointer hover:border-muted-foreground/50 transition-colors"
-              onClick={() => setImageDialogOpen(true)}
-            >
-              <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Click to upload an image
-              </p>
-              <p className="text-xs text-muted-foreground">JPG, PNG or WebP (max 5MB)</p>
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="flex gap-2">
         <Button type="submit" disabled={isLoading}>
           {isLoading ? (initialData ? "Updating..." : "Creating...") : (submitLabel || "Create Event")}
         </Button>
       </div>
-
-      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Upload Event Image</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {imagePreview && !selectedFile && (
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            {selectedFile && (
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                <img
-                  src={URL.createObjectURL(selectedFile)}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            {!imagePreview && !selectedFile && (
-              <div
-                className="flex flex-col items-center justify-center aspect-video w-full rounded-lg border-2 border-dashed border-muted-foreground/25 cursor-pointer hover:border-muted-foreground/50 transition-colors"
-                onClick={() => fileInputRef.current?.click()}
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-              >
-                <UploadIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-xs text-muted-foreground">JPG, PNG or WebP (max 5MB)</p>
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) handleFileSelect(file)
-              }}
-            />
-            <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Select Image
-                </Button>
-                {imagePreview && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleDeleteImage}
-                  >
-                    Delete
-                  </Button>
-                )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                if (selectedFile) {
-                  setSelectedFile(null)
-                }
-                setImageDialogOpen(false)
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setImageDialogOpen(false)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </form>
   )
 }
