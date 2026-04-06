@@ -1,8 +1,8 @@
 import { Navigate } from "react-router"
-import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage } from "@/features/admin"
-import { EventsListPage } from "@/features/events"
+import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage, EventsPage } from "@/features/admin"
 import { ExternalEventsPage, FavoritesPage } from "@/features/external"
 import { RegisterPage, LoginPage } from "@/features/auth"
+import { MyPurchasesPage } from "@/features/tickets"
 import { ProtectedRoute, GuestRoute } from "./ProtectedRoute"
 import { AppLayout } from "@/core/layouts/AppLayout"
 
@@ -51,6 +51,10 @@ export const routes = [
             path: "favorites",
             Component: FavoritesPage,
           },
+          {
+            path: "my-purchases",
+            Component: MyPurchasesPage,
+          },
         ],
       },
 
@@ -70,15 +74,15 @@ export const routes = [
                 path: "users",
                 Component: UsersPage,
               },
-{
-                    path: "events",
-                    children: [
-                      {
-                        index: true,
-                        Component: EventsListPage,
-                      },
-                    ],
+              {
+                path: "events",
+                children: [
+                  {
+                    index: true,
+                    Component: EventsPage,
                   },
+                ],
+              },
             ],
           },
         ],

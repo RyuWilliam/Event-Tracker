@@ -27,7 +27,35 @@ function isTokenExpired(token: string): boolean {
 
 function decodeRole(token: string): UserRole | null {
   const payload = decodePayload(token)
-  return (payload?.role as UserRole) ?? null
+  if (!payload) return null
+
+  // Try different possible locations where the role might be stored
+  // 1. Direct role field
+  if (payload.role) return (payload.role as UserRole) ?? null
+
+  // 2. authorities array (Spring Security standard)
+  if (Array.isArray(payload.authorities)) {
+    const auth = payload.authorities.find((a: any) => {
+      const role = typeof a === "string" ? a : a.authority
+      return role === "ROLE_ADMIN" || role === "ROLE_USER"
+    })
+    if (auth) return (typeof auth === "string" ? auth : auth.authority) as UserRole
+  }
+
+  // 3. scope field (sometimes roles are in scope)
+  if (payload.scope) {
+    const scope = String(payload.scope)
+    if (scope.includes("ROLE_ADMIN")) return "ROLE_ADMIN"
+    if (scope.includes("ROLE_USER")) return "ROLE_USER"
+  }
+
+  // 4. roles array (alternative format)
+  if (Array.isArray(payload.roles)) {
+    const role = payload.roles.find((r: any) => r === "ROLE_ADMIN" || r === "ROLE_USER")
+    if (role) return role as UserRole
+  }
+
+  return null
 }
 
 function buildState(token: string | null): AuthState {

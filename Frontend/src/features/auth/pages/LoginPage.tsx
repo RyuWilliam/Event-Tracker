@@ -15,8 +15,9 @@ export function LoginPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(role === "ROLE_ADMIN" ? "/admin" : "/events", { replace: true })
+    if (isAuthenticated && role) {
+      const path = role === "ROLE_ADMIN" ? "/admin" : "/events"
+      navigate(path, { replace: true })
     }
   }, [isAuthenticated, role, navigate])
 
