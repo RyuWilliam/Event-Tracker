@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Plus, Trash2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import type { Event, EventTicket, EventCategory, TicketType } from "@/features/events/types/event.types"
 import { createTicketType } from "@/features/tickets/services/ticketsApi"
+import { createCategory } from "@/features/events/services/eventsApi"
 
 interface EventEditFormProps {
   event: Event
@@ -12,6 +13,7 @@ interface EventEditFormProps {
   ticketTypes: TicketType[]
   onSave: (event: Event) => Promise<void>
   onCancel: () => void
+  onDelete?: () => Promise<void>
   isLoading: boolean
 }
 
@@ -25,15 +27,21 @@ export function EventEditForm({
   ticketTypes: initialTicketTypes,
   onSave,
   onCancel,
+  onDelete,
   isLoading,
 }: EventEditFormProps) {
   const [event, setEvent] = useState<Event>(initialEvent)
   const [expandedTickets, setExpandedTickets] = useState<ExpandedTickets>({})
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [allCategories, setAllCategories] = useState<EventCategory[]>(categories)
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>(initialTicketTypes)
   const [showCreateTypeStates, setShowCreateTypeStates] = useState<{ [key: string]: boolean }>({})
   const [newTypeName, setNewTypeName] = useState("")
   const [isCreatingType, setIsCreatingType] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+  const [showCreateCategoryDialog, setShowCreateCategoryDialog] = useState(false)
 
   const handleEventChange = (
     field: keyof Event,
@@ -122,6 +130,26 @@ export function EventEditForm({
     }
   }
 
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) {
+      toast.error("Category name cannot be empty")
+      return
+    }
+
+    try {
+      setIsCreatingCategory(true)
+      const newCategory = await createCategory(newCategoryName.trim())
+      setAllCategories((prev) => [...prev, newCategory])
+      setNewCategoryName("")
+      setShowCreateCategoryDialog(false)
+      toast.success("Category created successfully!")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create category")
+    } finally {
+      setIsCreatingCategory(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Event Details */}
@@ -190,9 +218,40 @@ export function EventEditForm({
           </div>
 
           <div>
-            <label className="text-sm font-medium">Categories</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium">Categories</label>
+              <Dialog open={showCreateCategoryDialog} onOpenChange={setShowCreateCategoryDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="h-6 px-2">
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Category</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Input
+                      placeholder="Category name (e.g., Music, Sports, Art)"
+                      value={newCategoryName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setNewCategoryName(e.target.value)
+                      }
+                    />
+                    <Button
+                      onClick={handleCreateCategory}
+                      disabled={isCreatingCategory}
+                      className="w-full"
+                    >
+                      {isCreatingCategory ? "Creating..." : "Create Category"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className="space-y-2">
-              {categories.map((cat: EventCategory) => (
+              {allCategories.map((cat: EventCategory) => (
                 <label key={cat.id} className="flex items-center gap-2">
                   <Checkbox
                     checked={event.categories?.some((c) => c.id === cat.id) || false}
@@ -248,11 +307,16 @@ export function EventEditForm({
                         <Button
                           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation()
+                            if (ticket.id && ticket.soldQuantity > 0) {
+                              toast.error("Cannot delete ticket with sales")
+                              return
+                            }
                             handleDeleteTicket(ticket.id)
                           }}
                           size="sm"
                           variant="ghost"
                           className="text-destructive hover:text-destructive"
+                          disabled={ticket.id !== undefined && ticket.soldQuantity > 0}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -497,13 +561,36 @@ export function EventEditForm({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 justify-end">
-        <Button onClick={onCancel} variant="outline">
-          Cancel
-        </Button>
-        <Button onClick={handleSave} disabled={isSaving || isLoading}>
-          {isSaving ? "Saving..." : "Save"}
-        </Button>
+      <div className="flex gap-2 justify-between">
+        {initialEvent.id && onDelete && (
+          <Button
+            onClick={async () => {
+              if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) return
+              try {
+                setIsDeleting(true)
+                await onDelete()
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed to delete event")
+              } finally {
+                setIsDeleting(false)
+              }
+            }}
+            variant="destructive"
+            disabled={isDeleting || isSaving || isLoading}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isDeleting ? "Deleting..." : "Delete Event"}
+          </Button>
+        )}
+        <div className="flex gap-2">
+          <Button onClick={onCancel} variant="outline" disabled={isSaving || isDeleting}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving || isLoading || isDeleting}>
+            {isSaving ? "Saving..." : "Save"}
+          </Button>
+        </div>
       </div>
     </div>
   )

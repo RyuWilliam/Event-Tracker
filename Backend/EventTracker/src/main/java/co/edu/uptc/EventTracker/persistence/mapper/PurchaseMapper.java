@@ -1,11 +1,7 @@
 package co.edu.uptc.EventTracker.persistence.mapper;
 
 import co.edu.uptc.EventTracker.domain.model.TicketPurchase;
-import co.edu.uptc.EventTracker.persistence.crud.EventTicketJpaRepository;
-import co.edu.uptc.EventTracker.persistence.entities.EventTicketEntity;
 import co.edu.uptc.EventTracker.persistence.entities.TicketPurchaseEntity;
-import co.edu.uptc.EventTracker.persistence.entities.UserEntity;
-import co.edu.uptc.EventTracker.persistence.exceptions.EventTicketNullException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

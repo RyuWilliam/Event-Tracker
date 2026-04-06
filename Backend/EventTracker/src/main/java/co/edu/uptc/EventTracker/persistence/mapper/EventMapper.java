@@ -1,15 +1,9 @@
 package co.edu.uptc.EventTracker.persistence.mapper;
 
 
-import ch.qos.logback.core.model.ComponentModel;
 import co.edu.uptc.EventTracker.domain.model.Event;
-import co.edu.uptc.EventTracker.domain.model.EventCategory;
-import co.edu.uptc.EventTracker.persistence.entities.CategoryEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventTicketEntity;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
