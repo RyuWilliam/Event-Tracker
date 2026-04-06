@@ -4,6 +4,9 @@ import co.edu.uptc.EventTracker.domain.model.TicketType;
 import co.edu.uptc.EventTracker.persistence.entities.TicketTypeEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class TicketTypeMapper {
 
@@ -18,5 +21,13 @@ public class TicketTypeMapper {
         type.setId(entity.getId());
         type.setName(entity.getName());
         return type;
+    }
+
+    public List<TicketType> toTypes(List<TicketTypeEntity> entities){
+        List<TicketType> types = new ArrayList<>();
+        for (TicketTypeEntity entity: entities){
+            types.add(toType(entity));
+        }
+        return types;
     }
 }

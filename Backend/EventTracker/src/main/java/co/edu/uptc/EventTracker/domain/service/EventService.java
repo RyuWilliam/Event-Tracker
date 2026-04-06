@@ -15,11 +15,9 @@ import java.util.List;
 public class EventService {
 
     private final EventRepository eventRepository;
-    private final ImageService imageService;
 
-    public EventService(EventRepository eventRepository, ImageService imageService) {
+    public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
-        this.imageService = imageService;
     }
 
     public Event save(Event event){
@@ -31,10 +29,6 @@ public class EventService {
     }
 
     public void deleteEvent (Integer id){
-        Event event = eventRepository.findById(id).orElse(null);
-        if (event != null && event.getImageUrl() != null) {
-            imageService.deleteImage(id);
-        }
         eventRepository.deleteById(id);
     }
 
