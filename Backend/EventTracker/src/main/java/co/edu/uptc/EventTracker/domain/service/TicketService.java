@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,6 +38,9 @@ public class TicketService {
     }
     public Optional<TicketType> getTypeById(Integer id){
         return ticketRepository.getTypeById(id);
+    }
+    public List<TicketType> findAll(){
+        return ticketRepository.findAll();
     }
     public void deleteType(Integer id){
         ticketRepository.deleteType(id);

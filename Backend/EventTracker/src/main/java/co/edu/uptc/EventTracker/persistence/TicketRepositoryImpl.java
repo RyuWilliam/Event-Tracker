@@ -12,6 +12,7 @@ import co.edu.uptc.EventTracker.persistence.mapper.PurchaseMapper;
 import co.edu.uptc.EventTracker.persistence.mapper.TicketTypeMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -45,6 +46,11 @@ public class TicketRepositoryImpl implements TicketRepository {
         entity.setName(name);
         ticketTypeJpaRepository.save(entity);
         return typeMapper.toType(entity);
+    }
+
+    @Override
+    public List<TicketType> findAll() {
+        return typeMapper.toTypes(ticketTypeJpaRepository.findAll());
     }
 
     @Override

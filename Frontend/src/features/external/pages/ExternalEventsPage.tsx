@@ -5,13 +5,17 @@ import { Input } from "@/shared/ui"
 import { MainLayout } from "@/core/layouts/MainLayout"
 import { useEvents, likeEvent, unlikeEvent, getMyFavorites } from "@/features/events"
 import { ExternalEventCard } from "../components/ExternalEventCard"
+import { EventDetailsDialog } from "../components/EventDetailsDialog"
 import { useAuth } from "@/features/auth"
+import type { Event } from "@/features/events"
 
 export function ExternalEventsPage() {
   const { events, isLoading, error } = useEvents()
   const { isAuthenticated } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [likedEvents, setLikedEvents] = useState<Set<number>>(new Set())
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -71,6 +75,16 @@ export function ExternalEventsPage() {
     }
   }
 
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event)
+    setDetailsDialogOpen(true)
+  }
+
+  const handlePurchaseSuccess = () => {
+    toast.success("Ticket purchased! Check your purchases in 'My Tickets'")
+    setDetailsDialogOpen(false)
+  }
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -118,11 +132,19 @@ export function ExternalEventsPage() {
                 event={event}
                 isLiked={likedEvents.has(event.id!)}
                 onLike={handleLike}
+                onViewDetails={handleViewDetails}
               />
             ))}
           </div>
         )}
       </div>
+
+      <EventDetailsDialog
+        open={detailsDialogOpen}
+        event={selectedEvent}
+        onOpenChange={setDetailsDialogOpen}
+        onTicketPurchaseSuccess={handlePurchaseSuccess}
+      />
     </MainLayout>
   )
 }

@@ -14,6 +14,8 @@ export async function getCategories(): Promise<EventCategory[]> {
   return response.json()
 }
 
+export const getAllCategories = getCategories
+
 export async function createCategory(name: string): Promise<EventCategory> {
   const response = await fetch(`${BASE_URL}/categories`, {
     method: "POST",
