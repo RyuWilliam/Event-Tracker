@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardTitle, Button, H1, Input } from "@/shared/ui"
-import { Edit2, Search, BarChart3 } from "lucide-react"
+import { Card, CardContent, CardTitle, Button, H1 } from "@/shared/ui"
+import { Edit2, BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { useAdminEvents } from "@/features/events/hooks/useAdminEvents"
 import { EventEditForm } from "@/features/admin/components/EventEditForm"
+import { EventFilters } from "@/features/admin/components/EventFilters"
 import { EventSalesReport } from "@/features/admin/components/EventSalesReport"
-import type { Event, EventCategory, TicketType } from "@/features/events/types/event.types"
+import type { Event, EventCategory, TicketType, EventStatus } from "@/features/events/types/event.types"
 import { getAllCategories } from "@/features/events/services/eventsApi"
 import { getTicketTypes } from "@/features/tickets/services/ticketsApi"
 import { resolveImageUrl } from "@/lib/image"
@@ -23,6 +24,7 @@ export function EventsPage() {
   const [editingEvent, setEditingEvent] = useState<EditingEventState | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<EventStatus | null>(null)
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [reportEvent, setReportEvent] = useState<Event | null>(null)
@@ -75,14 +77,10 @@ export function EventsPage() {
         await loadAllEvents()
       } else if (editingEvent?.id) {
         // Updating existing event
-        // Filter out tickets with sales - backend doesn't allow modifying them
-        const eventToSend = {
-          ...updatedEvent,
-          tickets: updatedEvent.tickets?.filter(
-            (ticket) => !ticket.id || ticket.soldQuantity === 0
-          ) || [],
-        }
-        await updateEvent(editingEvent.id, eventToSend)
+        // Send tickets as-is. The backend handles validation and won't allow
+        // modifications to tickets with sales. Frontend prevents deletion of
+        // tickets with sales via the delete button being disabled.
+        await updateEvent(editingEvent.id, updatedEvent)
         const updated = await loadAllEvents()
         setEvents(updated)
       } else {
@@ -100,6 +98,7 @@ export function EventsPage() {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === null || 
       event.categories?.some(cat => cat.id === selectedCategory)
+    const matchesStatus = selectedStatus === null || event.status === selectedStatus
 
     const eventDate = new Date(event.date)
     const hasValidDate = !Number.isNaN(eventDate.getTime())
@@ -109,7 +108,7 @@ export function EventsPage() {
     const matchesFrom = !fromDate || (hasValidDate && eventDate >= fromDate)
     const matchesTo = !toDate || (hasValidDate && eventDate <= toDate)
 
-    return matchesSearch && matchesCategory && matchesFrom && matchesTo
+    return matchesSearch && matchesCategory && matchesStatus && matchesFrom && matchesTo
   })
 
   const handleDeleteEvent = async () => {
@@ -178,51 +177,19 @@ export function EventsPage() {
           </Button>
         </div>
 
-        <div className="grid gap-3 items-end md:grid-cols-4">
-          <div className="flex-1">
-            <label className="text-sm font-medium block mb-2">Search by Name</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search events..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-          <div className="flex-1">
-            <label className="text-sm font-medium block mb-2">Filter by Category</label>
-            <select
-              value={selectedCategory ?? ""}
-              onChange={(e) => setSelectedCategory(e.target.value ? parseInt(e.target.value) : null)}
-              className="w-full px-3 py-2 border border-input rounded-md text-sm"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="text-sm font-medium block mb-2">Date From</label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-sm font-medium block mb-2">Date To</label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-            />
-          </div>
-        </div>
+        <EventFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          dateFrom={dateFrom}
+          onDateFromChange={setDateFrom}
+          dateTo={dateTo}
+          onDateToChange={setDateTo}
+          categories={categories}
+        />
       </div>
 
       {loading && events.length === 0 && (
@@ -235,7 +202,7 @@ export function EventsPage() {
       {!loading && filteredEvents.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            <p>{searchQuery || selectedCategory || dateFrom || dateTo ? "No events match your filters" : "No events found"}</p>
+            <p>{searchQuery || selectedCategory || selectedStatus || dateFrom || dateTo ? "No events match your filters" : "No events found"}</p>
           </CardContent>
         </Card>
       )}
@@ -291,9 +258,16 @@ export function EventsPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex gap-6 text-sm text-muted-foreground mt-3">
+                  <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mt-3 items-center">
                     <span>📅 {event.date}</span>
                     <span>🎫 {event.tickets?.length || 0} type(s)</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      event.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                      event.status === 'FINISHED' ? 'bg-gray-100 text-gray-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {event.status}
+                    </span>
                   </div>
                 </div>
               </div>

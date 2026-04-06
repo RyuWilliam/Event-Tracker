@@ -71,7 +71,7 @@ export function EventEditForm({
 
   const handleAddTicket = () => {
     const newTicket: EventTicket = {
-      id: undefined as any,
+      id: undefined,
       ticketType: ticketTypes[0] || { id: 1, name: "Standard" },
       price: 0,
       totalQuantity: 100,

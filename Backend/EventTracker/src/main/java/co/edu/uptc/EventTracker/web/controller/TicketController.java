@@ -20,7 +20,7 @@ import java.util.Optional;
 public class TicketController {
 
     private final UserTicketService userTicketService;
-    private final UserService userService;
+    private final UserService userService;  
     private final TicketService ticketService;
 
     public TicketController(UserTicketService userTicketService, UserService userService, TicketService ticketService) {
