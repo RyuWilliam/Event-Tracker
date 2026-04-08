@@ -41,7 +41,19 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public Event save(Event event) {
         EventEntity entity = eventMapper.toEntity(event);
-        entity.setActive(true);
+        
+        if (entity.getEventId() != null) {
+            EventEntity existing = eventJpaRepository.findById(entity.getEventId()).orElse(null);
+            if (existing != null) {
+                entity.setFavorites(existing.getFavorites());
+                entity.setActive(existing.getActive());
+            } else {
+                entity.setActive(true);
+            }
+        } else {
+            entity.setActive(true);
+        }
+
         List<CategoryEntity> categoryEntities = new ArrayList<>();
 
         for(EventCategory category: event.getCategories()){

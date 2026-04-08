@@ -33,6 +33,7 @@ export function MyPurchasesView() {
   const [purchases, setPurchases] = useState<TicketResume[]>([]);
   const [eventsData, setEventsData] = useState<Record<string, Event>>({});
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"ACTIVE" | "HISTORICAL">("ACTIVE");
   const [selectedPurchase, setSelectedPurchase] =
     useState<SelectedPurchaseWithId | null>(null);
 
@@ -72,15 +73,6 @@ export function MyPurchasesView() {
   if (loading && purchases.length === 0) {
     return (
       <div className="space-y-4">
-        <Button
-          onClick={() => navigate(-1)}
-          variant="ghost"
-          size="sm"
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
         <div className="flex items-center justify-center p-12">
           <div className="text-center text-muted-foreground">
             <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -94,15 +86,6 @@ export function MyPurchasesView() {
   if (purchases.length === 0) {
     return (
       <div className="space-y-4">
-        <Button
-          onClick={() => navigate(-1)}
-          variant="ghost"
-          size="sm"
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
         <div className="flex items-center justify-center p-12">
           <div className="text-center text-muted-foreground">
             <AlertCircle className="h-8 w-8 mx-auto mb-4 opacity-50" />
@@ -113,35 +96,64 @@ export function MyPurchasesView() {
     );
   }
 
+  const activePurchases = purchases.filter((purchase) => {
+    const eventInfo = eventsData[purchase.eventName];
+    // Consider it active if event details not found yet or status is ACTIVE or CANCELLED
+    return !eventInfo || eventInfo.status === "ACTIVE" || !eventInfo.status || eventInfo.status === "CANCELLED";
+  });
+
+  const historicalPurchases = purchases.filter((purchase) => {
+    const eventInfo = eventsData[purchase.eventName];
+    return eventInfo && eventInfo.status === "FINISHED";
+  });
+
+  const displayedPurchases = viewMode === "ACTIVE" ? activePurchases : historicalPurchases;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => navigate(-1)}
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <h2 className="text-2xl font-bold">My Tickets</h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between w-full sm:w-auto">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold">My Tickets</h2>
+          </div>
         </div>
-        <Button
-          onClick={loadPurchases}
-          disabled={loading}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        
+        <div className="flex items-center justify-between gap-4 w-full sm:w-auto">
+          <div className="flex bg-muted p-1 rounded-lg w-full sm:w-auto">
+            <button
+              onClick={() => setViewMode("ACTIVE")}
+              className={`flex-1 sm:px-6 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === "ACTIVE" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Current
+            </button>
+            <button
+              onClick={() => setViewMode("HISTORICAL")}
+              className={`flex-1 sm:px-6 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === "HISTORICAL" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Historical
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {purchases.map((purchase, index) => {
+      {displayedPurchases.length === 0 ? (
+        <div className="flex items-center justify-center p-12 bg-card rounded-lg border border-border mt-4">
+          <div className="text-center text-muted-foreground">
+            <AlertCircle className="h-8 w-8 mx-auto mb-4 opacity-50" />
+            <p>
+              {viewMode === "ACTIVE" 
+                ? "No current tickets found." 
+                : "No historical tickets found."}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 mt-4">
+          {displayedPurchases.map((purchase, index) => {
           const eventInfo = eventsData[purchase.eventName];
           const imageObjUrl = eventInfo
             ? getImageUrl(eventInfo.imageUrl)
@@ -172,11 +184,23 @@ export function MyPurchasesView() {
                 <div className="p-4 flex flex-1 flex-col justify-between">
                   <div className="space-y-3">
                     <div>
-                      <Badge variant="secondary" className="mb-2">
-                        {purchase.type.name}
-                      </Badge>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary">
+                          {purchase.type.name}
+                        </Badge>
+                        {eventInfo?.status === "CANCELLED" && (
+                          <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                            Cancelled
+                          </Badge>
+                        )}
+                        {eventInfo?.status === "FINISHED" && (
+                          <Badge variant="outline" className="bg-muted text-muted-foreground border-muted-foreground/30">
+                            Finished
+                          </Badge>
+                        )}
+                      </div>
                       <h3
-                        className="text-xl font-semibold line-clamp-1"
+                        className="text-xl font-semibold line-clamp-1 flex items-center gap-2"
                         title={purchase.eventName}
                       >
                         {purchase.eventName}
@@ -214,22 +238,25 @@ export function MyPurchasesView() {
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-border mt-auto">
-                    <Button
-                      onClick={() => handleShowQr(purchase, index)}
-                      variant="default"
-                      className="w-full gap-2"
-                    >
-                      <QrCode className="h-4 w-4" />
-                      Show QR
-                    </Button>
-                  </div>
+                  {eventInfo?.status !== "CANCELLED" && eventInfo?.status !== "FINISHED" && (
+                    <div className="mt-4 pt-4 border-t border-border mt-auto">
+                      <Button
+                        onClick={() => handleShowQr(purchase, index)}
+                        variant="default"
+                        className="w-full gap-2"
+                      >
+                        <QrCode className="h-4 w-4" />
+                        Show QR
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
           );
         })}
       </div>
+      )}
 
       {error && (
         <div className="flex items-start gap-2 p-3 bg-destructive/10 text-destructive rounded-lg text-sm">

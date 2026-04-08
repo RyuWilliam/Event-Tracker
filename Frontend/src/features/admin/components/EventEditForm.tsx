@@ -726,11 +726,18 @@ export function EventEditForm({
       {/* Actions */}
       <div className="flex gap-2 justify-between">
         {initialEvent.id && onDelete && (
-          <>
+          <div title={event.tickets?.some(t => (t.soldQuantity || 0) > 0) ? "Cannot delete event with registered tickets" : ""}>
             <Button
-              onClick={() => setShowDeleteConfirmDialog(true)}
+              onClick={(e) => {
+                if (event.tickets?.some(t => (t.soldQuantity || 0) > 0)) {
+                  e.preventDefault();
+                  toast.error("Cannot delete event with registered tickets");
+                  return;
+                }
+                setShowDeleteConfirmDialog(true);
+              }}
               variant="destructive"
-              disabled={isDeleting || isSaving || isLoading}
+              disabled={isDeleting || isSaving || isLoading || event.tickets?.some(t => (t.soldQuantity || 0) > 0)}
               className="gap-2"
             >
               <Trash2 className="h-4 w-4" />
@@ -770,7 +777,7 @@ export function EventEditForm({
                 </div>
               </DialogContent>
             </Dialog>
-          </>
+          </div>
         )}
         <div className="flex gap-2">
           <Button onClick={onCancel} variant="outline" disabled={isSaving || isDeleting}>

@@ -35,7 +35,10 @@ export function AuthPopup() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl">
+          <DialogTitle className="text-center text-xl flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center bg-black text-white w-8 h-8 rounded-md font-bold text-xl">
+              E
+            </div>
             Welcome to Event Tracker
           </DialogTitle>
         </DialogHeader>

@@ -60,7 +60,7 @@ SELECT 'Cybersecurity Workshop','Hands-on workshop on cybersecurity fundamentals
 WHERE NOT EXISTS (SELECT 1 FROM events WHERE name='Cybersecurity Workshop');
 
 INSERT INTO events (name, description, date, status, active, image_url, last_updated)
-SELECT 'Bubaseta Concert','Gianni Canisso is a Chilean MC born in Switzerland but raised in Quilpué, Valparaíso. He became known for his unique rapping style, which sparked much debate among rap listeners during his time.',TIMESTAMP '2026-04-08 10:00:00','ACTIVE',true,'https://rtvc-assets-radionica3.s3.amazonaws.com/s3fs-public/styles/articulo_760x422/public/2025-07/_BUBASETa_en_bogota_.jpg?itok=F2d_5613',NOW()
+SELECT 'Bubaseta Concert','Gianni Canisso is a Chilean MC born in Switzerland but raised in Quilpué, Valparaíso. He became known for his unique rapping style, which sparked much debate among rap listeners during his time.',TIMESTAMP '2026-04-10   10:00:00','ACTIVE',true,'https://rtvc-assets-radionica3.s3.amazonaws.com/s3fs-public/styles/articulo_760x422/public/2025-07/_BUBASETa_en_bogota_.jpg?itok=F2d_5613',NOW()
 WHERE NOT EXISTS (SELECT 1 FROM events WHERE name='Bubaseta Concert');
 
 INSERT INTO events (name, description, date, status, active, image_url, last_updated)

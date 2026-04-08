@@ -51,10 +51,6 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <H1>Dashboard</H1>
-        <Button variant="outline" size="sm" onClick={loadReport} disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
       </div>
 
       <Card>
