@@ -5,7 +5,7 @@ import { MainLayout } from "@/core/layouts/MainLayout"
 import { Badge, Button } from "@/shared/ui"
 import { getMyFavorites, unlikeEvent } from "@/features/events"
 import type { Event } from "@/features/events"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { resolveImageUrl } from "@/lib/image"
 
 function formatEventDate(dateString: string) {
   const date = new Date(dateString)
@@ -17,14 +17,14 @@ function formatEventDate(dateString: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  return `${getImageBaseUrl()}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 export function FavoritesPage() {
   const [favorites, setFavorites] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<"ACTIVE" | "HISTORICAL">("ACTIVE")
 
   useEffect(() => {
     getMyFavorites()
@@ -43,12 +43,38 @@ export function FavoritesPage() {
     }
   }
 
+  const activeFavorites = favorites.filter(e => e.status === "ACTIVE" || !e.status || e.status === "CANCELLED");
+  const historicalFavorites = favorites.filter(e => e.status === "FINISHED");
+
+  const displayedFavorites = viewMode === "ACTIVE" ? activeFavorites : historicalFavorites;
+
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <HeartIcon className="h-6 w-6 fill-accent text-accent" />
-          <h2 className="text-2xl font-bold">My Favorites</h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <HeartIcon className="h-6 w-6 fill-accent text-accent" />
+            <h2 className="text-2xl font-bold">My Favorites</h2>
+          </div>
+          
+          <div className="flex bg-muted p-1 rounded-lg w-full sm:w-auto">
+            <button
+              onClick={() => setViewMode("ACTIVE")}
+              className={`flex-1 sm:px-6 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === "ACTIVE" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Current
+            </button>
+            <button
+              onClick={() => setViewMode("HISTORICAL")}
+              className={`flex-1 sm:px-6 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === "HISTORICAL" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Historical
+            </button>
+          </div>
         </div>
 
         {isLoading && (
@@ -59,16 +85,20 @@ export function FavoritesPage() {
           <p className="text-destructive">Error: {error}</p>
         )}
 
-        {!isLoading && !error && favorites.length === 0 && (
+        {!isLoading && !error && displayedFavorites.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
             <HeartIcon className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-muted-foreground">You haven't liked any events yet.</p>
+            <p className="text-muted-foreground">
+              {viewMode === "ACTIVE" 
+                ? "You haven't liked any current events yet." 
+                : "No historical favorites found."}
+            </p>
           </div>
         )}
 
-        {!isLoading && !error && favorites.length > 0 && (
+        {!isLoading && !error && displayedFavorites.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {favorites.map((event) => {
+            {displayedFavorites.map((event) => {
               const { day, month, year, time } = formatEventDate(event.date)
               const imageUrl = getImageUrl(event.imageUrl)
 
@@ -77,6 +107,13 @@ export function FavoritesPage() {
                   key={event.id}
                   className="group relative flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md"
                 >
+                  {event.status === "CANCELLED" && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                        Cancelled
+                      </Badge>
+                    </div>
+                  )}
                   {imageUrl ? (
                     <div className="w-full h-40 shrink-0">
                       <img

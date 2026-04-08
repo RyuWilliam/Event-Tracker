@@ -11,11 +11,12 @@ export interface TicketType {
 }
 
 export interface EventTicket {
-  id: number
+  id?: number
   ticketType: TicketType
   totalQuantity: number
   soldQuantity: number
   price: number
+  availableQuantity?: number
 }
 
 export interface Event {

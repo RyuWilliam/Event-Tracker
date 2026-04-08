@@ -9,7 +9,7 @@ import { useEvents } from "../hooks/useEvents"
 import { CreateEventDialog } from "../components/CreateEventDialog"
 import { EditEventDialog } from "../components/EditEventDialog"
 import { deleteEvent, uploadEventImage, deleteEventImage, getCategories } from "../services/eventsApi"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { resolveImageUrl } from "@/lib/image"
 import type { EventCategory } from "../types/event.types"
 
 function formatDate(dateString: string): string {
@@ -36,9 +36,7 @@ function getStatusVariant(status: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  const baseUrl = getImageBaseUrl()
-  return `${baseUrl}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 export function EventsListPage() {
@@ -55,7 +53,7 @@ export function EventsListPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>("ACTIVE")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [categories, setCategories] = useState<EventCategory[]>([])
 
@@ -84,7 +82,8 @@ export function EventsListPage() {
         event.name.toLowerCase().includes(normalizedQuery) ||
         event.description?.toLowerCase().includes(normalizedQuery)
 
-      const matchesStatus = statusFilter === "all" || event.status === statusFilter
+      // Only show ACTIVE events by default, but if user explicitly selected "all", show everything
+      const matchesStatus = statusFilter === "all" ? true : event.status === statusFilter
 
       const matchesCategory =
         categoryFilter === "all" ||

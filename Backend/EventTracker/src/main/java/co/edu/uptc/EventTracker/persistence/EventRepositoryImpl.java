@@ -2,6 +2,7 @@ package co.edu.uptc.EventTracker.persistence;
 
 import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.EventCategory;
+import co.edu.uptc.EventTracker.domain.model.EventTicket;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.persistence.crud.EventJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.CategoryEntity;
@@ -40,7 +41,19 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public Event save(Event event) {
         EventEntity entity = eventMapper.toEntity(event);
-        entity.setActive(true);
+        
+        if (entity.getEventId() != null) {
+            EventEntity existing = eventJpaRepository.findById(entity.getEventId()).orElse(null);
+            if (existing != null) {
+                entity.setFavorites(existing.getFavorites());
+                entity.setActive(existing.getActive());
+            } else {
+                entity.setActive(true);
+            }
+        } else {
+            entity.setActive(true);
+        }
+
         List<CategoryEntity> categoryEntities = new ArrayList<>();
 
         for(EventCategory category: event.getCategories()){
@@ -115,11 +128,10 @@ public class EventRepositoryImpl implements EventRepository {
     public boolean isActive(Integer id) {
         EventEntity entity = eventJpaRepository.findById(id).orElse(null);
         if(entity != null){
-            return entity.getActive();
+            return Boolean.TRUE.equals(entity.getActive());
         }
         return false;
     }
-
 
     @Override
     public Event modify(Integer id, Event event) {
@@ -134,36 +146,59 @@ public class EventRepositoryImpl implements EventRepository {
         Optional.ofNullable(event.getCategories()).ifPresent(cats ->
                 entity.setCategories(categoryMapper.toEntities(cats))
         );
-        Optional.ofNullable(event.getTickets()).ifPresent(tickets ->
-                tickets.forEach(ticket -> {
-                    if (ticket.getId() == null) {
-                        EventTicketEntity newTicket = new EventTicketEntity();
-                        newTicket.setEvent(entity);
-                        newTicket.setPrice(ticket.getPrice());
-                        newTicket.setTotalQuantity(ticket.getTotalQuantity());
-                        newTicket.setSoldQuantity(0);
-                        newTicket.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
-                        entity.getTickets().add(newTicket);
-                    } else {
-                        entity.getTickets().stream()
-                                .filter(t -> t.getId().equals(ticket.getId()))
-                                .findFirst()
-                                .ifPresent(existing -> {
-                                    if (existing.getSoldQuantity() > 0) {
-                                        throw new IllegalStateException(
-                                                "El ticket '" + existing.getTicketType().getName() +
-                                                        "' ya tiene ventas registradas y no puede modificarse"
-                                        );
-                                    }
-                                    Optional.ofNullable(ticket.getPrice()).ifPresent(existing::setPrice);
-                                    Optional.ofNullable(ticket.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
-                                });
-                    }
-                })
-        );
+        Optional.ofNullable(event.getTickets()).ifPresent(tickets -> {
+            List<Integer> incomingIds = tickets.stream()
+                    .filter(t -> t.getId() != null)
+                    .map(EventTicket::getId)
+                    .toList();
 
+            // Eliminar tickets que no vienen en la lista y no tienen ventas
+            entity.getTickets().removeIf(existing -> {
+                if (!incomingIds.contains(existing.getId())) {
+                    if (existing.getSoldQuantity() > 0) {
+                        throw new IllegalStateException(
+                                "El ticket '" + existing.getTicketType().getName() +
+                                        "' ya tiene ventas y no puede eliminarse"
+                        );
+                    }
+                    return true;
+                }
+                return false;
+            });
+
+            // Agregar o modificar
+            tickets.forEach(ticket -> {
+                if (ticket.getId() == null) {
+                    EventTicketEntity newTicket = new EventTicketEntity();
+                    newTicket.setEvent(entity);
+                    newTicket.setPrice(ticket.getPrice());
+                    newTicket.setTotalQuantity(ticket.getTotalQuantity());
+                    newTicket.setSoldQuantity(0);
+                    newTicket.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
+                    entity.getTickets().add(newTicket);
+                } else {
+                    entity.getTickets().stream()
+                            .filter(t -> t.getId().equals(ticket.getId()))
+                            .findFirst()
+                            .ifPresent(existing -> {
+                                boolean priceChanged = ticket.getPrice() != null &&
+                                        !ticket.getPrice().equals(existing.getPrice());
+                                boolean quantityChanged = ticket.getTotalQuantity() != null &&
+                                        !ticket.getTotalQuantity().equals(existing.getTotalQuantity());
+
+                                if (existing.getSoldQuantity() > 0 && (priceChanged || quantityChanged)) {
+                                    throw new IllegalStateException(
+                                            "El ticket '" + existing.getTicketType().getName() +
+                                                    "' ya tiene ventas registradas y no puede modificarse"
+                                    );
+                                }
+
+                                Optional.ofNullable(ticket.getPrice()).ifPresent(existing::setPrice);
+                                Optional.ofNullable(ticket.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
+                            });
+                }
+            });
+        });
         return eventMapper.toEvent(eventJpaRepository.save(entity));
     }
-
-
 }

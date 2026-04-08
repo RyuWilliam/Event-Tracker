@@ -1,7 +1,6 @@
 package co.edu.uptc.EventTracker.persistence.mapper;
 
 
-import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.EventTicket;
 import co.edu.uptc.EventTracker.persistence.entities.EventTicketEntity;
 import org.springframework.stereotype.Component;

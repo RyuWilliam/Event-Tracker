@@ -51,7 +51,8 @@ export function QrDialog({
         URL.revokeObjectURL(qrUrl)
       }
     }
-  }, [open, purchaseId, getQrImage])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, purchaseId])
 
   const handleDownload = () => {
     if (!qrUrl) return

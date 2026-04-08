@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type { Event } from "../types/event.types"
-import { getEvents } from "../services/eventsApi"
+import { getEvents, refreshEventsStatus } from "../services/eventsApi"
 
 interface UseEventsResult {
   events: Event[] | null
@@ -14,11 +14,14 @@ export function useEvents(): UseEventsResult {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
     try {
+      // First trigger the refresh to keep status sync, don't block fetching the list
+      refreshEventsStatus().catch(console.error)
+      
       const data = await getEvents()
       setEvents(data)
     } catch (err) {
@@ -27,11 +30,18 @@ export function useEvents(): UseEventsResult {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+    
+    // Set up an interval to refresh statuses periodically
+    const intervalId = setInterval(() => {
+      refreshEventsStatus().then(() => fetchEvents()).catch(console.error)
+    }, 30000) // Every 30 seconds
+
+    return () => clearInterval(intervalId)
+  }, [fetchEvents])
 
   return {
     events,
