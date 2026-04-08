@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
-import { Card, CardContent, CardTitle, Button, Badge } from "@/shared/ui";
+import { Card, Button, Badge } from "@/shared/ui";
 import {
   QrCode,
   AlertCircle,
-  RefreshCw,
-  ArrowLeft,
   Ticket,
   MapPin,
   DollarSign,
@@ -28,7 +25,6 @@ interface SelectedPurchaseWithId extends TicketResume {
 }
 
 export function MyPurchasesView() {
-  const navigate = useNavigate();
   const { getTicketResumes, loading, error } = useTicketPurchase();
   const [purchases, setPurchases] = useState<TicketResume[]>([]);
   const [eventsData, setEventsData] = useState<Record<string, Event>>({});

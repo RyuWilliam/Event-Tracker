@@ -5,13 +5,12 @@ import {
   CardTitle,
   Button,
   Badge,
-  Input,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogDescription,
+  DialogFooter,
 } from "@/shared/ui";
 import {
   ShoppingCart,
@@ -41,7 +40,6 @@ interface TicketQuantityMap {
 export function EventTicketsView({
   eventName = "Detailed Event",
   tickets,
-  eventId,
   onPurchaseSuccess,
 }: EventTicketsViewProps) {
   const { purchase, loading, error } = useTicketPurchase();
@@ -52,7 +50,7 @@ export function EventTicketsView({
     null,
   );
   const [quantities, setQuantities] = useState<TicketQuantityMap>(
-    tickets.reduce((acc, ticket) => ({ ...acc, [ticket.id]: 1 }), {}),
+    tickets.reduce((acc, ticket) => ({ ...acc, [ticket.id!]: 1 }), {}),
   );
 
   const handleQuantityChange = (ticketId: number, value: string) => {
@@ -77,7 +75,7 @@ export function EventTicketsView({
 
     setQuantities((prev) => ({
       ...prev,
-      [ticket.id]: 1,
+      [ticket.id!]: 1,
     }));
 
     setConfirmingTicket(ticket);
@@ -88,7 +86,7 @@ export function EventTicketsView({
     const ticket = confirmingTicket;
 
     const available = ticket.totalQuantity - ticket.soldQuantity;
-    const quantity = quantities[ticket.id] || 1;
+    const quantity = quantities[ticket.id!] || 1;
 
     if (available <= 0 || quantity > available) {
       toast.error("Not enough tickets available");
@@ -97,11 +95,11 @@ export function EventTicketsView({
     }
 
     try {
-      setPurchasingTicketId(ticket.id);
+      setPurchasingTicketId(ticket.id!);
       const result = await purchase({
         quantity,
         eventTicket: {
-          id: ticket.id,
+          id: ticket.id!,
         },
       });
       toast.success(
@@ -138,7 +136,7 @@ export function EventTicketsView({
           const isAvailable = available > 0;
 
           return (
-            <Card key={ticket.id} className="overflow-hidden">
+            <Card key={ticket.id!} className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1">
@@ -166,7 +164,7 @@ export function EventTicketsView({
                       disabled={
                         !isAvailable ||
                         loading ||
-                        purchasingTicketId === ticket.id
+                        purchasingTicketId === ticket.id!
                       }
                       size="lg"
                       className="gap-2 px-8"
@@ -230,19 +228,19 @@ export function EventTicketsView({
                       size="icon"
                       className="h-8 w-8 rounded-full border-muted-foreground/30 hover:bg-muted/50"
                       disabled={
-                        loading || (quantities[confirmingTicket.id] || 1) <= 1
+                        loading || (quantities[confirmingTicket.id!!] || 1) <= 1
                       }
                       onClick={() =>
                         handleQuantityChange(
-                          confirmingTicket.id,
-                          String((quantities[confirmingTicket.id] || 1) - 1),
+                          confirmingTicket.id!!,
+                          String((quantities[confirmingTicket.id!!] || 1) - 1),
                         )
                       }
                     >
                       <Minus className="h-4 w-4 text-foreground" />
                     </Button>
                     <span className="w-6 text-center font-medium select-none text-base">
-                      {quantities[confirmingTicket.id] || 1}
+                      {quantities[confirmingTicket.id!!] || 1}
                     </span>
                     <Button
                       variant="outline"
@@ -250,14 +248,14 @@ export function EventTicketsView({
                       className="h-8 w-8 rounded-full border-muted-foreground/30 hover:bg-muted/50"
                       disabled={
                         loading ||
-                        (quantities[confirmingTicket.id] || 1) >=
+                        (quantities[confirmingTicket.id!!] || 1) >=
                           confirmingTicket.totalQuantity -
                             confirmingTicket.soldQuantity
                       }
                       onClick={() =>
                         handleQuantityChange(
-                          confirmingTicket.id,
-                          String((quantities[confirmingTicket.id] || 1) + 1),
+                          confirmingTicket.id!!,
+                          String((quantities[confirmingTicket.id!!] || 1) + 1),
                         )
                       }
                     >
@@ -280,7 +278,7 @@ export function EventTicketsView({
                   <div className="text-xl font-bold text-green-600 dark:text-green-500">
                     $
                     {(
-                      (quantities[confirmingTicket.id] || 1) *
+                      (quantities[confirmingTicket.id!!] || 1) *
                       confirmingTicket.price
                     ).toFixed(2)}
                   </div>

@@ -1,5 +1,4 @@
 import { useEffect } from "react"
-import { Calendar } from "lucide-react"
 import { Link, useNavigate } from "react-router"
 import { useAuthAction } from "../hooks/useAuthAction"
 import { login } from "../services/authApi"
