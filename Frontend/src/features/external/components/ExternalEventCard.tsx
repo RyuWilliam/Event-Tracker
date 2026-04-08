@@ -46,6 +46,10 @@ export function ExternalEventCard({
   }
 
   const handleViewDetails = () => {
+    if (!isAuthenticated) {
+      openAuthPopup()
+      return
+    }
     onViewDetails?.(event)
   }
 
@@ -94,16 +98,18 @@ export function ExternalEventCard({
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 shrink-0"
-            onClick={handleLikeClick}
-          >
-            <HeartIcon
-              className={`h-5 w-5 ${isLiked ? "fill-accent text-accent" : "text-muted-foreground"}`}
-            />
-          </Button>
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0"
+              onClick={handleLikeClick}
+            >
+              <HeartIcon
+                className={`h-5 w-5 ${isLiked ? "fill-accent text-accent" : "text-muted-foreground"}`}
+              />
+            </Button>
+          )}
         </div>
 
         <div className="mt-4 flex gap-2">
@@ -119,7 +125,7 @@ export function ExternalEventCard({
             size="sm"
             className="ml-auto"
           >
-            View Details
+            Buy Tickets
           </Button>
         </div>
       </div>

@@ -1,7 +1,10 @@
     package co.edu.uptc.EventTracker.persistence.entities;
     
     import co.edu.uptc.EventTracker.persistence.enums.Role;
-    import jakarta.persistence.*; import java.util.List;
+    import jakarta.persistence.*;
+
+    import java.util.ArrayList;
+    import java.util.List;
     @Entity
     @Table(name = "users")
     public class UserEntity {
@@ -90,7 +93,7 @@
         public void setTokens(List<Token> tokens) {
             this.tokens = tokens;
         }
-    
+
         public List<Favorite> getFavorites() {
             return favorites;
         }

@@ -116,7 +116,7 @@ public class EventRepositoryImpl implements EventRepository {
     public boolean isActive(Integer id) {
         EventEntity entity = eventJpaRepository.findById(id).orElse(null);
         if(entity != null){
-            return entity.getActive();
+            return Boolean.TRUE.equals(entity.getActive());
         }
         return false;
     }

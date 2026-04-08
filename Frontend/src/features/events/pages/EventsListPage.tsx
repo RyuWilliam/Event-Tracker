@@ -53,7 +53,7 @@ export function EventsListPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>("ACTIVE")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [categories, setCategories] = useState<EventCategory[]>([])
 
@@ -82,7 +82,8 @@ export function EventsListPage() {
         event.name.toLowerCase().includes(normalizedQuery) ||
         event.description?.toLowerCase().includes(normalizedQuery)
 
-      const matchesStatus = statusFilter === "all" || event.status === statusFilter
+      // Only show ACTIVE events by default, but if user explicitly selected "all", show everything
+      const matchesStatus = statusFilter === "all" ? true : event.status === statusFilter
 
       const matchesCategory =
         categoryFilter === "all" ||

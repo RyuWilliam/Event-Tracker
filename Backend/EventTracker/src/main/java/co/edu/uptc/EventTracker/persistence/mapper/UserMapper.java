@@ -20,11 +20,11 @@ public class UserMapper {
     }
 
     public User toDomain(UserEntity entity) {
-
         List<Event> favorites = entity.getFavorites() == null
                 ? Collections.emptyList()
                 : entity.getFavorites()
                 .stream()
+                .filter(f -> f.getEvent() != null && Boolean.TRUE.equals(f.getEvent().getActive()))
                 .map(Favorite::getEvent)
                 .map(eventMapper::toEvent)
                 .collect(Collectors.toList());

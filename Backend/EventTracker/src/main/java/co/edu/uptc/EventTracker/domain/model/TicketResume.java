@@ -1,6 +1,7 @@
 package co.edu.uptc.EventTracker.domain.model;
 
 public class TicketResume {
+    private Integer id;
     private String userAddress;
     private Double total;
     private TicketType type;
@@ -11,6 +12,13 @@ public class TicketResume {
 
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getEventName() {
         return eventName;

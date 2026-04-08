@@ -14,6 +14,7 @@ interface EventFiltersProps {
   dateTo: string
   onDateToChange: (value: string) => void
   categories: EventCategory[]
+  hideStatusFilter?: boolean
 }
 
 export function EventFilters({
@@ -28,9 +29,10 @@ export function EventFilters({
   dateTo,
   onDateToChange,
   categories,
+  hideStatusFilter = false,
 }: EventFiltersProps) {
   return (
-    <div className="grid gap-3 items-end md:grid-cols-6 border-b pb-6">
+    <div className={`grid gap-3 items-end border-b pb-6 ${hideStatusFilter ? 'md:grid-cols-5' : 'md:grid-cols-6'}`}>
       <div className="flex-1">
         <label className="text-sm font-medium block mb-2">Filter by Category</label>
         <select
@@ -47,19 +49,21 @@ export function EventFilters({
         </select>
       </div>
 
-      <div className="flex-1">
-        <label className="text-sm font-medium block mb-2">Filter by Status</label>
-        <select
-          value={selectedStatus ?? ""}
-          onChange={(e) => onStatusChange((e.target.value as EventStatus) || null)}
-          className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
-        >
-          <option value="">All Status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="FINISHED">Finished</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-      </div>
+      {!hideStatusFilter && (
+        <div className="flex-1">
+          <label className="text-sm font-medium block mb-2">Filter by Status</label>
+          <select
+            value={selectedStatus ?? ""}
+            onChange={(e) => onStatusChange((e.target.value as EventStatus) || null)}
+            className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
+          >
+            <option value="">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="FINISHED">Finished</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      )}
 
       <div className="flex-1">
         <label className="text-sm font-medium block mb-2">Date From</label>

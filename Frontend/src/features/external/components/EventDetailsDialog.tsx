@@ -92,6 +92,7 @@ export function EventDetailsDialog({
               {hasTickets ? (
                 <div className="space-y-4 border-t pt-4">
                   <EventTicketsView
+                    eventName={event.name}
                     tickets={event.tickets}
                     eventId={event.id!}
                     onPurchaseSuccess={onTicketPurchaseSuccess}

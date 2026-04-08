@@ -66,6 +66,10 @@ export function EventsPage() {
   }, [])
 
   const handleEditClick = (event: Event) => {
+    if (event.status === "FINISHED") {
+      toast.error("Finished events cannot be edited")
+      return
+    }
     setEditingEvent({
       id: event.id || 0,
       data: { ...event },
@@ -99,7 +103,8 @@ export function EventsPage() {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === null || 
       event.categories?.some(cat => cat.id === selectedCategory)
-    const matchesStatus = selectedStatus === null || event.status === selectedStatus
+    // Modificado para que por defecto muestre solo ACTIVE, excepto si selecciona TODOS
+    const matchesStatus = (selectedStatus === null) ? event.status === "ACTIVE" : event.status === selectedStatus
 
     const eventDate = new Date(event.date)
     const hasValidDate = !Number.isNaN(eventDate.getTime())

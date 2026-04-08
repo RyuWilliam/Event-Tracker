@@ -87,9 +87,13 @@ export function EventEditForm({
     const tempId = -(tempTicketIdCounter + 1)
     setTempTicketIdCounter(prev => prev + 1)
     
+    const usedTypeIds = new Set(event.tickets?.map(t => t.ticketType?.id).filter(Boolean))
+    const availableTypes = ticketTypes.filter(t => !usedTypeIds.has(t.id))
+    const defaultType = availableTypes.length > 0 ? availableTypes[0] : (ticketTypes[0] || { id: 1, name: "Standard" })
+
     const newTicket: EventTicket = {
       id: tempId as any,
-      ticketType: ticketTypes[0] || { id: 1, name: "Standard" },
+      ticketType: defaultType,
       price: 0,
       totalQuantity: 100,
       soldQuantity: 0,
@@ -174,6 +178,24 @@ export function EventEditForm({
 
     if (hasInvalidTickets) {
       toast.error("Please select a ticket type for all new tickets before saving")
+      return
+    }
+
+    // Validate duplicate ticket types
+    const ticketTypesIds = event.tickets?.map(t => t.ticketType?.id).filter(Boolean) || []
+    const uniqueTicketTypes = new Set(ticketTypesIds)
+    if (ticketTypesIds.length !== uniqueTicketTypes.size) {
+      toast.error("You cannot have multiple tickets with the same ticket type")
+      return
+    }
+
+    // Validate ticket prices
+    const hasInvalidPrices = event.tickets?.some(
+      (ticket: EventTicket) => (ticket.price ?? 0) <= 0
+    )
+
+    if (hasInvalidPrices) {
+      toast.error("Ticket prices must be greater than 0")
       return
     }
 

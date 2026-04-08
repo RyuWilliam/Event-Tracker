@@ -2,6 +2,7 @@ package co.edu.uptc.EventTracker.domain.service;
 
 
 import co.edu.uptc.EventTracker.domain.model.Event;
+import co.edu.uptc.EventTracker.domain.model.EventTicket;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 import co.edu.uptc.EventTracker.persistence.exceptions.EventNotActiveException;
@@ -9,6 +10,7 @@ import co.edu.uptc.EventTracker.persistence.exceptions.EventNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,6 +49,35 @@ public class EventService {
     }
     public List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end){
         return eventRepository.findByDateBetween(start,end);
+    }
+
+    public void refreshStatus(){
+        for (Event event: eventRepository.findAll()){
+            if(event.getDate().isBefore(LocalDateTime.now())){
+                event.setStatus(EventStatus.FINISHED);
+                eventRepository.save(event);
+            }
+        }
+    }
+
+    public List<Event> getMostPopular() {
+        return eventRepository.findByStatus(EventStatus.ACTIVE).stream()
+                .sorted((e1, e2) -> Double.compare(
+                        getTotalSales(e2),
+                        getTotalSales(e1)
+                ))
+                .limit(5)
+                .toList();
+    }
+
+    private double getTotalSales(Event event) {
+        if (event.getTickets() == null) return 0;
+
+        return event.getTickets().stream()
+                .mapToDouble(ticket ->
+                        ticket.getSoldQuantity() * ticket.getPrice()
+                )
+                .sum();
     }
 
 

@@ -101,7 +101,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         EventEntity event = eventJpaRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
-        if(event.getActive() == false){
+        if (Boolean.FALSE.equals(event.getActive())) {
             throw new RuntimeException("Event not active");
         }
         Favorite favorite = new Favorite();

@@ -74,6 +74,19 @@ public class EventController {
     }
 
 
+    @PostMapping("/refresh")
+    public ResponseEntity<Void> refreshStatus(){
+        eventService.refreshStatus();
+        return ResponseEntity.ok().build();
+    }
+
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<Event>> getMostPopular() {
+        return ResponseEntity.ok(eventService.getMostPopular());
+    }
+
+
 
 
 }

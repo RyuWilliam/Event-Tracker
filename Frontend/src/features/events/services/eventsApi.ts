@@ -66,6 +66,32 @@ export async function getEvents(): Promise<Event[]> {
   return response.json()
 }
 
+export async function getPopularEvents(): Promise<Event[]> {
+  // Use no auth headers to avoid intercepting and getting redirected if token is invalid
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  const authHeaders = getAuthHeaders()
+  if (authHeaders.Authorization) {
+      headers.Authorization = authHeaders.Authorization
+  }
+  const response = await fetch(`${BASE_URL}/events/popular`, {
+    headers,
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch popular events: ${response.status}`)
+  }
+  return response.json()
+}
+
+export async function refreshEventsStatus(): Promise<void> {
+  const response = await fetch(`${BASE_URL}/events/refresh`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  })
+  if (!response.ok) {
+    console.error(`Failed to refresh events status: ${response.status}`)
+  }
+}
+
 export async function createEvent(data: CreateEventPayload): Promise<Event> {
   const response = await fetch(`${BASE_URL}/events`, {
     method: "POST",

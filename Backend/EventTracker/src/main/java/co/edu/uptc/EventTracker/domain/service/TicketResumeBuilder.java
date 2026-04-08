@@ -11,6 +11,7 @@ public class TicketResumeBuilder {
 
     public TicketResume buildFromPurchase(TicketPurchase purchase, Event event, EventTicket eventTicket) {
         TicketResume resume = new TicketResume();
+        resume.setId(purchase.getId());
         resume.setQuantity(purchase.getQuantity());
         resume.setEventName(event.getName());
         resume.setTotal(eventTicket.getPrice() * purchase.getQuantity());
