@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardTitle, Button, H1 } from "@/shared/ui"
-import { Edit2, BarChart3 } from "lucide-react"
+import { Edit2, BarChart3, Settings } from "lucide-react"
 import { toast } from "sonner"
 import { useAdminEvents } from "@/features/events/hooks/useAdminEvents"
 import { EventEditForm } from "@/features/admin/components/EventEditForm"
 import { EventFilters } from "@/features/admin/components/EventFilters"
 import { EventSalesReport } from "@/features/admin/components/EventSalesReport"
+import { CategoriesManagement } from "@/features/admin/components/CategoriesManagement"
 import type { Event, EventCategory, TicketType, EventStatus } from "@/features/events/types/event.types"
 import { getAllCategories } from "@/features/events/services/eventsApi"
 import { getTicketTypes } from "@/features/tickets/services/ticketsApi"
@@ -17,11 +18,12 @@ interface EditingEventState {
 }
 
 export function EventsPage() {
-  const { loadAllEvents, updateEvent, deleteEvent, loading } = useAdminEvents()
+  const { loadAllEvents, updateEvent, deleteEvent, createEvent, loading } = useAdminEvents()
   const [events, setEvents] = useState<Event[]>([])
   const [categories, setCategories] = useState<EventCategory[]>([])
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
   const [editingEvent, setEditingEvent] = useState<EditingEventState | null>(null)
+  const [showCategoriesDialog, setShowCategoriesDialog] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<EventStatus | null>(null)
@@ -74,12 +76,11 @@ export function EventsPage() {
     try {
       if (editingEvent?.id === null) {
         // Creating new event
-        await loadAllEvents()
+        await createEvent(updatedEvent)
+        const updated = await loadAllEvents()
+        setEvents(updated)
       } else if (editingEvent?.id) {
         // Updating existing event
-        // Send tickets as-is. The backend handles validation and won't allow
-        // modifications to tickets with sales. Frontend prevents deletion of
-        // tickets with sales via the delete button being disabled.
         await updateEvent(editingEvent.id, updatedEvent)
         const updated = await loadAllEvents()
         setEvents(updated)
@@ -135,7 +136,7 @@ export function EventsPage() {
           >
             ← Back
           </Button>
-          <H1>Edit Event</H1>
+          <H1>{editingEvent.id === null ? "Create Event" : "Edit Event"}</H1>
         </div>
 
         <EventEditForm
@@ -152,10 +153,20 @@ export function EventsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <H1>Events Management</H1>
+    <div className="relative pb-10">
+      {/* Sticky Header with Title and Action Buttons */}
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/95 backdrop-blur py-4 border-b -mt-4 -mx-4 px-4 shadow-sm mb-6">
+        <H1 className="text-2xl font-bold m-0">Events Management</H1>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowCategoriesDialog(true)}
+            size="sm" 
+            variant="outline"
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Manage Categories
+          </Button>
           <Button 
             onClick={() => {
               const newEvent: Event = {
@@ -176,7 +187,10 @@ export function EventsPage() {
             + New Event
           </Button>
         </div>
+      </div>
 
+      <div className="space-y-6 px-1">
+        {/* Search & Filters */}
         <EventFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -190,7 +204,6 @@ export function EventsPage() {
           onDateToChange={setDateTo}
           categories={categories}
         />
-      </div>
 
       {loading && events.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
@@ -281,6 +294,14 @@ export function EventsPage() {
         open={showReport} 
         onOpenChange={setShowReport} 
       />
+
+      <CategoriesManagement
+        categories={categories}
+        open={showCategoriesDialog}
+        onOpenChange={setShowCategoriesDialog}
+        onCategoriesChange={setCategories}
+      />
+      </div>
     </div>
   )
 }

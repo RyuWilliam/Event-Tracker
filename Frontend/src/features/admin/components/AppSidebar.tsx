@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/shared/ui"
 import { useAuth } from "@/features/auth"
 import { adminNavItems } from "./nav-data"
@@ -17,6 +18,7 @@ export function AppSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { logout } = useAuth()
+  const { setOpen } = useSidebar()
 
   const handleLogout = () => {
     logout()
@@ -24,7 +26,11 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar 
+      collapsible="icon" 
+      onMouseEnter={() => setOpen(true)} 
+      onMouseLeave={() => setOpen(false)}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

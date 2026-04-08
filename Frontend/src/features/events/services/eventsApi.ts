@@ -31,6 +31,31 @@ export async function createCategory(name: string): Promise<EventCategory> {
   return response.json()
 }
 
+export async function updateCategory(id: number, name: string): Promise<EventCategory> {
+  const params = new URLSearchParams({ name })
+  const response = await fetch(`${BASE_URL}/categories/${id}?${params.toString()}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to update category: ${response.status}`)
+  }
+  return response.json()
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/categories/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to delete category: ${response.status}`)
+  }
+}
+
 export async function getEvents(): Promise<Event[]> {
   const response = await fetch(`${BASE_URL}/events`, {
     headers: getAuthHeaders(),

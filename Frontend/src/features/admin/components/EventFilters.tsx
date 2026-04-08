@@ -30,26 +30,13 @@ export function EventFilters({
   categories,
 }: EventFiltersProps) {
   return (
-    <div className="grid gap-3 items-end md:grid-cols-6">
-      <div className="flex-1">
-        <label className="text-sm font-medium block mb-2">Search by Name</label>
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search events..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
-
+    <div className="grid gap-3 items-end md:grid-cols-6 border-b pb-6">
       <div className="flex-1">
         <label className="text-sm font-medium block mb-2">Filter by Category</label>
         <select
           value={selectedCategory ?? ""}
           onChange={(e) => onCategoryChange(e.target.value ? parseInt(e.target.value) : null)}
-          className="w-full px-3 py-2 border border-input rounded-md text-sm"
+          className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
         >
           <option value="">All Categories</option>
           {categories.map((cat) => (
@@ -65,7 +52,7 @@ export function EventFilters({
         <select
           value={selectedStatus ?? ""}
           onChange={(e) => onStatusChange((e.target.value as EventStatus) || null)}
-          className="w-full px-3 py-2 border border-input rounded-md text-sm"
+          className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
         >
           <option value="">All Status</option>
           <option value="ACTIVE">Active</option>
@@ -90,6 +77,19 @@ export function EventFilters({
           value={dateTo}
           onChange={(e) => onDateToChange(e.target.value)}
         />
+      </div>
+
+      <div className="md:col-span-2">
+        <label className="text-sm font-medium block mb-2">Search by Name</label>
+        <div className="relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </div>
     </div>
   )
