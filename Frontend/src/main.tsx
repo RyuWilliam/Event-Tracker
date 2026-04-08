@@ -2,12 +2,15 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { RouterProvider } from "react-router"
 import { router } from "./app/router"
-import { Toaster } from "@/shared/ui"
+import { AuthProvider, AuthPromptProvider } from "@/features/auth"
 import "./index.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
-    <Toaster />
+    <AuthProvider>
+      <AuthPromptProvider>
+        <RouterProvider router={router} />
+      </AuthPromptProvider>
+    </AuthProvider>
   </StrictMode>
 )

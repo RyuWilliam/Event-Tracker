@@ -13,8 +13,8 @@ public class Event {
     private LocalDateTime date;
     private EventStatus status;
     private List<EventCategory> categories;
-    private Integer likes;
     private String imageUrl;
+    private List<EventTicket> tickets;
 
 
     public Event(){
@@ -27,7 +27,6 @@ public class Event {
         this.description = description;
         this.date = date;
         this.status = status;
-        this.likes = likes;
     }
 
     public Integer getId() {
@@ -70,15 +69,6 @@ public class Event {
         this.status = status;
     }
 
-
-    public Integer getLikes() {
-        return likes;
-    }
-
-    public void setLikes(Integer likes) {
-        this.likes = likes;
-    }
-
     public List<EventCategory> getCategories() {
         return categories;
     }
@@ -93,5 +83,13 @@ public class Event {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public List<EventTicket> getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(List<EventTicket> tickets) {
+        this.tickets = tickets;
     }
 }

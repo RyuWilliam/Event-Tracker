@@ -9,6 +9,7 @@
     import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
     import java.time.LocalDateTime;
+    import java.util.ArrayList;
     import java.util.HashSet;
     import java.util.List;
     import java.util.Set;
@@ -26,7 +27,11 @@
         @Column(nullable = false)
         private String name;
         private String description;
+        @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<Favorite> favorites;
         private LocalDateTime date;
+        @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<EventTicketEntity> tickets = new ArrayList<>();
 
         @Enumerated(EnumType.STRING)
         private EventStatus status;
@@ -36,8 +41,6 @@
         private LocalDateTime lastUpdated;
 
         private Boolean active;
-
-        private Integer likes;
 
         @Column(name = "image_url")
         private String imageUrl;
@@ -52,14 +55,6 @@
 
         public EventEntity(){
 
-        }
-
-        public Integer getLikes() {
-            return likes;
-        }
-
-        public void setLikes(Integer likes) {
-            this.likes = likes;
         }
 
         public Integer getEventId() {
@@ -122,15 +117,31 @@
             this.categories = categories;
         }
 
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
-    public String getImageUrl() {
+        public String getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
+        public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-}
+
+        public List<Favorite> getFavorites() {
+            return favorites;
+        }
+
+        public void setFavorites(List<Favorite> favorites) {
+            this.favorites = favorites;
+        }
+
+        public void setLastUpdated(LocalDateTime lastUpdated) {
+            this.lastUpdated = lastUpdated;
+        }
+
+        public List<EventTicketEntity> getTickets() {
+            return tickets;
+        }
+
+        public void setTickets(List<EventTicketEntity> tickets) {
+            this.tickets = tickets;
+        }
+    }

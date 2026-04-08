@@ -14,7 +14,6 @@ import java.util.Optional;
 public class CategoryController {
 
 
-    // save, find all, findbyid, edit, delete
 
     private final CategoryService categoryService;
 

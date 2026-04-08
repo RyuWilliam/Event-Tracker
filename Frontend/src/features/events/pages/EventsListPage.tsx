@@ -1,14 +1,15 @@
-import { Link } from "react-router"
 import { useState, useRef, useMemo, useEffect } from "react"
-import { PencilIcon, HeartIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
+import { PencilIcon, TrashIcon, ImageIcon, UploadIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Button, Card, CardTitle, CardContent, Badge, H1, Input } from "@/shared/ui"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui"
 import { useEvents } from "../hooks/useEvents"
+import { CreateEventDialog } from "../components/CreateEventDialog"
+import { EditEventDialog } from "../components/EditEventDialog"
 import { deleteEvent, uploadEventImage, deleteEventImage, getCategories } from "../services/eventsApi"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { resolveImageUrl } from "@/lib/image"
 import type { EventCategory } from "../types/event.types"
 
 function formatDate(dateString: string): string {
@@ -35,15 +36,16 @@ function getStatusVariant(status: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  const baseUrl = getImageBaseUrl()
-  return `${baseUrl}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
 export function EventsListPage() {
   const { events, isLoading, error, refetch } = useEvents()
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingEventId, setEditingEventId] = useState<number | null>(null)
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -51,7 +53,7 @@ export function EventsListPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>("ACTIVE")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [categories, setCategories] = useState<EventCategory[]>([])
 
@@ -80,7 +82,8 @@ export function EventsListPage() {
         event.name.toLowerCase().includes(normalizedQuery) ||
         event.description?.toLowerCase().includes(normalizedQuery)
 
-      const matchesStatus = statusFilter === "all" || event.status === statusFilter
+      // Only show ACTIVE events by default, but if user explicitly selected "all", show everything
+      const matchesStatus = statusFilter === "all" ? true : event.status === statusFilter
 
       const matchesCategory =
         categoryFilter === "all" ||
@@ -174,17 +177,14 @@ export function EventsListPage() {
       <div className="flex justify-between items-center">
         <H1>Events</H1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}>
-            Refresh
-          </Button>
-          <Button asChild>
-            <Link to="/admin/events/create">Create Event</Link>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            Create Event
           </Button>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+        <div className="relative flex-1 sm:w-1/2">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search events..."
@@ -194,7 +194,7 @@ export function EventsListPage() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-width-select-sm">
+          <SelectTrigger className="w-full sm:w-28">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
@@ -205,7 +205,7 @@ export function EventsListPage() {
           </SelectContent>
         </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-width-select-md">
+          <SelectTrigger className="w-full sm:w-32">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
@@ -274,12 +274,8 @@ export function EventsListPage() {
                 </div>
                 <div className="flex-1 flex">
                   <div className="flex-1 p-4 pl-0">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center mb-2">
                       <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <HeartIcon className="h-4 w-4" />
-                        <span className="text-sm">{event.likes || 0}</span>
-                      </div>
                     </div>
                     <CardTitle className="line-clamp-1 mb-1">{event.name}</CardTitle>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
@@ -304,10 +300,15 @@ export function EventsListPage() {
                     >
                       <ImageIcon className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/admin/events/${event.id}/edit`}>
-                        <PencilIcon className="h-4 w-4" />
-                      </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingEventId(event.id!)
+                        setEditDialogOpen(true)
+                      }}
+                    >
+                      <PencilIcon className="h-4 w-4" />
                     </Button>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -410,6 +411,19 @@ export function EventsListPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CreateEventDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={refetch}
+      />
+
+      <EditEventDialog
+        eventId={editingEventId}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={refetch}
+      />
     </div>
   )
 }

@@ -2,14 +2,17 @@ package co.edu.uptc.EventTracker.persistence;
 
 import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.EventCategory;
+import co.edu.uptc.EventTracker.domain.model.EventTicket;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.persistence.crud.EventJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.CategoryEntity;
 import co.edu.uptc.EventTracker.persistence.entities.EventEntity;
+import co.edu.uptc.EventTracker.persistence.entities.EventTicketEntity;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 import co.edu.uptc.EventTracker.persistence.exceptions.EventNotFoundException;
 import co.edu.uptc.EventTracker.persistence.mapper.CategoryMapper;
 import co.edu.uptc.EventTracker.persistence.mapper.EventMapper;
+import co.edu.uptc.EventTracker.persistence.mapper.TicketTypeMapper;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -23,12 +26,14 @@ public class EventRepositoryImpl implements EventRepository {
 
     private final EventMapper eventMapper;
     private final CategoryMapper categoryMapper;
+    private final TicketTypeMapper ticketTypeMapper;
     private final CategoryRepositoryImpl categoryRepository;
     private final EventJpaRepository eventJpaRepository;
 
-    public EventRepositoryImpl(EventMapper eventMapper, CategoryMapper categoryMapper, CategoryRepositoryImpl categoryRepository, EventJpaRepository eventJpaRepository) {
+    public EventRepositoryImpl(EventMapper eventMapper, CategoryMapper categoryMapper, TicketTypeMapper ticketTypeMapper, CategoryRepositoryImpl categoryRepository, EventJpaRepository eventJpaRepository) {
         this.eventMapper = eventMapper;
         this.categoryMapper = categoryMapper;
+        this.ticketTypeMapper = ticketTypeMapper;
         this.categoryRepository = categoryRepository;
         this.eventJpaRepository = eventJpaRepository;
     }
@@ -36,8 +41,19 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public Event save(Event event) {
         EventEntity entity = eventMapper.toEntity(event);
-        entity.setActive(true);
-        entity.setLikes(0);
+        
+        if (entity.getEventId() != null) {
+            EventEntity existing = eventJpaRepository.findById(entity.getEventId()).orElse(null);
+            if (existing != null) {
+                entity.setFavorites(existing.getFavorites());
+                entity.setActive(existing.getActive());
+            } else {
+                entity.setActive(true);
+            }
+        } else {
+            entity.setActive(true);
+        }
+
         List<CategoryEntity> categoryEntities = new ArrayList<>();
 
         for(EventCategory category: event.getCategories()){
@@ -59,6 +75,13 @@ public class EventRepositoryImpl implements EventRepository {
             return Optional.empty();
         }
         return Optional.of(eventMapper.toEvent(entity));
+    }
+
+    @Override
+    public Event findByEventTicketId(Integer id) {
+        return eventJpaRepository.findByTicketsId(id)
+                .map(eventMapper::toEvent)
+                .orElseThrow(() -> new EventNotFoundException(id));
     }
 
     @Override
@@ -105,53 +128,77 @@ public class EventRepositoryImpl implements EventRepository {
     public boolean isActive(Integer id) {
         EventEntity entity = eventJpaRepository.findById(id).orElse(null);
         if(entity != null){
-            return entity.getActive();
+            return Boolean.TRUE.equals(entity.getActive());
         }
         return false;
     }
 
     @Override
-    public void addLike(Integer id) {
-        EventEntity entity = eventJpaRepository.findById(id).orElse(null);
-        if(entity != null){
-            entity.setLikes(entity.getLikes()+1);
-            eventJpaRepository.save(entity);
-        }
-    }
-
-    @Override
     public Event modify(Integer id, Event event) {
-
         EventEntity entity = eventJpaRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException(id));
 
-        if (event.getName() != null) {
-            entity.setName(event.getName());
-        }
+        Optional.ofNullable(event.getName()).ifPresent(entity::setName);
+        Optional.ofNullable(event.getDescription()).ifPresent(entity::setDescription);
+        Optional.ofNullable(event.getDate()).ifPresent(entity::setDate);
+        Optional.ofNullable(event.getStatus()).ifPresent(entity::setStatus);
+        Optional.ofNullable(event.getImageUrl()).ifPresent(entity::setImageUrl);
+        Optional.ofNullable(event.getCategories()).ifPresent(cats ->
+                entity.setCategories(categoryMapper.toEntities(cats))
+        );
+        Optional.ofNullable(event.getTickets()).ifPresent(tickets -> {
+            List<Integer> incomingIds = tickets.stream()
+                    .filter(t -> t.getId() != null)
+                    .map(EventTicket::getId)
+                    .toList();
 
-        if (event.getDescription() != null) {
-            entity.setDescription(event.getDescription());
-        }
+            // Eliminar tickets que no vienen en la lista y no tienen ventas
+            entity.getTickets().removeIf(existing -> {
+                if (!incomingIds.contains(existing.getId())) {
+                    if (existing.getSoldQuantity() > 0) {
+                        throw new IllegalStateException(
+                                "El ticket '" + existing.getTicketType().getName() +
+                                        "' ya tiene ventas y no puede eliminarse"
+                        );
+                    }
+                    return true;
+                }
+                return false;
+            });
 
-        if (event.getDate() != null) {
-            entity.setDate(event.getDate());
-        }
+            // Agregar o modificar
+            tickets.forEach(ticket -> {
+                if (ticket.getId() == null) {
+                    EventTicketEntity newTicket = new EventTicketEntity();
+                    newTicket.setEvent(entity);
+                    newTicket.setPrice(ticket.getPrice());
+                    newTicket.setTotalQuantity(ticket.getTotalQuantity());
+                    newTicket.setSoldQuantity(0);
+                    newTicket.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
+                    entity.getTickets().add(newTicket);
+                } else {
+                    entity.getTickets().stream()
+                            .filter(t -> t.getId().equals(ticket.getId()))
+                            .findFirst()
+                            .ifPresent(existing -> {
+                                boolean priceChanged = ticket.getPrice() != null &&
+                                        !ticket.getPrice().equals(existing.getPrice());
+                                boolean quantityChanged = ticket.getTotalQuantity() != null &&
+                                        !ticket.getTotalQuantity().equals(existing.getTotalQuantity());
 
-        if (event.getStatus() != null) {
-            entity.setStatus(event.getStatus());
-        }
+                                if (existing.getSoldQuantity() > 0 && (priceChanged || quantityChanged)) {
+                                    throw new IllegalStateException(
+                                            "El ticket '" + existing.getTicketType().getName() +
+                                                    "' ya tiene ventas registradas y no puede modificarse"
+                                    );
+                                }
 
-        if (event.getCategories() != null) {
-            entity.setCategories(categoryMapper.toEntities(event.getCategories()));
-        }
-
-        if (event.getLikes() != null) {
-            entity.setLikes(event.getLikes());
-        }
-        EventEntity updated = eventJpaRepository.save(entity);
-        return eventMapper.toEvent(updated);
+                                Optional.ofNullable(ticket.getPrice()).ifPresent(existing::setPrice);
+                                Optional.ofNullable(ticket.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
+                            });
+                }
+            });
+        });
+        return eventMapper.toEvent(eventJpaRepository.save(entity));
     }
-
-
-
 }

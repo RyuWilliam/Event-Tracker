@@ -2,7 +2,6 @@ package co.edu.uptc.EventTracker.web.controller;
 
 import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.service.EventService;
-import co.edu.uptc.EventTracker.persistence.EventRepositoryImpl;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +14,9 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
-    private final EventRepositoryImpl repository;
 
-    public EventController(EventService eventService, EventRepositoryImpl repository) {
+    public EventController(EventService eventService) {
         this.eventService = eventService;
-        this.repository = repository;
     }
 
     @GetMapping
@@ -76,10 +73,20 @@ public class EventController {
         return ResponseEntity.ok(eventService.findByDateBetween(start, end));
     }
 
-    @PostMapping("/addLike/{id}")
-    public ResponseEntity<Void> addLike(@PathVariable Integer id){
-        eventService.addLike(id);
-        return ResponseEntity.noContent().build();
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Void> refreshStatus(){
+        eventService.refreshStatus();
+        return ResponseEntity.ok().build();
     }
+
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<Event>> getMostPopular() {
+        return ResponseEntity.ok(eventService.getMostPopular());
+    }
+
+
+
 
 }

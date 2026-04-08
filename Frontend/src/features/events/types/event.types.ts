@@ -5,6 +5,20 @@ export interface EventCategory {
   name: string
 }
 
+export interface TicketType {
+  id: number
+  name: string
+}
+
+export interface EventTicket {
+  id?: number
+  ticketType: TicketType
+  totalQuantity: number
+  soldQuantity: number
+  price: number
+  availableQuantity?: number
+}
+
 export interface Event {
   id?: number
   name: string
@@ -12,8 +26,8 @@ export interface Event {
   date: string
   status: EventStatus
   categories: EventCategory[]
-  likes: number
   imageUrl?: string | null
+  tickets: EventTicket[]
 }
 
-export type CreateEventPayload = Omit<Event, "id" | "likes">
+export type CreateEventPayload = Omit<Event, "id" | "tickets">

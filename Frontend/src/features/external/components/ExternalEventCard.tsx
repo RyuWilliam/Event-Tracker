@@ -1,12 +1,15 @@
-import { HeartIcon, ImageIcon } from "lucide-react"
+import { HeartIcon, ImageIcon, TicketIcon } from "lucide-react"
 import type { Event } from "@/features/events"
 import { Badge, Button } from "@/shared/ui"
-import { getImageBaseUrl } from "@/lib/apiConfig"
+import { useAuth } from "@/features/auth"
+import { useAuthPrompt } from "@/features/auth"
+import { resolveImageUrl } from "@/lib/image"
 
 interface ExternalEventCardProps {
   event: Event
   isLiked: boolean
   onLike: (eventId: number) => void
+  onViewDetails?: (event: Event) => void
 }
 
 function formatEventDate(dateString: string) {
@@ -19,14 +22,36 @@ function formatEventDate(dateString: string) {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
-  if (!imageUrl) return null
-  const baseUrl = getImageBaseUrl()
-  return `${baseUrl}${imageUrl}`
+  return resolveImageUrl(imageUrl)
 }
 
-export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardProps) {
+export function ExternalEventCard({
+  event,
+  isLiked,
+  onLike,
+  onViewDetails,
+}: ExternalEventCardProps) {
+  const { isAuthenticated } = useAuth()
+  const { open: openAuthPopup } = useAuthPrompt()
   const { day, month, year, time } = formatEventDate(event.date)
   const imageUrl = getImageUrl(event.imageUrl)
+  const ticketCount = event.tickets?.length || 0
+
+  const handleLikeClick = () => {
+    if (!isAuthenticated) {
+      openAuthPopup()
+      return
+    }
+    onLike(event.id!)
+  }
+
+  const handleViewDetails = () => {
+    if (!isAuthenticated) {
+      openAuthPopup()
+      return
+    }
+    onViewDetails?.(event)
+  }
 
   return (
     <div className="group relative flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md">
@@ -73,15 +98,34 @@ export function ExternalEventCard({ event, isLiked, onLike }: ExternalEventCardP
             )}
           </div>
 
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0"
+              onClick={handleLikeClick}
+            >
+              <HeartIcon
+                className={`h-5 w-5 ${isLiked ? "fill-accent text-accent" : "text-muted-foreground"}`}
+              />
+            </Button>
+          )}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          {ticketCount > 0 && (
+            <Badge variant="outline" className="gap-1">
+              <TicketIcon className="h-3 w-3" />
+              {ticketCount} type(s)
+            </Badge>
+          )}
           <Button
-            variant="ghost"
+            onClick={handleViewDetails}
+            variant="default"
             size="sm"
-            className="h-8 w-8 p-0 shrink-0"
-            onClick={() => onLike(event.id!)}
+            className="ml-auto"
           >
-            <HeartIcon
-              className={`h-5 w-5 ${isLiked ? "fill-accent text-accent" : "text-muted-foreground"}`}
-            />
+            Buy Tickets
           </Button>
         </div>
       </div>

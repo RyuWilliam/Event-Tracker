@@ -1,20 +1,36 @@
-import { Link, useLocation } from "react-router"
+import { Link, useLocation, useNavigate } from "react-router"
+import { LogOut } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/shared/ui"
+import { useAuth } from "@/features/auth"
 import { adminNavItems } from "./nav-data"
 
 export function AppSidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
+  const { setOpen } = useSidebar()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login", { replace: true })
+  }
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar 
+      collapsible="icon" 
+      onMouseEnter={() => setOpen(true)} 
+      onMouseLeave={() => setOpen(false)}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -58,6 +74,16 @@ export function AppSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout}>
+              <LogOut className="size-4" />
+              <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

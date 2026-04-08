@@ -11,6 +11,7 @@ public interface EventRepository {
 
     Event save(Event event);
     Optional<Event> findById(Integer id);
+    Event findByEventTicketId(Integer id);
     List<Event> findAll();
     void deleteById(Integer id);
     Event modify(Integer id, Event event);
@@ -20,5 +21,4 @@ public interface EventRepository {
     List<Event> findByStatus(EventStatus status);
     List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
     boolean isActive(Integer id);
-    void addLike(Integer id);
 }
