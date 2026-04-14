@@ -83,7 +83,12 @@ export function CartPage() {
     <div className="container mx-auto max-w-4xl py-8 px-4">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Go back"
+            onClick={() => navigate(-1)}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <H2>Shopping Cart</H2>
