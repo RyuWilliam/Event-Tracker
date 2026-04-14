@@ -3,14 +3,12 @@ import { Badge } from "@/shared/ui"
 import { AlertCircle } from "lucide-react"
 import { EventTicketsView } from "@/features/events"
 import type { Event } from "@/features/events"
-import type { TicketResume } from "@/features/tickets"
 import { resolveImageUrl } from "@/lib/image"
 
 interface EventDetailsDialogProps {
   open: boolean
   event: Event | null
   onOpenChange: (open: boolean) => void
-  onTicketPurchaseSuccess?: (ticketResume: TicketResume) => void
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string | null {
@@ -31,7 +29,6 @@ export function EventDetailsDialog({
   open,
   event,
   onOpenChange,
-  onTicketPurchaseSuccess,
 }: EventDetailsDialogProps) {
   const imageUrl = event ? getImageUrl(event.imageUrl) : null
   const hasTickets = event?.tickets && event.tickets.length > 0
@@ -94,8 +91,6 @@ export function EventDetailsDialog({
                   <EventTicketsView
                     eventName={event.name}
                     tickets={event.tickets}
-                    eventId={event.id!}
-                    onPurchaseSuccess={onTicketPurchaseSuccess}
                   />
                 </div>
               ) : (

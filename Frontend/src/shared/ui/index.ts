@@ -56,3 +56,13 @@ export {
   SidebarTrigger,
   useSidebar,
 } from "./sidebar"
+export {
+  Sheet,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from "./sheet"

@@ -4,6 +4,7 @@ import { LogOut, HeartIcon, CalendarDays, LogIn, Ticket } from "lucide-react"
 import { APP_CONFIG } from "@/core/config"
 import { useAuth, useAuthPrompt } from "@/features/auth"
 import { Button } from "@/shared/ui"
+import { CartBadge } from "@/features/cart"
 
 interface MainLayoutProps {
   children: ReactNode
@@ -65,6 +66,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <Ticket className="h-4 w-4" />
                   My Tickets
                 </NavLink>
+                <div className="ml-2">
+                  <CartBadge />
+                </div>
                 <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
