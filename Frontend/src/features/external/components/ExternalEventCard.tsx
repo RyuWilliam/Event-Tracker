@@ -4,6 +4,7 @@ import { Badge, Button } from "@/shared/ui"
 import { useAuth } from "@/features/auth"
 import { useAuthPrompt } from "@/features/auth"
 import { resolveImageUrl } from "@/lib/image"
+import { CartBadge } from "@/features/cart"
 
 interface ExternalEventCardProps {
   event: Event
@@ -127,6 +128,7 @@ export function ExternalEventCard({
           >
             Buy Tickets
           </Button>
+          <CartBadge />
         </div>
       </div>
     </div>

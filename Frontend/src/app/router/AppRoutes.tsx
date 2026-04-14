@@ -3,6 +3,7 @@ import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage, EventsPage } 
 import { ExternalEventsPage, FavoritesPage } from "@/features/external"
 import { RegisterPage, LoginPage } from "@/features/auth"
 import { MyPurchasesPage } from "@/features/tickets"
+import { CartPage } from "@/features/cart"
 import { ProtectedRoute, GuestRoute } from "./ProtectedRoute"
 import { AppLayout } from "@/core/layouts/AppLayout"
 
@@ -26,6 +27,12 @@ export const routes = [
       {
         path: "events",
         Component: ExternalEventsPage,
+      },
+
+      // Cart page (no auth required)
+      {
+        path: "cart",
+        Component: CartPage,
       },
 
       // Guest-only routes (redirect away if already logged in)
