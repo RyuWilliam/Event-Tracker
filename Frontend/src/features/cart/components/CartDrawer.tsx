@@ -16,8 +16,8 @@ export function CartDrawer() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetContent side="right" className="w-[380px] sm:w-[450px] flex flex-col">
-        <SheetHeader>
+      <SheetContent side="right" className="w-[380px] sm:w-[450px] flex flex-col gap-6 p-6">
+        <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
             Shopping Cart
@@ -30,14 +30,14 @@ export function CartDrawer() {
         </SheetHeader>
 
         {items.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-4">
             <ShoppingCart className="h-12 w-12 mb-4 opacity-50" />
             <p className="text-sm">Your cart is empty</p>
             <p className="text-xs mt-1">Add tickets to get started</p>
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto space-y-3 py-4">
+            <div className="flex-1 overflow-y-auto px-1 -mx-1 space-y-3">
               {items.map((item) => (
                 <CartItemCard key={item.eventTicketId} item={item} />
               ))}

@@ -4,7 +4,6 @@ import { Badge, Button } from "@/shared/ui"
 import { useAuth } from "@/features/auth"
 import { useAuthPrompt } from "@/features/auth"
 import { resolveImageUrl } from "@/lib/image"
-import { CartBadge } from "@/features/cart"
 
 interface ExternalEventCardProps {
   event: Event
@@ -120,15 +119,13 @@ export function ExternalEventCard({
               {ticketCount} type(s)
             </Badge>
           )}
-          <Button
+            <Button
             onClick={handleViewDetails}
             variant="default"
             size="sm"
-            className="ml-auto"
           >
             Buy Tickets
           </Button>
-          <CartBadge />
         </div>
       </div>
     </div>
