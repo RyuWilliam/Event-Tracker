@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-import { TrophyIcon, RefreshCw, Ticket, DollarSign, Calendar } from "lucide-react"
-import { H1, Card, CardContent, Button, Badge } from "@/shared/ui"
+import { TrophyIcon, Ticket, DollarSign, Calendar } from "lucide-react"
+import { H1, Card, CardContent, Badge } from "@/shared/ui"
 import { getPopularEvents } from "@/features/events/services/eventsApi"
 import type { Event, EventTicket } from "@/features/events/types/event.types"
 import { resolveImageUrl } from "@/lib/image"

@@ -47,7 +47,7 @@ public class EventRepositoryImpl implements EventRepository {
             if (existing != null) {
                 entity.setFavorites(existing.getFavorites());
                 entity.setActive(existing.getActive());
-            } else {
+            } else {.
                 entity.setActive(true);
             }
         } else {
