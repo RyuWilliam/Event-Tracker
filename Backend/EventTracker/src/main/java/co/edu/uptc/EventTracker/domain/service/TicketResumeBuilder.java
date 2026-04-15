@@ -1,22 +1,36 @@
 package co.edu.uptc.EventTracker.domain.service;
 
-import co.edu.uptc.EventTracker.domain.model.Event;
-import co.edu.uptc.EventTracker.domain.model.EventTicket;
-import co.edu.uptc.EventTracker.domain.model.TicketPurchase;
-import co.edu.uptc.EventTracker.domain.model.TicketResume;
+import co.edu.uptc.EventTracker.domain.model.*;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class TicketResumeBuilder {
 
-    public TicketResume buildFromPurchase(TicketPurchase purchase, Event event, EventTicket eventTicket) {
+    public TicketResume buildFromPurchase(TicketPurchase purchase, Event event) {
+        List<TicketPurchaseItem> items = purchase.getItems();
+
+        List<TicketResumeItem> resumeItems = items.stream()
+                .map(item -> {
+                    TicketResumeItem ri = new TicketResumeItem();
+                    ri.setType(item.getEventTicket().getTicketType());
+                    ri.setQuantity(item.getQuantity());
+                    ri.setSubtotal(item.getEventTicket().getPrice() * item.getQuantity());
+                    return ri;
+                }).toList();
+
+        int totalQuantity = resumeItems.stream().mapToInt(TicketResumeItem::getQuantity).sum();
+        double total = resumeItems.stream().mapToDouble(TicketResumeItem::getSubtotal).sum();
+
         TicketResume resume = new TicketResume();
         resume.setId(purchase.getId());
-        resume.setQuantity(purchase.getQuantity());
         resume.setEventName(event.getName());
-        resume.setTotal(eventTicket.getPrice() * purchase.getQuantity());
         resume.setUserAddress(purchase.getUser().getEmail());
-        resume.setType(eventTicket.getTicketType());
+        resume.setTotalQuantity(totalQuantity);
+        resume.setTotal(total);
+        resume.setItems(resumeItems);
+
         return resume;
     }
 }
