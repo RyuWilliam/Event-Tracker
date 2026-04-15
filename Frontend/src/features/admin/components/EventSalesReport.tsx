@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, Card, CardContent } from "@/shared/ui"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Card, CardContent } from "@/shared/ui"
 import type { Event } from "@/features/events/types/event.types"
 
 interface EventSalesReportProps {
@@ -13,6 +13,7 @@ export function EventSalesReport({ event, open, onOpenChange }: EventSalesReport
   const totalTickets = event.tickets?.reduce((sum, t) => sum + t.totalQuantity, 0) || 0
   const totalSold = event.tickets?.reduce((sum, t) => sum + t.soldQuantity, 0) || 0
   const totalRevenue = event.tickets?.reduce((sum, t) => sum + t.price * t.soldQuantity, 0) || 0
+  const percentageSold = totalTickets > 0 ? Math.round((totalSold / totalTickets) * 100) : 0
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,6 +79,7 @@ export function EventSalesReport({ event, open, onOpenChange }: EventSalesReport
                     event.tickets.map((ticket) => {
                       const available = ticket.totalQuantity - ticket.soldQuantity
                       const revenue = ticket.price * ticket.soldQuantity
+                      const percentSold = ticket.totalQuantity > 0 ? Math.round((ticket.soldQuantity / ticket.totalQuantity) * 100) : 0
 
                       return (
                         <tr key={ticket.id} className="transition-colors hover:bg-muted/30">
