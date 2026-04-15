@@ -180,10 +180,12 @@ export function MyPurchasesView() {
                 <div className="p-4 flex flex-1 flex-col justify-between">
                   <div className="space-y-3">
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="secondary">
-                          {purchase.type.name}
-                        </Badge>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {purchase.items?.map((item, i) => (
+                          <Badge key={i} variant="secondary">
+                            {item.quantity}x {item.type.name}
+                          </Badge>
+                        ))}
                         {eventInfo?.status === "CANCELLED" && (
                           <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
                             Cancelled
@@ -215,7 +217,7 @@ export function MyPurchasesView() {
                         <span>
                           Quantity:{" "}
                           <span className="font-medium text-foreground">
-                            {purchase.quantity}
+                            {purchase.totalQuantity}
                           </span>
                         </span>
                       </div>
@@ -265,7 +267,7 @@ export function MyPurchasesView() {
         <QrDialog
           open={qrDialogOpen}
           purchaseId={selectedPurchase.displayId}
-          ticketType={selectedPurchase.type.name}
+          ticketType={selectedPurchase.items?.map(i => `${i.quantity}x ${i.type.name}`).join(", ") || "General"}
           eventName={selectedPurchase.eventName}
           onOpenChange={setQrDialogOpen}
         />

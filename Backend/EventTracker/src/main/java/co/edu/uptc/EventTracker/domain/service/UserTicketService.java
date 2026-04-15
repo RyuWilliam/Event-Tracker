@@ -1,9 +1,6 @@
 package co.edu.uptc.EventTracker.domain.service;
 
-import co.edu.uptc.EventTracker.domain.model.Event;
-import co.edu.uptc.EventTracker.domain.model.EventTicket;
-import co.edu.uptc.EventTracker.domain.model.TicketPurchase;
-import co.edu.uptc.EventTracker.domain.model.TicketResume;
+import co.edu.uptc.EventTracker.domain.model.*;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.domain.repository.PurchaseRepository;
 import com.google.zxing.BarcodeFormat;
@@ -28,21 +25,23 @@ public class UserTicketService {
         this.eventRepository = eventRepository;
     }
 
-    public List<TicketResume> getTickets(Integer id){
+    public List<TicketResume> getTickets(Integer id) {
         List<TicketPurchase> purchases = purchaseRepository.findByUserId(id);
         List<TicketResume> tickets = new ArrayList<>();
-        for(TicketPurchase purchase: purchases){
-            Event event = eventRepository.findByEventTicketId(purchase.getEventTicket().getId());
-            EventTicket eventTicket = purchase.getEventTicket();
-            tickets.add(ticketResumeBuilder.buildFromPurchase(purchase,event,eventTicket));
+        for (TicketPurchase purchase : purchases) {
+            Event event = eventRepository.findByEventTicketId(
+                    purchase.getItems().get(0).getEventTicket().getId()
+            );
+            tickets.add(ticketResumeBuilder.buildFromPurchase(purchase, event));
         }
         return tickets;
     }
 
     public byte[] generateQrFromPurchase(TicketPurchase purchase) {
-        Event event = eventRepository.findByEventTicketId(purchase.getEventTicket().getId());
-        EventTicket eventTicket = purchase.getEventTicket();
-        TicketResume resume = ticketResumeBuilder.buildFromPurchase(purchase, event, eventTicket);
+        Event event = eventRepository.findByEventTicketId(
+                purchase.getItems().get(0).getEventTicket().getId()
+        );
+        TicketResume resume = ticketResumeBuilder.buildFromPurchase(purchase, event);
         return generateFromTicketResume(resume);
     }
 
@@ -51,25 +50,28 @@ public class UserTicketService {
         try {
             QRCodeWriter qrWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrWriter.encode(content, BarcodeFormat.QR_CODE, 300, 300);
-
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
             return outputStream.toByteArray();
-
         } catch (Exception e) {
             throw new RuntimeException("Error generando QR", e);
         }
     }
 
-
     private String buildContent(TicketResume resume) {
-        return String.format(
-                "Evento: %s | Tipo: %s | Cantidad: %d | Total: $%.2f | Email: %s",
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Evento: %s | Email: %s | Total: $%.2f%n",
                 resume.getEventName(),
-                resume.getType().getName(),
-                resume.getQuantity(),
-                resume.getTotal(),
-                resume.getUserAddress()
-        );
+                resume.getUserAddress(),
+                resume.getTotal()));
+
+        for (TicketResumeItem item : resume.getItems()) {
+            sb.append(String.format("  - %s x%d → $%.2f%n",
+                    item.getType().getName(),
+                    item.getQuantity(),
+                    item.getSubtotal()));
+        }
+
+        return sb.toString();
     }
 }

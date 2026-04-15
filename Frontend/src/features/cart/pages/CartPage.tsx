@@ -21,27 +21,15 @@ export function CartPage() {
     try {
       const result = await checkoutCart(items)
 
-      if (result.success) {
-        const totalPurchased = result.results.reduce(
-          (sum, r) => (r.success ? sum + r.item.quantity : sum),
-          0,
-        )
+      if (result.success && result.ticketResume) {
+        const totalPurchased = result.ticketResume.totalQuantity
         toast.success(
           `Successfully purchased ${totalPurchased} ticket${totalPurchased > 1 ? "s" : ""}!`,
         )
         clearCart()
         navigate("/my-purchases")
       } else {
-        const failedCount = result.results.filter((r) => !r.success).length
-        const successCount = result.results.filter((r) => r.success).length
-
-        if (successCount > 0) {
-          toast.warning(
-            `${successCount} ticket${successCount > 1 ? "s" : ""} purchased, ${failedCount} failed`,
-          )
-        } else {
-          toast.error("All purchases failed. Please try again.")
-        }
+        toast.error(result.error || "Purchase failed. Please try again.")
       }
     } catch (error) {
       toast.error("Failed to process purchase")
