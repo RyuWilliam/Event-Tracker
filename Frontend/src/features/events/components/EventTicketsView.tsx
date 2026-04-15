@@ -17,10 +17,19 @@ import {
   AlertCircle,
   Plus,
   Minus,
+  Calendar,
+  Ticket,
+  DollarSign
 } from "lucide-react"
 import { toast } from "sonner"
 import type { EventTicket } from "../types/event.types"
 import { useCart } from "@/features/cart"
+
+export interface EventTicketsViewProps {
+  eventName?: string
+  tickets: EventTicket[]
+  onPurchaseSuccess?: (r: any) => void
+}
 
 interface TicketQuantityMap {
   [ticketId: number]: number
@@ -31,7 +40,7 @@ export function EventTicketsView({
   tickets,
   onPurchaseSuccess,
 }: EventTicketsViewProps) {
-  const { purchase, loading, error } = useTicketPurchase();
+  const { addItem } = useCart();
   const [purchasingTicketId, setPurchasingTicketId] = useState<number | null>(
     null,
   );
@@ -39,12 +48,12 @@ export function EventTicketsView({
     null,
   );
   const [quantities, setQuantities] = useState<TicketQuantityMap>(
-    tickets.reduce((acc, ticket) => ({ ...acc, [ticket.id!]: 1 }), {}),
+    tickets.reduce((acc: TicketQuantityMap, ticket: EventTicket) => ({ ...acc, [ticket.id!]: 1 }), {}),
   );
 
   const handleQuantityChange = (ticketId: number, value: string) => {
     const num = parseInt(value) || 1
-    const ticket = tickets.find((t) => t.id === ticketId)
+    const ticket = tickets.find((t: EventTicket) => t.id === ticketId)
     const maxAvailable = ticket
       ? ticket.totalQuantity - ticket.soldQuantity
       : 0
@@ -54,7 +63,7 @@ export function EventTicketsView({
     }))
   }
 
-  const handleAddToCart = (ticket: EventTicket) => {
+  const handleOpenConfirm = (ticket: EventTicket) => {
     const available = ticket.totalQuantity - ticket.soldQuantity
     const quantity = quantities[ticket.id!] || 1
 
@@ -65,7 +74,7 @@ export function EventTicketsView({
 
     setQuantities((prev) => ({
       ...prev,
-      [ticket.id!]: 1,
+      [ticket.id!]: quantity,
     }));
 
     setConfirmingTicket(ticket);
@@ -86,22 +95,24 @@ export function EventTicketsView({
 
     try {
       setPurchasingTicketId(ticket.id!);
-      const result = await purchase({
+      addItem({
+        eventTicketId: ticket.id!,
+        eventName,
+        ticketTypeName: ticket.ticketType.name,
         quantity,
-        eventTicket: {
-          id: ticket.id!,
-        },
+        unitPrice: ticket.price,
+        maxAvailable: available,
       });
       toast.success(
-        `${quantity} ticket${quantity > 1 ? "s" : ""} purchased successfully!`,
+        `${quantity} ticket${quantity > 1 ? "s" : ""} added to cart successfully!`,
       );
       setConfirmingTicket(null);
-      if (result) {
-        onPurchaseSuccess?.(result);
+      if (onPurchaseSuccess) {
+        onPurchaseSuccess({ ticket, quantity });
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to purchase ticket";
+        err instanceof Error ? err.message : "Failed to add to cart";
       toast.error(errorMessage);
     } finally {
       setPurchasingTicketId(null);
@@ -192,7 +203,6 @@ export function EventTicketsView({
                       onClick={() => handleOpenConfirm(ticket)}
                       disabled={
                         !isAvailable ||
-                        loading ||
                         purchasingTicketId === ticket.id!
                       }
                       size="lg"
@@ -208,17 +218,11 @@ export function EventTicketsView({
           )
         })}
       </div>
-      {error && (
-        <div className="flex items-start gap-2 p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
-          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
 
       {/* Confirmation Dialog */}
       <Dialog
         open={!!confirmingTicket}
-        onOpenChange={(open) => !open && !loading && setConfirmingTicket(null)}
+        onOpenChange={(open) => !open && setConfirmingTicket(null)}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -257,7 +261,7 @@ export function EventTicketsView({
                       size="icon"
                       className="h-8 w-8 rounded-full border-muted-foreground/30 hover:bg-muted/50"
                       disabled={
-                        loading || (quantities[confirmingTicket.id!!] || 1) <= 1
+                        (quantities[confirmingTicket.id!!] || 1) <= 1
                       }
                       onClick={() =>
                         handleQuantityChange(
@@ -276,7 +280,6 @@ export function EventTicketsView({
                       size="icon"
                       className="h-8 w-8 rounded-full border-muted-foreground/30 hover:bg-muted/50"
                       disabled={
-                        loading ||
                         (quantities[confirmingTicket.id!!] || 1) >=
                           confirmingTicket.totalQuantity -
                             confirmingTicket.soldQuantity
@@ -327,16 +330,14 @@ export function EventTicketsView({
             <Button
               variant="outline"
               onClick={() => setConfirmingTicket(null)}
-              disabled={loading}
             >
               Cancel
             </Button>
             <Button
               variant="default"
               onClick={handlePurchase}
-              disabled={loading}
             >
-              {loading ? "Processing..." : "Confirm Purchase"}
+              Confirm Purchase
             </Button>
           </DialogFooter>
         </DialogContent>
