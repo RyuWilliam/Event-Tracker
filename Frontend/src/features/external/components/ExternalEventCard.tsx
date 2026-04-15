@@ -119,11 +119,10 @@ export function ExternalEventCard({
               {ticketCount} type(s)
             </Badge>
           )}
-          <Button
+            <Button
             onClick={handleViewDetails}
             variant="default"
             size="sm"
-            className="ml-auto"
           >
             Buy Tickets
           </Button>

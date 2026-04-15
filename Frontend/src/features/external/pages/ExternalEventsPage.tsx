@@ -135,11 +135,6 @@ export function ExternalEventsPage() {
     setDetailsDialogOpen(true)
   }
 
-  const handlePurchaseSuccess = () => {
-    toast.success("Ticket purchased! Check your purchases in 'My Tickets'")
-    setDetailsDialogOpen(false)
-  }
-
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -284,7 +279,6 @@ export function ExternalEventsPage() {
         open={detailsDialogOpen}
         event={selectedEvent}
         onOpenChange={setDetailsDialogOpen}
-        onTicketPurchaseSuccess={handlePurchaseSuccess}
       />
     </MainLayout>
   )
