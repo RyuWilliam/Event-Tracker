@@ -1,16 +1,14 @@
 package co.edu.uptc.EventTracker.domain.model;
 
+import java.util.List;
+
 public class TicketResume {
     private Integer id;
-    private String userAddress;
-    private Double total;
-    private TicketType type;
-    private Integer quantity;
     private String eventName;
-
-    public TicketResume(){
-
-    }
+    private String userAddress;
+    private Integer totalQuantity;
+    private Double total;
+    private List<TicketResumeItem> items;
 
     public Integer getId() {
         return id;
@@ -36,6 +34,14 @@ public class TicketResume {
         this.userAddress = userAddress;
     }
 
+    public Integer getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(Integer totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
     public Double getTotal() {
         return total;
     }
@@ -44,19 +50,11 @@ public class TicketResume {
         this.total = total;
     }
 
-    public TicketType getType() {
-        return type;
+    public List<TicketResumeItem> getItems() {
+        return items;
     }
 
-    public void setType(TicketType type) {
-        this.type = type;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
+    public void setItems(List<TicketResumeItem> items) {
+        this.items = items;
     }
 }

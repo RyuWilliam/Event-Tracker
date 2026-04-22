@@ -14,20 +14,10 @@ export interface CartItemPayload {
   }
 }
 
+import type { TicketResume } from "@/features/tickets/types/ticket.types";
+
 export interface CheckoutResult {
   success: boolean
-  results: {
-    item: CartItem
-    success: boolean
-    error?: string
-    ticketResume?: {
-      id: number
-      eventName: string
-      type: {
-        name: string
-      }
-      quantity: number
-      total: number
-    }
-  }[]
+  error?: string
+  ticketResume?: TicketResume
 }

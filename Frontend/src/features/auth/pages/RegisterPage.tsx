@@ -1,4 +1,3 @@
-import { Calendar } from "lucide-react"
 import { Link } from "react-router"
 import { useAuthAction } from "../hooks/useAuthAction"
 import { register } from "../services/authApi"
