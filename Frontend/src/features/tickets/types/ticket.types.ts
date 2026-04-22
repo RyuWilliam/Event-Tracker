@@ -1,5 +1,5 @@
 import type { EventTicket } from "@/features/events"
-import type { User } from "@/features/admin/services/users.types"
+import type { User } from "@/features/users"
 import type { TicketType } from "@/features/events"
 
 export interface TicketPurchase {

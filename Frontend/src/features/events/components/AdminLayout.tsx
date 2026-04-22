@@ -1,6 +1,6 @@
 import { Outlet } from "react-router"
 import { SidebarInset, SidebarProvider } from "@/shared/ui"
-import { AppSidebar } from "./AppSidebar"
+import { AppSidebar } from "./AdminSidebar"
 
 export function AdminLayout() {
   return (

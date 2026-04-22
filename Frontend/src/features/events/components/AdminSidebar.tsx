@@ -12,7 +12,7 @@ import {
   useSidebar,
 } from "@/shared/ui"
 import { useAuth } from "@/features/auth"
-import { adminNavItems } from "./nav-data"
+import { adminNavItems } from "./adminNavData"
 
 export function AppSidebar() {
   const location = useLocation()
