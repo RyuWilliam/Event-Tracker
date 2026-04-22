@@ -2,6 +2,7 @@ package co.edu.uptc.EventTracker.persistence.mapper;
 
 import co.edu.uptc.EventTracker.domain.model.TicketPurchase;
 import co.edu.uptc.EventTracker.persistence.entities.TicketPurchaseEntity;
+import co.edu.uptc.EventTracker.persistence.entities.TicketPurchaseItemEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,44 +10,41 @@ import java.util.List;
 @Component
 public class PurchaseMapper {
 
-    private final TicketMapper ticketMapper;
+    private final PurchaseItemMapper itemMapper;
     private final UserMapper userMapper;
 
-    public PurchaseMapper(TicketMapper ticketMapper, UserMapper userMapper) {
-        this.ticketMapper = ticketMapper;
+    public PurchaseMapper(PurchaseItemMapper itemMapper, UserMapper userMapper) {
+        this.itemMapper = itemMapper;
         this.userMapper = userMapper;
     }
 
     public TicketPurchaseEntity toEntity(TicketPurchase purchase) {
         TicketPurchaseEntity entity = new TicketPurchaseEntity();
-        entity.setQuantity(purchase.getQuantity());
-        entity.setEventTicket(ticketMapper.toEntity(purchase.getEventTicket()));
         entity.setUser(userMapper.toEntity(purchase.getUser()));
+
+        List<TicketPurchaseItemEntity> itemEntities = itemMapper.toEntities(purchase.getItems());
+        // Asignar referencia al padre antes de guardar (necesario por mappedBy)
+        itemEntities.forEach(item -> item.setTicketPurchase(entity));
+        entity.setItems(itemEntities);
+
         return entity;
     }
 
-
-
-    public TicketPurchase toPurchase(TicketPurchaseEntity entity){
+    public TicketPurchase toPurchase(TicketPurchaseEntity entity) {
         TicketPurchase purchase = new TicketPurchase();
-        purchase.setQuantity(entity.getQuantity());
         purchase.setId(entity.getId());
         purchase.setUser(userMapper.toDomain(entity.getUser()));
-        purchase.setEventTicket(ticketMapper.toEventTicket(entity.getEventTicket()));
+        purchase.setItems(itemMapper.toDomains(entity.getItems()));
         return purchase;
     }
+
     public List<TicketPurchaseEntity> toEntities(List<TicketPurchase> purchases) {
         if (purchases == null) return List.of();
-        return purchases.stream()
-                .map(this::toEntity)
-                .toList();
+        return purchases.stream().map(this::toEntity).toList();
     }
 
     public List<TicketPurchase> toPurchases(List<TicketPurchaseEntity> entities) {
         if (entities == null) return List.of();
-        return entities.stream()
-                .map(this::toPurchase)
-                .toList();
+        return entities.stream().map(this::toPurchase).toList();
     }
-
 }

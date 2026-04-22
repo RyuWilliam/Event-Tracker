@@ -3,6 +3,13 @@ package co.edu.uptc.EventTracker.web.dto;
 public class RegisterRequest {
 
     private String name;
+
+    public RegisterRequest(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+
     private String email;
     private String password;
 
