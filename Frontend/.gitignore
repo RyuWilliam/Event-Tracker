@@ -24,7 +24,7 @@ dist-ssr
 *.sln
 *.sw?
 
-../Backend/EventTracker/uploads/
+.webp
 
 agents.md
 opencode.json

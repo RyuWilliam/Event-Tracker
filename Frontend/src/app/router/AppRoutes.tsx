@@ -1,6 +1,6 @@
 import { Navigate } from "react-router"
 import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage, EventsPage } from "@/features/admin"
-import { ExternalEventsPage, FavoritesPage } from "@/features/external"
+import { ExternalEventsPage, FavoritesPage } from "@/features/events"
 import { RegisterPage, LoginPage } from "@/features/auth"
 import { MyPurchasesPage } from "@/features/tickets"
 import { CartPage } from "@/features/cart"
