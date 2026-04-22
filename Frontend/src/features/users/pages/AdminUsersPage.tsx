@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Users, HeartIcon, ShieldCheck, User as UserIcon, ChevronDown, ChevronUp } from "lucide-react"
 import { Badge, Card, CardContent, H1, Input } from "@/shared/ui"
 import { getAllUsers } from "../services/usersApi"
-import type { User } from "../services/users.types"
+import type { User } from "../types/user.types"
 
 function roleBadgeVariant(role: string) {
   return role === "ROLE_ADMIN" ? "default" : "secondary"

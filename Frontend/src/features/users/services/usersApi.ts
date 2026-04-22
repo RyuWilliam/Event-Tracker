@@ -1,6 +1,6 @@
 import { getAuthHeaders } from "@/features/auth"
 import { getApiBaseUrl } from "@/lib/apiConfig"
-import type { User } from "./users.types"
+import type { User } from "../types/user.types"
 
 const BASE_URL = getApiBaseUrl()
 
