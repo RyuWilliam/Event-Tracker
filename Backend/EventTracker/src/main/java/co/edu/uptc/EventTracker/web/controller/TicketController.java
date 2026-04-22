@@ -5,7 +5,6 @@ import co.edu.uptc.EventTracker.domain.model.TicketResume;
 import co.edu.uptc.EventTracker.domain.model.TicketType;
 import co.edu.uptc.EventTracker.domain.service.TicketService;
 import co.edu.uptc.EventTracker.domain.service.UserService;
-import co.edu.uptc.EventTracker.domain.service.UserTicketService;
 import co.edu.uptc.EventTracker.security.UserDetailsImpl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +18,10 @@ import java.util.Optional;
 @RequestMapping("/tickets")
 public class TicketController {
 
-    private final UserTicketService userTicketService;
     private final UserService userService;  
     private final TicketService ticketService;
 
-    public TicketController(UserTicketService userTicketService, UserService userService, TicketService ticketService) {
-        this.userTicketService = userTicketService;
+    public TicketController(UserService userService, TicketService ticketService) {
         this.userService = userService;
         this.ticketService = ticketService;
     }
@@ -71,7 +68,7 @@ public class TicketController {
     public ResponseEntity<byte[]> getQr(@PathVariable Integer id) {
         TicketPurchase ticketPurchase = ticketService.getPurchaseById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase no encontrado"));
-        byte[] qr = userTicketService.generateQrFromPurchase(ticketPurchase);
+        byte[] qr = ticketService.generateQrFromPurchase(ticketPurchase);
         return ResponseEntity.ok(qr);
     }
 
