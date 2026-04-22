@@ -1,4 +1,4 @@
-package co.edu.uptc.EventTracker;
+package co.edu.uptc.EventTracker.model.service;
 import co.edu.uptc.EventTracker.domain.service.AuthService;
 import co.edu.uptc.EventTracker.persistence.crud.UserJpaRepository;
 import co.edu.uptc.EventTracker.persistence.entities.UserEntity;
@@ -16,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;

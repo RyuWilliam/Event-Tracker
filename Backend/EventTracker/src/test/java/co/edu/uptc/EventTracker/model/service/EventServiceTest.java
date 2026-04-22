@@ -1,11 +1,10 @@
-package co.edu.uptc.EventTracker;
+package co.edu.uptc.EventTracker.model.service;
 
 import co.edu.uptc.EventTracker.domain.model.Event;
 import co.edu.uptc.EventTracker.domain.model.EventTicket;
 import co.edu.uptc.EventTracker.domain.repository.EventRepository;
 import co.edu.uptc.EventTracker.domain.service.EventService;
 import co.edu.uptc.EventTracker.persistence.enums.EventStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

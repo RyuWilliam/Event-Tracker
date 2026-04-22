@@ -1,4 +1,4 @@
-package co.edu.uptc.EventTracker;
+package co.edu.uptc.EventTracker.model.service;
 
 import co.edu.uptc.EventTracker.domain.model.*;
 import co.edu.uptc.EventTracker.domain.repository.*;
