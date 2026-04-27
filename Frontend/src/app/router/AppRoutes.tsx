@@ -3,7 +3,6 @@ import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage, EventsPage } 
 import { ExternalEventsPage, FavoritesPage } from "@/features/events"
 import { RegisterPage, LoginPage } from "@/features/auth"
 import { MyPurchasesPage, EventDirectPurchasePage } from "@/features/tickets"
-import { CartPage } from "@/features/cart"
 import { ProtectedRoute, GuestRoute } from "./ProtectedRoute"
 import { AppLayout } from "@/core/layouts/AppLayout"
 
@@ -29,10 +28,10 @@ export const routes = [
         Component: ExternalEventsPage,
       },
 
-      // Cart page (no auth required)
+      // Deprecated cart entrypoint (temporary redirect during transition)
       {
         path: "cart",
-        Component: CartPage,
+        element: <Navigate to="/events" replace />,
       },
 
       // Guest-only routes (redirect away if already logged in)
