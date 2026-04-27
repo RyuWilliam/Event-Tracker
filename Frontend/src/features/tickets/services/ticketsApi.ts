@@ -6,16 +6,6 @@ import { getAuthHeaders } from "@/features/auth"
 
 const BASE_URL = getApiBaseUrl()
 
-export async function getEventTickets(eventId: number): Promise<EventTicket[]> {
-  const response = await fetch(`${BASE_URL}/events/${eventId}/tickets`, {
-    headers: getAuthHeaders(),
-  })
-  if (!response.ok) {
-    throw new Error(`Failed to fetch event tickets: ${response.status}`)
-  }
-  return response.json()
-}
-
 export async function getTicket(ticketId: number): Promise<EventTicket> {
   const response = await fetch(`${BASE_URL}/tickets/${ticketId}`, {
     headers: getAuthHeaders(),
