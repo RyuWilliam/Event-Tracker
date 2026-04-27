@@ -40,6 +40,32 @@ function formatEventDate(date: string): string {
   })
 }
 
+function getPurchaseErrorMessage(error: unknown): string {
+  const status =
+    typeof error === "object" && error !== null && "status" in error
+      ? (error as { status?: number }).status
+      : undefined
+  const apiMessage = error instanceof Error ? error.message : ""
+
+  if (status === 401 || status === 403) {
+    return "Your session is no longer valid. Please sign in again and retry."
+  }
+
+  if (status === 409) {
+    return apiMessage || "Ticket availability changed. Please review quantities and try again."
+  }
+
+  if (status === 400) {
+    return apiMessage || "Invalid purchase request. Please review ticket quantities and retry."
+  }
+
+  if (status && status >= 500) {
+    return "We could not complete your purchase due to a server issue. Please try again in a moment."
+  }
+
+  return apiMessage || "Purchase failed. Please try again."
+}
+
 export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProps) {
   const navigate = useNavigate()
   const { purchase, loading: purchasing } = useTicketPurchase()
@@ -94,6 +120,9 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
     (sum, item) => sum + item.quantity * item.ticket.price,
     0,
   )
+  const hasAvailableTickets = tickets.some((ticket) => getAvailableQuantity(ticket) > 0)
+  const isEventPurchasable = event?.status === "ACTIVE"
+  const canSubmitPurchase = Boolean(event) && isEventPurchasable && hasAvailableTickets && totalQuantity > 0 && !purchasing
 
   const handleQuantityDelta = (ticket: EventTicket, delta: number) => {
     if (!ticket.id) {
@@ -109,6 +138,16 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
   }
 
   const handlePurchase = async () => {
+    if (!isEventPurchasable) {
+      toast.error("This event is no longer available for purchase")
+      return
+    }
+
+    if (!hasAvailableTickets) {
+      toast.error("All tickets for this event are sold out")
+      return
+    }
+
     if (selectedItems.length === 0) {
       toast.error("Select at least one ticket before purchasing")
       return
@@ -126,8 +165,7 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
       toast.success(`Successfully purchased ${totalPurchased} ticket${totalPurchased > 1 ? "s" : ""}!`)
       navigate("/my-purchases")
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Purchase failed"
-      toast.error(message)
+      toast.error(getPurchaseErrorMessage(error))
     }
   }
 
@@ -180,6 +218,11 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
           </div>
           <h1 className="text-2xl font-bold text-foreground">{event.name}</h1>
           <p className="text-sm text-muted-foreground">Select ticket quantities and complete your purchase.</p>
+          {!isEventPurchasable && (
+            <div className="mt-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              Ticket sales are closed because this event is currently {event.status.toLowerCase()}.
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -216,7 +259,7 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
                         <Button
                           size="icon"
                           variant="outline"
-                          disabled={soldOut || selected <= 0}
+                          disabled={soldOut || selected <= 0 || !isEventPurchasable}
                           onClick={() => handleQuantityDelta(ticket, -1)}
                         >
                           <Minus className="h-4 w-4" />
@@ -225,7 +268,7 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
                         <Button
                           size="icon"
                           variant="outline"
-                          disabled={soldOut || selected >= available}
+                          disabled={soldOut || selected >= available || !isEventPurchasable}
                           onClick={() => handleQuantityDelta(ticket, 1)}
                         >
                           <Plus className="h-4 w-4" />
@@ -269,10 +312,16 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
                 </div>
               </div>
 
-              <Button className="w-full" disabled={totalQuantity === 0 || purchasing} onClick={handlePurchase}>
+              <Button className="w-full" disabled={!canSubmitPurchase} onClick={handlePurchase}>
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 {purchasing ? "Processing..." : "Complete Purchase"}
               </Button>
+              {!hasAvailableTickets && (
+                <p className="text-sm text-muted-foreground">This event is sold out.</p>
+              )}
+              {!isEventPurchasable && (
+                <p className="text-sm text-muted-foreground">Purchases are unavailable for this event status.</p>
+              )}
             </CardContent>
           </Card>
         </div>
