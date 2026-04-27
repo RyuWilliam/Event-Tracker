@@ -13,3 +13,4 @@ export { MyPurchasesView } from "./components/MyPurchasesView"
 
 // Pages
 export { MyPurchasesPage } from "./pages/MyPurchasesPage"
+export { EventDirectPurchasePage } from "./pages/EventDirectPurchasePage"
