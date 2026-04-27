@@ -27,7 +27,7 @@ export function EventTicketsView({
 
   const handleGoToPurchase = () => {
     if (!isAuthenticated) {
-      openAuthPopup()
+      openAuthPopup({ redirectTo: `/events/${eventId}/purchase` })
       return
     }
 

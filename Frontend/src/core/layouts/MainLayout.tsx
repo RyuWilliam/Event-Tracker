@@ -71,7 +71,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 </Button>
               </>
             ) : (
-              <Button variant="default" size="sm" onClick={openAuthPopup} className="ml-2">
+              <Button variant="default" size="sm" onClick={() => openAuthPopup()} className="ml-2">
                 <LogIn className="h-4 w-4 mr-2" />
                 Login
               </Button>
