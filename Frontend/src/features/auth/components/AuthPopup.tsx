@@ -14,7 +14,7 @@ import type { LoginRequest, RegisterRequest, AuthResponse } from "../types/auth.
 type AuthTab = "login" | "register"
 
 export function AuthPopup() {
-  const { isOpen, close } = useAuthPrompt()
+  const { isOpen, close, redirectTo, clearRedirect } = useAuthPrompt()
   const { isAuthenticated, role } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<AuthTab>("login")
@@ -24,12 +24,22 @@ export function AuthPopup() {
   useEffect(() => {
     if (!isAuthenticated || !role) return
 
-    // Close the popup if it is open, then redirect by role.
     if (isOpen) {
       close()
     }
-    navigate(role === "ROLE_ADMIN" ? "/admin" : "/events", { replace: true })
-  }, [isOpen, isAuthenticated, role, close, navigate])
+
+    let targetPath: string
+    if (role === "ROLE_ADMIN") {
+      targetPath = "/admin"
+    } else if (redirectTo && redirectTo.startsWith("/events/")) {
+      targetPath = redirectTo
+    } else {
+      targetPath = "/events"
+    }
+
+    navigate(targetPath, { replace: true })
+    clearRedirect()
+  }, [isOpen, isAuthenticated, role, close, navigate, redirectTo, clearRedirect])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
