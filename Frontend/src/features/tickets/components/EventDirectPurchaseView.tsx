@@ -13,7 +13,6 @@ import {
 import { Badge, Button, Card, CardContent, CardTitle } from "@/shared/ui"
 import { getEvent } from "@/features/events/services/eventsApi"
 import { useTicketPurchase } from "../hooks/useTicketPurchase"
-import { getEventTickets } from "../services/ticketsApi"
 import type { DirectPurchaseSelection } from "../types/ticket.types"
 import type { Event, EventTicket } from "@/features/events"
 
@@ -55,10 +54,8 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
     setLoadError(null)
 
     try {
-      const [eventData, ticketsData] = await Promise.all([
-        getEvent(eventId),
-        getEventTickets(eventId),
-      ])
+      const eventData = await getEvent(eventId)
+      const ticketsData = Array.isArray(eventData.tickets) ? eventData.tickets : []
 
       setEvent(eventData)
       setTickets(ticketsData)

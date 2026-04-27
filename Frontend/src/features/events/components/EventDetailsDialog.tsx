@@ -31,7 +31,8 @@ export function EventDetailsDialog({
   onOpenChange,
 }: EventDetailsDialogProps) {
   const imageUrl = event ? getImageUrl(event.imageUrl) : null
-  const hasTickets = event?.tickets && event.tickets.length > 0
+  const eventId = event?.id
+  const hasTickets = Boolean(eventId) && Boolean(event?.tickets && event.tickets.length > 0)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,10 +89,20 @@ export function EventDetailsDialog({
 
               {hasTickets ? (
                 <div className="space-y-4 border-t pt-4">
-                  <EventTicketsView
-                    eventName={event.name}
-                    tickets={event.tickets}
-                  />
+                  {eventId ? (
+                    <EventTicketsView
+                      eventId={eventId}
+                      eventName={event.name}
+                      tickets={event.tickets}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center p-6 bg-muted/50 rounded-lg">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <AlertCircle className="h-5 w-5" />
+                        <p className="text-sm">This event is not available for purchase yet</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center p-6 bg-muted/50 rounded-lg">
