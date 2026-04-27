@@ -37,3 +37,9 @@ export interface PurchaseTicketPayload {
     }
   }[]
 }
+
+export interface DirectPurchaseSelection {
+  eventTicketId: number
+  quantity: number
+  ticket: EventTicket
+}
