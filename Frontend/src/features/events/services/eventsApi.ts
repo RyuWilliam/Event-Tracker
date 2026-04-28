@@ -83,12 +83,16 @@ export async function getPopularEvents(): Promise<Event[]> {
 }
 
 export async function refreshEventsStatus(): Promise<void> {
-  const response = await fetch(`${BASE_URL}/events/refresh`, {
-    method: "POST",
-    headers: getAuthHeaders(),
-  })
-  if (!response.ok) {
-    console.error(`Failed to refresh events status: ${response.status}`)
+  try {
+    const response = await fetch(`${BASE_URL}/events/refresh`, {
+      method: "GET",
+    })
+    
+    if (!response.ok) {
+      console.error(`Failed to refresh events status: ${response.status}`)
+    }
+  } catch (err) {
+    console.error("Error calling refresh endpoint:", err)
   }
 }
 
