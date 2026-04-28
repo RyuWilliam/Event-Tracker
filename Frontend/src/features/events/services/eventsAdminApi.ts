@@ -42,6 +42,16 @@ export async function deleteEvent(id: number): Promise<void> {
   }
 }
 
+export async function getTotalSales(): Promise<number> {
+  const response = await fetch(`${BASE_URL}/events/total_sales`, {
+    headers: getAuthHeaders(),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch total sales: ${response.status}`)
+  }
+  return response.json()
+}
+
 export async function createEvent(event: Omit<Event, "id">): Promise<Event> {
   const response = await fetch(`${BASE_URL}/events`, {
     method: "POST",

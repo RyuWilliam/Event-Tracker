@@ -53,11 +53,10 @@ export function EventFilters({
         <div className="flex-1">
           <label className="text-sm font-medium block mb-2">Filter by Status</label>
           <select
-            value={selectedStatus ?? ""}
-            onChange={(e) => onStatusChange((e.target.value as EventStatus) || null)}
+            value={selectedStatus ?? "ACTIVE"}
+            onChange={(e) => onStatusChange((e.target.value as EventStatus) || "ACTIVE")}
             className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background"
           >
-            <option value="">All Status</option>
             <option value="ACTIVE">Active</option>
             <option value="FINISHED">Finished</option>
             <option value="CANCELLED">Cancelled</option>
