@@ -10,5 +10,4 @@ export type NavItem = {
 export const adminNavItems: NavItem[] = [
   { title: "Home", url: "/admin", icon: Home },
   { title: "Events", url: "/admin/events", icon: Calendar },
-  { title: "Users", url: "/admin/users", icon: Users },
 ]

@@ -81,5 +81,16 @@ public class EventService {
     }
 
 
+    public double getTotalSales() {
+        return eventRepository.findAll().stream()
+                .flatMap(event -> event.getTickets().stream())
+                .mapToDouble(ticket ->
+                        ticket.getSoldQuantity() * ticket.getPrice()
+                )
+                .sum();
+    }
+
+
+
 
 }

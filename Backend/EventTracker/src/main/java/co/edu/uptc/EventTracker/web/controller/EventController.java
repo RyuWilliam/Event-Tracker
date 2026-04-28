@@ -86,6 +86,11 @@ public class EventController {
         return ResponseEntity.ok(eventService.getMostPopular());
     }
 
+    @GetMapping("/total_sales")
+    public ResponseEntity<Double> getTotalSales(){
+        return ResponseEntity.ok(eventService.getTotalSales());
+    }
+
 
 
 
