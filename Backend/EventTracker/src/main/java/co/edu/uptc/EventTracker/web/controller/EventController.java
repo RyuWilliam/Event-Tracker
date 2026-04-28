@@ -74,7 +74,7 @@ public class EventController {
     }
 
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<Void> refreshStatus(){
         eventService.refreshStatus();
         return ResponseEntity.ok().build();
