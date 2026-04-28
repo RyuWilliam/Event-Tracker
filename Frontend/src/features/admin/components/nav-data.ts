@@ -1,4 +1,4 @@
-import { Home, Calendar, Users } from "lucide-react"
+import { Home, Calendar } from "lucide-react"
 import type { ElementType } from "react"
 
 export type NavItem = {

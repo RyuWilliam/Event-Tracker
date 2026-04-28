@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { DollarSign, Calendar, Users, Activity, TrophyIcon, Ticket } from "lucide-react"
-import { H1, Card, CardContent, Badge } from "@/shared/ui"
+import { H1, Card, CardContent } from "@/shared/ui"
 import { getAllEvents, getTotalSales } from "@/features/events/services/eventsAdminApi"
 import { getAllUsers } from "@/features/admin/services/usersApi"
 import { getPopularEvents } from "@/features/events/services/eventsApi"
