@@ -63,29 +63,29 @@ export function EventTicketsView({
                     <div className="mb-2 flex items-center gap-2">
                       <CardTitle className="text-base">{ticket.ticketType.name}</CardTitle>
                       <Badge className={isAvailable ? "bg-green-600 text-white hover:bg-green-700" : "bg-black text-white hover:bg-black/90"}>
-                        {isAvailable ? `${available} available` : "Sold out"}
+                        {isAvailable ? "Available" : "Sold out"}
                       </Badge>
                     </div>
                     <div className="space-y-1 text-sm font-medium text-foreground">
                       <p>Price: ${ticket.price.toFixed(2)}</p>
                     </div>
                   </div>
-
-                  <Button
-                    onClick={handleGoToPurchase}
-                    disabled={!isAvailable}
-                    size="lg"
-                    className="gap-2 px-6"
-                  >
-                    <ShoppingBag className="h-4 w-4" />
-                    Buy
-                  </Button>
                 </div>
               </CardContent>
             </Card>
           )
         })}
       </div>
+
+      <Button
+        onClick={handleGoToPurchase}
+        size="lg"
+        className="w-full gap-2 mt-4"
+        disabled={tickets.every((t) => ((t.totalQuantity ?? 0) - (t.soldQuantity ?? 0)) <= 0)}
+      >
+        <ShoppingBag className="h-4 w-4" />
+        Buy Tickets
+      </Button>
     </div>
   )
 }

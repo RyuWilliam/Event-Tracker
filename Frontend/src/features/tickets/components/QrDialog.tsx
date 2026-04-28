@@ -73,13 +73,19 @@ export function QrDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="text-sm text-muted-foreground space-y-1">
-            <p>
-              <strong>Event:</strong> {eventName}
-            </p>
-            <p>
-              <strong>Type:</strong> {ticketType}
-            </p>
+          <div className="text-sm text-foreground space-y-2 mb-4 bg-muted p-4 rounded-lg">
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs uppercase tracking-wider">Event</span>
+              <span className="font-semibold text-lg">{eventName}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs uppercase tracking-wider">Tickets</span>
+              <div className="font-medium mt-1">
+                {ticketType.split(' | ').map((type, i) => (
+                  <div key={i}>{type}</div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {loading && (
