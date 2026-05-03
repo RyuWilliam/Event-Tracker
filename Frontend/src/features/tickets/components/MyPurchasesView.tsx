@@ -201,9 +201,16 @@ export function MyPurchasesView() {
                     </div>
                     <div className="p-4 flex flex-1 flex-col justify-between">
                       <div className="space-y-3">
-                        <h3 className="text-xl font-semibold line-clamp-2" title={group.eventName}>
-                          {group.eventName}
-                        </h3>
+                        <div>
+                          {eventInfo?.status === "CANCELLED" && (
+                            <Badge variant="destructive" className="mb-2 bg-red-500 hover:bg-red-600">
+                              Cancelled
+                            </Badge>
+                          )}
+                          <h3 className="text-xl font-semibold line-clamp-2" title={group.eventName}>
+                            {group.eventName}
+                          </h3>
+                        </div>
                         <div className="space-y-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Ticket className="h-4 w-4 shrink-0 text-foreground" />
