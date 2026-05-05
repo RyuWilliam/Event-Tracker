@@ -217,8 +217,8 @@ export async function deleteEventImage(eventId: number): Promise<void> {
 }
 
 export async function getMyFavorites(): Promise<Event[]> {
-  // The backend reads the userId from the JWT token; the path variable is ignored.
-  const response = await fetch(`${BASE_URL}/users/favorites/0`, {
+  // The backend reads the userId from the JWT token; the path variable is no longer needed.
+  const response = await fetch(`${BASE_URL}/users/favorites`, {
     headers: getAuthHeaders(),
   })
 

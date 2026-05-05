@@ -52,7 +52,7 @@ public class UserController {
         return userService.getFavoriteReport();
     }
 
-    @GetMapping("/favorites/{userId}")
+    @GetMapping("/favorites")
     public List<Event> getFavorites(){
         Integer userId = getAuthenticatedUserId();
         return userService.getFavorites(userId);
@@ -67,11 +67,17 @@ public class UserController {
 
 
     private Integer getAuthenticatedUserId() {
-
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        UserDetailsImpl userDetails =
-                (UserDetailsImpl) authentication.getPrincipal();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Usuario no autenticado");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (!(principal instanceof UserDetailsImpl userDetails)) {
+            throw new IllegalStateException("Principal no válido");
+        }
 
         return userDetails.getId();
     }

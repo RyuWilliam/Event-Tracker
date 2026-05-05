@@ -136,3 +136,17 @@ export async function createTicketType(name: string): Promise<TicketType> {
 
   return response.json()
 }
+
+export async function modifyTicketType(id: number, name: string): Promise<TicketType> {
+  const response = await fetch(`${BASE_URL}/tickets/type/modify/${id}?name=${encodeURIComponent(name)}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, "Failed to modify ticket type")
+  }
+
+  return response.json()
+}
+
