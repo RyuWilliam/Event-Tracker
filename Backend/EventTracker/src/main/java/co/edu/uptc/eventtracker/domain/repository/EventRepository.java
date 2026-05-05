@@ -1,0 +1,24 @@
+package co.edu.uptc.eventtracker.domain.repository;
+
+import co.edu.uptc.eventtracker.domain.model.Event;
+import co.edu.uptc.eventtracker.persistence.enums.EventStatus;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface EventRepository {
+
+    Event save(Event event);
+    Optional<Event> findById(Integer id);
+    Event findByEventTicketId(Integer id);
+    List<Event> findAll();
+    void deleteById(Integer id);
+    Event modify(Integer id, Event event);
+    boolean existById(Integer id);
+    List<Event> findActive();
+    List<Event> findByName(String name);
+    List<Event> findByStatus(EventStatus status);
+    List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
+    boolean isActive(Integer id);
+}
