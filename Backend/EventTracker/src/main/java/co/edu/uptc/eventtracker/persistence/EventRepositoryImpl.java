@@ -138,45 +138,53 @@ public class EventRepositoryImpl implements EventRepository {
         EventEntity entity = eventJpaRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException(id));
 
-        updateBasicFields(entity, event);
-        updateCategories(entity, event);
-        updateTickets(entity, event.getTickets());
+        updateBasicEventFields(entity, event);
+        updateEventCategories(entity, event);
+        updateEventTickets(entity, event);
 
         return eventMapper.toEvent(eventJpaRepository.save(entity));
     }
-    private void updateBasicFields(EventEntity entity, Event event) {
+
+    private void updateBasicEventFields(EventEntity entity, Event event) {
         Optional.ofNullable(event.getName()).ifPresent(entity::setName);
         Optional.ofNullable(event.getDescription()).ifPresent(entity::setDescription);
         Optional.ofNullable(event.getDate()).ifPresent(entity::setDate);
         Optional.ofNullable(event.getStatus()).ifPresent(entity::setStatus);
         Optional.ofNullable(event.getImageUrl()).ifPresent(entity::setImageUrl);
     }
-    private void updateCategories(EventEntity entity, Event event) {
+
+    private void updateEventCategories(EventEntity entity, Event event) {
         Optional.ofNullable(event.getCategories()).ifPresent(cats ->
                 entity.setCategories(categoryMapper.toEntities(cats))
         );
     }
-    private void updateTickets(EventEntity entity, List<EventTicket> tickets) {
-        if (tickets == null) return;
 
-        List<Integer> incomingIds = tickets.stream()
+    private void updateEventTickets(EventEntity entity, Event event) {
+        Optional.ofNullable(event.getTickets()).ifPresent(tickets -> {
+            List<Integer> incomingIds = extractIncomingTicketIds(tickets);
+            removeDeletedTickets(entity, incomingIds);
+            addOrModifyTickets(entity, tickets);
+        });
+    }
+
+    private List<Integer> extractIncomingTicketIds(List<EventTicket> tickets) {
+        return tickets.stream()
                 .filter(t -> t.getId() != null)
                 .map(EventTicket::getId)
                 .toList();
-
-        removeTickets(entity, incomingIds);
-        processTickets(entity, tickets);
     }
-    private void removeTickets(EventEntity entity, List<Integer> incomingIds) {
+
+    private void removeDeletedTickets(EventEntity entity, List<Integer> incomingIds) {
         entity.getTickets().removeIf(existing -> {
             if (!incomingIds.contains(existing.getId())) {
-                validateTicketDeletion(existing);
+                validateTicketDeletable(existing);
                 return true;
             }
             return false;
         });
     }
-    private void validateTicketDeletion(EventTicketEntity ticket) {
+
+    private void validateTicketDeletable(EventTicketEntity ticket) {
         if (ticket.getSoldQuantity() > 0) {
             throw new IllegalStateException(
                     "El ticket '" + ticket.getTicketType().getName() +
@@ -184,15 +192,17 @@ public class EventRepositoryImpl implements EventRepository {
             );
         }
     }
-    private void processTickets(EventEntity entity, List<EventTicket> tickets) {
+
+    private void addOrModifyTickets(EventEntity entity, List<EventTicket> tickets) {
         tickets.forEach(ticket -> {
             if (ticket.getId() == null) {
                 addNewTicket(entity, ticket);
             } else {
-                updateExistingTicket(entity, ticket);
+                modifyExistingTicket(entity, ticket);
             }
         });
     }
+
     private void addNewTicket(EventEntity entity, EventTicket ticket) {
         EventTicketEntity newTicket = new EventTicketEntity();
         newTicket.setEvent(entity);
@@ -202,28 +212,40 @@ public class EventRepositoryImpl implements EventRepository {
         newTicket.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
         entity.getTickets().add(newTicket);
     }
-    private void updateExistingTicket(EventEntity entity, EventTicket ticket) {
+
+    private void modifyExistingTicket(EventEntity entity, EventTicket ticket) {
         entity.getTickets().stream()
                 .filter(t -> t.getId().equals(ticket.getId()))
                 .findFirst()
-                .ifPresent(existing -> applyTicketChanges(existing, ticket));
+                .ifPresent(existing -> {
+                    validateTicketModifiable(existing, ticket);
+                    updateTicketFields(existing, ticket);
+                });
     }
-    private void applyTicketChanges(EventTicketEntity existing, EventTicket ticket) {
-        boolean priceChanged = ticket.getPrice() != null &&
-                !ticket.getPrice().equals(existing.getPrice());
 
-        boolean quantityChanged = ticket.getTotalQuantity() != null &&
-                !ticket.getTotalQuantity().equals(existing.getTotalQuantity());
-
-        if (existing.getSoldQuantity() > 0 && (priceChanged || quantityChanged)) {
+    private void validateTicketModifiable(EventTicketEntity existing, EventTicket incoming) {
+        if (existing.getSoldQuantity() > 0 &&
+                (isPriceChanged(existing, incoming) || isQuantityChanged(existing, incoming))) {
             throw new IllegalStateException(
                     "El ticket '" + existing.getTicketType().getName() +
                             "' ya tiene ventas registradas y no puede modificarse"
-            );
+            );  
         }
-
-        Optional.ofNullable(ticket.getPrice()).ifPresent(existing::setPrice);
-        Optional.ofNullable(ticket.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
     }
 
+    private boolean isPriceChanged(EventTicketEntity existing, EventTicket incoming) {
+        return incoming.getPrice() != null && !incoming.getPrice().equals(existing.getPrice());
+    }
+
+    private boolean isQuantityChanged(EventTicketEntity existing, EventTicket incoming) {
+        return incoming.getTotalQuantity() != null &&
+                !incoming.getTotalQuantity().equals(existing.getTotalQuantity());
+    }
+
+    private void updateTicketFields(EventTicketEntity existing, EventTicket incoming) {
+        Optional.ofNullable(incoming.getPrice()).ifPresent(existing::setPrice);
+        Optional.ofNullable(incoming.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
+        Optional.ofNullable(incoming.getTicketType())
+                .ifPresent(tt -> existing.setTicketType(ticketTypeMapper.toEntity(tt)));
+    }
 }

@@ -37,14 +37,13 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.findAll());
     }
     @PutMapping("/type/modify/{id}")
-    public ResponseEntity<TicketType> modifyType(@RequestParam Integer id, @RequestParam String name){
+    public ResponseEntity<TicketType> modifyType(@PathVariable Integer id, @RequestParam String name){
         return ResponseEntity.ok(ticketService.modifyType(id,name));
     }
 
     @GetMapping("/type/{id}")
     public ResponseEntity<Optional<TicketType>> getTypeById(@PathVariable Integer id){
         return ResponseEntity.ok(ticketService.getTypeById(id));
-
 
     }
 
@@ -67,17 +66,23 @@ public class TicketController {
     @GetMapping(value = "/purchase/{id}/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getQr(@PathVariable Integer id) {
         TicketPurchase ticketPurchase = ticketService.getPurchaseById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Purchase not found"));
         byte[] qr = ticketService.generateQrFromPurchase(ticketPurchase);
         return ResponseEntity.ok(qr);
     }
 
     private Integer getAuthenticatedUserId() {
-
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        UserDetailsImpl userDetails =
-                (UserDetailsImpl) authentication.getPrincipal();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("user not authenticated");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (!(principal instanceof UserDetailsImpl userDetails)) {
+            throw new IllegalStateException("invalid user details");
+        }
 
         return userDetails.getId();
     }

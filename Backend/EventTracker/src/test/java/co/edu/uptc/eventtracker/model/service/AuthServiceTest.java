@@ -5,7 +5,6 @@ import co.edu.uptc.eventtracker.persistence.entities.UserEntity;
 import co.edu.uptc.eventtracker.persistence.enums.Role;
 import co.edu.uptc.eventtracker.security.JwtService;
 import co.edu.uptc.eventtracker.web.dto.AuthResponse;
-import co.edu.uptc.eventtracker.web.dto.LoginRequest;
 import co.edu.uptc.eventtracker.web.dto.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,13 +46,11 @@ class AuthServiceTest {
     //  Datos compartidos entre pruebas
     // ============================================================
     private RegisterRequest registerRequest;
-    private LoginRequest loginRequest;
     private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
         registerRequest = new RegisterRequest("Juan", "juan@mail.com", "pass123");
-        loginRequest = new LoginRequest("juan@mail.com", "pass123");
         userEntity = new UserEntity("Juan", "juan@mail.com", "hashed_pass", Role.ROLE_USER);
     }
 

@@ -11,11 +11,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/tracker/api': {
-        target: 'http://localhost:7022',
+        target: 'http://127.0.0.1:7022',
         changeOrigin: true,
       },
       '/images': {
-        target: 'http://localhost:7022/tracker/api',
+        target: 'http://127.0.0.1:7022/tracker/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/images/, '/images'),
       },
