@@ -138,70 +138,114 @@ public class EventRepositoryImpl implements EventRepository {
         EventEntity entity = eventJpaRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException(id));
 
+        updateBasicEventFields(entity, event);
+        updateEventCategories(entity, event);
+        updateEventTickets(entity, event);
+
+        return eventMapper.toEvent(eventJpaRepository.save(entity));
+    }
+
+    private void updateBasicEventFields(EventEntity entity, Event event) {
         Optional.ofNullable(event.getName()).ifPresent(entity::setName);
         Optional.ofNullable(event.getDescription()).ifPresent(entity::setDescription);
         Optional.ofNullable(event.getDate()).ifPresent(entity::setDate);
         Optional.ofNullable(event.getStatus()).ifPresent(entity::setStatus);
         Optional.ofNullable(event.getImageUrl()).ifPresent(entity::setImageUrl);
+    }
+
+    private void updateEventCategories(EventEntity entity, Event event) {
         Optional.ofNullable(event.getCategories()).ifPresent(cats ->
                 entity.setCategories(categoryMapper.toEntities(cats))
         );
-        Optional.ofNullable(event.getTickets()).ifPresent(tickets -> {
-            List<Integer> incomingIds = tickets.stream()
-                    .filter(t -> t.getId() != null)
-                    .map(EventTicket::getId)
-                    .toList();
-
-            // Eliminar tickets que no vienen en la lista y no tienen ventas
-            entity.getTickets().removeIf(existing -> {
-                if (!incomingIds.contains(existing.getId())) {
-                    if (existing.getSoldQuantity() > 0) {
-                        throw new IllegalStateException(
-                                "El ticket '" + existing.getTicketType().getName() +
-                                        "' ya tiene ventas y no puede eliminarse"
-                        );
-                    }
-                    return true;
-                }
-                return false;
-            });
-
-            // Agregar o modificar
-            tickets.forEach(ticket -> {
-                if (ticket.getId() == null) {
-                    EventTicketEntity newTicket = new EventTicketEntity();
-                    newTicket.setEvent(entity);
-                    newTicket.setPrice(ticket.getPrice());
-                    newTicket.setTotalQuantity(ticket.getTotalQuantity());
-                    newTicket.setSoldQuantity(0);
-                    newTicket.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
-                    entity.getTickets().add(newTicket);
-                } else {
-                    entity.getTickets().stream()
-                            .filter(t -> t.getId().equals(ticket.getId()))
-                            .findFirst()
-                            .ifPresent(existing -> {
-                                boolean priceChanged = ticket.getPrice() != null &&
-                                        !ticket.getPrice().equals(existing.getPrice());
-                                boolean quantityChanged = ticket.getTotalQuantity() != null &&
-                                        !ticket.getTotalQuantity().equals(existing.getTotalQuantity());
-
-                                if (existing.getSoldQuantity() > 0 && (priceChanged || quantityChanged)) {
-                                    throw new IllegalStateException(
-                                            "El ticket '" + existing.getTicketType().getName() +
-                                                    "' ya tiene ventas registradas y no puede modificarse"
-                                    );
-                                }
-
-                                Optional.ofNullable(ticket.getPrice()).ifPresent(existing::setPrice);
-                                Optional.ofNullable(ticket.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
-                                Optional.ofNullable(ticket.getTicketType())
-                                        .ifPresent(tt -> existing.setTicketType(ticketTypeMapper.toEntity(tt)));
-                            });
-                }
-            });
-        });
-        return eventMapper.toEvent(eventJpaRepository.save(entity));
     }
 
+    private void updateEventTickets(EventEntity entity, Event event) {
+        Optional.ofNullable(event.getTickets()).ifPresent(tickets -> {
+            List<Integer> incomingIds = extractIncomingTicketIds(tickets);
+            removeDeletedTickets(entity, incomingIds);
+            addOrModifyTickets(entity, tickets);
+        });
+    }
+
+    private List<Integer> extractIncomingTicketIds(List<EventTicket> tickets) {
+        return tickets.stream()
+                .filter(t -> t.getId() != null)
+                .map(EventTicket::getId)
+                .toList();
+    }
+
+    private void removeDeletedTickets(EventEntity entity, List<Integer> incomingIds) {
+        entity.getTickets().removeIf(existing -> {
+            if (!incomingIds.contains(existing.getId())) {
+                validateTicketDeletable(existing);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void validateTicketDeletable(EventTicketEntity ticket) {
+        if (ticket.getSoldQuantity() > 0) {
+            throw new IllegalStateException(
+                    "El ticket '" + ticket.getTicketType().getName() +
+                            "' ya tiene ventas y no puede eliminarse"
+            );
+        }
+    }
+
+    private void addOrModifyTickets(EventEntity entity, List<EventTicket> tickets) {
+        tickets.forEach(ticket -> {
+            if (ticket.getId() == null) {
+                addNewTicket(entity, ticket);
+            } else {
+                modifyExistingTicket(entity, ticket);
+            }
+        });
+    }
+
+    private void addNewTicket(EventEntity entity, EventTicket ticket) {
+        EventTicketEntity newTicket = new EventTicketEntity();
+        newTicket.setEvent(entity);
+        newTicket.setPrice(ticket.getPrice());
+        newTicket.setTotalQuantity(ticket.getTotalQuantity());
+        newTicket.setSoldQuantity(0);
+        newTicket.setTicketType(ticketTypeMapper.toEntity(ticket.getTicketType()));
+        entity.getTickets().add(newTicket);
+    }
+
+    private void modifyExistingTicket(EventEntity entity, EventTicket ticket) {
+        entity.getTickets().stream()
+                .filter(t -> t.getId().equals(ticket.getId()))
+                .findFirst()
+                .ifPresent(existing -> {
+                    validateTicketModifiable(existing, ticket);
+                    updateTicketFields(existing, ticket);
+                });
+    }
+
+    private void validateTicketModifiable(EventTicketEntity existing, EventTicket incoming) {
+        if (existing.getSoldQuantity() > 0 &&
+                (isPriceChanged(existing, incoming) || isQuantityChanged(existing, incoming))) {
+            throw new IllegalStateException(
+                    "El ticket '" + existing.getTicketType().getName() +
+                            "' ya tiene ventas registradas y no puede modificarse"
+            );  
+        }
+    }
+
+    private boolean isPriceChanged(EventTicketEntity existing, EventTicket incoming) {
+        return incoming.getPrice() != null && !incoming.getPrice().equals(existing.getPrice());
+    }
+
+    private boolean isQuantityChanged(EventTicketEntity existing, EventTicket incoming) {
+        return incoming.getTotalQuantity() != null &&
+                !incoming.getTotalQuantity().equals(existing.getTotalQuantity());
+    }
+
+    private void updateTicketFields(EventTicketEntity existing, EventTicket incoming) {
+        Optional.ofNullable(incoming.getPrice()).ifPresent(existing::setPrice);
+        Optional.ofNullable(incoming.getTotalQuantity()).ifPresent(existing::setTotalQuantity);
+        Optional.ofNullable(incoming.getTicketType())
+                .ifPresent(tt -> existing.setTicketType(ticketTypeMapper.toEntity(tt)));
+    }
 }
