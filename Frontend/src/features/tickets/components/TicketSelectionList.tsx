@@ -41,7 +41,7 @@ export function TicketSelectionList({
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base">{ticket.ticketType.name}</CardTitle>
                     <Badge variant={soldOut ? "destructive" : "secondary"}>
-                      {soldOut ? "Sold out" : `${available} available`}
+                      {soldOut ? "Sold out" : "Available"}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">${ticket.price.toFixed(2)} each</p>

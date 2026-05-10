@@ -4,10 +4,6 @@ import { Badge, Card, CardContent, H1, Input } from "@/shared/ui"
 import { getAllUsers } from "../services/usersApi"
 import type { User } from "../services/users.types"
 
-function roleBadgeVariant(role: string) {
-  return role === "ROLE_ADMIN" ? "default" : "secondary"
-}
-
 function roleLabel(role: string) {
   return role === "ROLE_ADMIN" ? "Admin" : "User"
 }
@@ -100,7 +96,7 @@ export function UsersPage() {
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
 
-                  <Badge variant={roleBadgeVariant(user.role)} className="flex items-center gap-1 shrink-0">
+                  <Badge variant="outline" className={`flex items-center gap-1 shrink-0 border ${user.role === "ROLE_ADMIN" ? "border-blue-500 text-blue-600" : "border-emerald-500 text-emerald-600"}`}>
                     <RoleIcon role={user.role} />
                     {roleLabel(user.role)}
                   </Badge>
