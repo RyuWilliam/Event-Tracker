@@ -270,7 +270,13 @@ export function DashboardPage() {
                             {user.email}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
-                            <span className="px-2.5 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-medium uppercase">
+                            <span 
+                              className={`px-2.5 py-1 rounded-md text-xs font-medium uppercase border ${
+                                user.role === "ROLE_ADMIN" 
+                                  ? "border-blue-500 text-blue-600 bg-transparent" 
+                                  : "border-emerald-500 text-emerald-600 bg-transparent"
+                              }`}
+                            >
                               {user.role.replace("ROLE_", "")}
                             </span>
                           </td>
