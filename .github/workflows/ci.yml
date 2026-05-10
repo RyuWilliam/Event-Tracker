@@ -18,16 +18,50 @@ jobs:
       run:
         working-directory: Backend/EventTracker
 
+    # Variables de entorno para todo el job
+    env:
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5250/event_tracker_db
+      SPRING_DATASOURCE_USERNAME: EventAdmin
+      SPRING_DATASOURCE_PASSWORD: 0na93rF6WB
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: true
+      # Server
+      SERVER_PORT: 7022
+      SERVER_SERVLET_CONTEXT_PATH: /tracker/api
+      # Security JWT
+      APPLICATION_SECURITY_JWT_SECRET_KEY: D4xN2pW9qY7sB0tL6vR1fZ8mE3hK5uJ2aC9rT4pV7dG
+      APPLICATION_SECURITY_JWT_EXPIRATION: 86400000
+      APPLICATION_SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: 604800000
+      # Upload settings
+      APP_UPLOAD_DIR: uploads
+      APP_UPLOAD_MAX_SIZE: 5242880
+      APP_UPLOAD_ALLOWED_TYPES: image/jpeg,image/png,image/webp
+      # Admin user
+      APP_ADMIN_NAME: Admin
+      APP_ADMIN_EMAIL: admin@eventtracker.com
+      APP_ADMIN_PASSWORD: admin123
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: event_tracker_db
+          POSTGRES_PASSWORD: 0na93rF6WB
+          POSTGRES_USER: EventAdmin
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5250:5432
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Start PostgreSQL container
-        run: |
-          docker compose up -d postgres
-          echo "Waiting for PostgreSQL to be ready..."
-          sleep 10
-        working-directory: Backend/EventTracker
 
       - name: Set up JDK 24
         uses: actions/setup-java@v4
@@ -45,10 +79,17 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Task 1 - Build (Assemble)
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5250 -U EventAdmin; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Build (Assemble)
         run: ./gradlew assemble
 
-      - name: Task 2 - Test
+      - name: Run Tests
         run: ./gradlew test
 
   frontend-ci:
@@ -70,5 +111,5 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Task 1 - Build
+      - name: Build
         run: npm run build
