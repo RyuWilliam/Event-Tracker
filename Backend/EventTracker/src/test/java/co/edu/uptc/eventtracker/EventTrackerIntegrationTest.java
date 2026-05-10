@@ -41,42 +41,43 @@ class EventTrackerIntegrationTest {
 
     // ── Contenedor Postgres — mismo config que tu docker-compose ──
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest")
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("event_tracker_db")
             .withUsername("EventAdmin")
-            .withPassword("0na93rF6WB");
+            .withPassword("0na93rF6WB")
+            .withReuse(true);  // ← IMPORTANTE: reutiliza el contenedor
 
     // Sobreescribe las propiedades de datasource con los valores
     // del contenedor que Testcontainers levantó dinámicamente
     @DynamicPropertySource
     static void configureDataSource(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url",      postgres::getJdbcUrl);
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         // Crea las tablas automáticamente en el contenedor de prueba
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
     }
 
     @LocalServerPort
     int port;
 
-    @Autowired AuthService authService;
-    @Autowired EventService eventService;
+    @Autowired
+    AuthService authService;
+    @Autowired
+    EventService eventService;
     private RestTemplate restTemplate = new RestTemplate();
 
     {
         // Evita que RestTemplate lance excepción en 4xx/5xx
-        // así puedes hacer assertThat sobre el status normalmente
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse response) throws IOException {
-                return false; // nunca lanza excepción — tú manejas el status
+                return false;
             }
         });
     }
 
     // Verifica que Docker esté disponible antes de correr las pruebas
-    // Si no hay Docker, las pruebas se saltan (no fallan)
     @BeforeAll
     static void verificarDocker() {
         assumeTrue(
@@ -99,7 +100,7 @@ class EventTrackerIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.getAccessToken())
                 .isNotBlank()
-                .contains(".");   // formato JWT: header.payload.signature
+                .contains(".");
     }
 
     @Test
@@ -108,10 +109,10 @@ class EventTrackerIntegrationTest {
         RegisterRequest request = new RegisterRequest(
                 "Duplicado", "duplicado@mail.com", "pass123"
         );
-        authService.register(request);  // primera vez — ok
+        authService.register(request);
 
         org.assertj.core.api.Assertions.assertThatThrownBy(
-                        () -> authService.register(request)  // segunda vez — falla
+                        () -> authService.register(request)
                 ).isInstanceOf(RuntimeException.class)
                 .hasMessage("Email already registered");
     }
@@ -148,7 +149,6 @@ class EventTrackerIntegrationTest {
         Event saved = eventService.save(evento);
         eventService.deleteEvent(saved.getId());
 
-        // findAll retorna solo activos — el eliminado no debe estar
         List<Event> activos = eventService.findAll();
         assertThat(activos)
                 .isNotEmpty()
