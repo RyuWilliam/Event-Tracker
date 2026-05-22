@@ -29,7 +29,18 @@ export interface TicketResume {
   items: TicketResumeItem[]
 }
 
+export interface PaymentDetails {
+  userEmail: string
+  card: {
+    cardType: string
+    cardNumber: string
+    cardHolderName: string
+    csv?: string
+  }
+}
+
 export interface PurchaseTicketPayload {
+  payment: PaymentDetails
   items: {
     quantity: number
     eventTicket: {

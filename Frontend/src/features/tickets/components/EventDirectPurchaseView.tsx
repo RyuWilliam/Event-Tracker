@@ -11,6 +11,8 @@ import { getAvailableQuantity, getPurchaseErrorMessage } from "../utils/directPu
 import { EventDirectPurchaseHeader } from "./EventDirectPurchaseHeader"
 import { TicketSelectionList } from "./TicketSelectionList"
 import { DirectPurchaseSummaryCard } from "./DirectPurchaseSummaryCard"
+import { PaymentDialog } from "./PaymentDialog"
+import type { PaymentDetails } from "../types/ticket.types"
 
 interface EventDirectPurchaseViewProps {
   eventId: number
@@ -26,6 +28,7 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
   const [quantities, setQuantities] = useState<QuantityMap>({})
   const [loadingData, setLoadingData] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoadingData(true)
@@ -89,7 +92,7 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
     })
   }
 
-  const handlePurchase = async () => {
+  const handlePurchaseClick = () => {
     if (!isEventPurchasable) {
       toast.error("This event is no longer available for purchase")
       return
@@ -105,14 +108,20 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
       return
     }
 
+    setPaymentDialogOpen(true)
+  }
+
+  const handleConfirmPayment = async (paymentDetails: PaymentDetails) => {
     try {
       const ticketResume = await purchase({
+        payment: paymentDetails,
         items: selectedItems.map((item) => ({
           quantity: item.quantity,
           eventTicket: { id: item.eventTicketId },
         })),
       })
 
+      setPaymentDialogOpen(false)
       const totalPurchased = ticketResume?.totalQuantity ?? totalQuantity
       toast.success(`Successfully purchased ${totalPurchased} ticket${totalPurchased > 1 ? "s" : ""}!`)
       navigate("/my-purchases")
@@ -179,9 +188,17 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
           hasAvailableTickets={hasAvailableTickets}
           isEventPurchasable={isEventPurchasable}
           isPurchasing={purchasing}
-          onPurchase={handlePurchase}
+          onPurchase={handlePurchaseClick}
         />
       </div>
+
+      <PaymentDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        totalAmount={totalAmount}
+        onConfirm={handleConfirmPayment}
+        isPurchasing={purchasing}
+      />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import co.edu.uptc.eventtracker.domain.model.TicketType;
 import co.edu.uptc.eventtracker.domain.service.TicketService;
 import co.edu.uptc.eventtracker.domain.service.UserService;
 import co.edu.uptc.eventtracker.security.UserDetailsImpl;
+import co.edu.uptc.eventtracker.web.dto.PayAndPurchaseRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,11 +54,22 @@ public class TicketController {
         return ResponseEntity.noContent().build();
 
     }
-    @PostMapping("/purchase")
-    public ResponseEntity<TicketResume> registerSale(@RequestBody TicketPurchase purchase){
+    @PostMapping("/pay-and-purchase")
+    public ResponseEntity<TicketResume> payAndPurchase(@RequestBody PayAndPurchaseRequest request) {
         Integer userId = getAuthenticatedUserId();
-        purchase.setUser(userService.findById(userId));
-        return ResponseEntity.ok(ticketService.registerSale(purchase));
+
+        // Armar el TicketPurchase con el usuario autenticado
+        TicketPurchase purchase = new TicketPurchase(
+                userService.findById(userId),
+                request.getItems()
+        );
+
+        TicketResume resume = ticketService.processPaymentAndRegisterSale(
+                request.getPayment(),
+                purchase
+        );
+
+        return ResponseEntity.ok(resume);
     }
     @GetMapping("/purchase/{id}")
     public ResponseEntity<Optional<TicketPurchase>> getPurchaseById(@PathVariable Integer id){

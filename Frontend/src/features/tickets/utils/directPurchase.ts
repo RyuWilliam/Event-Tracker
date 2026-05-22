@@ -38,7 +38,7 @@ export function getPurchaseErrorMessage(error: unknown): string {
   }
 
   if (status && status >= 500) {
-    return "We could not complete your purchase due to a server issue. Please try again in a moment."
+    return apiMessage || "We could not complete your purchase due to a server issue. Please try again in a moment."
   }
 
   return apiMessage || "Purchase failed. Please try again."

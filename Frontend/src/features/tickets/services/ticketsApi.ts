@@ -49,7 +49,7 @@ export async function getTicket(ticketId: number): Promise<EventTicket> {
 }
 
 export async function purchaseTicket(payload: PurchaseTicketPayload): Promise<TicketResume> {
-  const response = await fetch(`${BASE_URL}/tickets/purchase`, {
+  const response = await fetch(`${BASE_URL}/tickets/pay-and-purchase`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

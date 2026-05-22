@@ -3,7 +3,11 @@ package co.edu.uptc.eventtracker.domain.service;
 import co.edu.uptc.eventtracker.domain.model.*;
 import co.edu.uptc.eventtracker.domain.repository.*;
 import co.edu.uptc.eventtracker.persistence.exceptions.InsufficientStockException;
+import co.edu.uptc.eventtracker.persistence.exceptions.PaymentDeclinedException;
 import co.edu.uptc.eventtracker.persistence.exceptions.QrException;
+import co.edu.uptc.eventtracker.web.PaymentClient;
+import co.edu.uptc.eventtracker.web.dto.PaymentRequest;
+import co.edu.uptc.eventtracker.web.dto.PaymentResponse;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
@@ -24,16 +28,18 @@ public class TicketService {
     private final PurchaseRepository purchaseRepository;
     private final EventRepository eventRepository;
     private final EventTicketRepository eventTicketRepository;
+    private final PaymentClient paymentClient;
 
     public TicketService(UserRepository userRepository, TicketRepository ticketRepository,
                          TicketResumeBuilder ticketResumeBuilder, PurchaseRepository purchaseRepository, EventRepository eventRepository,
-                         EventTicketRepository eventTicketRepository) {
+                         EventTicketRepository eventTicketRepository, PaymentClient paymentClient) {
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
         this.ticketResumeBuilder = ticketResumeBuilder;
         this.purchaseRepository = purchaseRepository;
         this.eventRepository = eventRepository;
         this.eventTicketRepository = eventTicketRepository;
+        this.paymentClient = paymentClient;
     }
 
     public TicketType createType(TicketType type) { return ticketRepository.createType(type); }
@@ -131,5 +137,31 @@ public class TicketService {
         }
 
         return sb.toString();
+    }
+    public TicketResume processPaymentAndRegisterSale(PaymentRequest paymentRequest,
+                                                      TicketPurchase purchase) {
+        List<TicketPurchaseItem> resolvedItems = purchase.getItems().stream()
+                .map(item -> {
+                    EventTicket eventTicket = eventTicketRepository
+                            .findById(item.getEventTicket().getId())
+                            .orElse(null);
+                    return new TicketPurchaseItem(eventTicket, item.getQuantity());
+                })
+                .toList();
+
+        double realAmount = resolvedItems.stream()
+                .mapToDouble(item -> item.getEventTicket().getPrice() * item.getQuantity())
+                .sum();
+
+        paymentRequest.setAmount(realAmount);
+
+        PaymentResponse paymentResponse = paymentClient.processPayment(paymentRequest);
+
+        if (paymentResponse == null || !"APPROVED".equalsIgnoreCase(paymentResponse.getStatus())) {
+            String reason = paymentResponse != null ? paymentResponse.getReason() : "Sin respuesta del servicio de pagos";
+            throw new PaymentDeclinedException(reason);
+        }
+
+        return registerSale(purchase);
     }
 }

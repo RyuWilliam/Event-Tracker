@@ -81,6 +81,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/favorites/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/tickets/purchase").authenticated()
                         .requestMatchers(HttpMethod.GET, "/tickets/purchase/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/tickets/pay-and-purchase").authenticated()
                         .requestMatchers(HttpMethod.POST, "/**").hasRole(ADMIN_ROLE)
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole(ADMIN_ROLE)
                         .requestMatchers(HttpMethod.DELETE, "/**").hasRole(ADMIN_ROLE)

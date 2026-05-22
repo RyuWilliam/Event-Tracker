@@ -1,35 +1,15 @@
+// co.edu.uptc.eventtracker.web.dto.PaymentResponse.java
 package co.edu.uptc.eventtracker.web.dto;
 
 public class PaymentResponse {
+    private String status;
+    private String reason;  // ← era "message", cámbialo a "reason"
 
-    private Status status;
-    private String message;
+    public PaymentResponse() {}
 
-    public PaymentResponse(Status status, String message) {
-        this.status = status;
-        this.message = message;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    private enum Status {
-        PENDING,
-        APPROVED,
-        REJECTED,
-        FAILED
-    }
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
 }
