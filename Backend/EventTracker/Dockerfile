@@ -22,6 +22,8 @@ RUN ./gradlew clean build -x test -DskipTests
 # Stage final
 FROM eclipse-temurin:24-jre
 
+
+
 WORKDIR /app
 
 # Copiar el JAR compilado desde el builder
