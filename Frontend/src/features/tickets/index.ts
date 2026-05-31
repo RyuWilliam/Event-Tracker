@@ -21,3 +21,4 @@ export * from "./utils/directPurchase"
 // Pages
 export { MyPurchasesPage } from "./pages/MyPurchasesPage"
 export { EventDirectPurchasePage } from "./pages/EventDirectPurchasePage"
+export { ConfirmPurchasePage } from "./pages/ConfirmPurchasePage"

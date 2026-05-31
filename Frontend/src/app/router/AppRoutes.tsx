@@ -2,7 +2,7 @@ import { Navigate } from "react-router"
 import { AdminLayout, DashboardPage, UsersPage, RegisterAdminPage, EventsPage } from "@/features/admin"
 import { ExternalEventsPage, FavoritesPage } from "@/features/events"
 import { RegisterPage, LoginPage } from "@/features/auth"
-import { MyPurchasesPage, EventDirectPurchasePage } from "@/features/tickets"
+import { MyPurchasesPage, EventDirectPurchasePage, ConfirmPurchasePage } from "@/features/tickets"
 import { ProtectedRoute, GuestRoute } from "./ProtectedRoute"
 import { AppLayout } from "@/core/layouts/AppLayout"
 
@@ -64,6 +64,10 @@ export const routes = [
           {
             path: "events/:eventId/purchase",
             Component: EventDirectPurchasePage,
+          },
+          {
+            path: "events/:eventId/confirm",
+            Component: ConfirmPurchasePage,
           },
         ],
       },
