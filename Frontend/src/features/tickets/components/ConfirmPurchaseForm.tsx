@@ -5,13 +5,16 @@ import type { PaymentDetails } from "../types/ticket.types"
 interface ConfirmPurchaseFormProps {
   onConfirm: (paymentInfo: PaymentDetails) => Promise<void>
   formId: string
+  userEmail: string
+  isPurchasing: boolean
 }
 
 export function ConfirmPurchaseForm({
   onConfirm,
   formId,
+  userEmail,
+  isPurchasing,
 }: ConfirmPurchaseFormProps) {
-  const [userEmail, setUserEmail] = useState("")
   const [cardHolderName, setCardHolderName] = useState("")
   const [cardNumber, setCardNumber] = useState("")
   const [cardType, setCardType] = useState("")
@@ -48,9 +51,7 @@ export function ConfirmPurchaseForm({
     }
 
     if (!userEmail.trim()) {
-      nextErrors.userEmail = "Email is required."
-    } else if (!/^\S+@\S+\.\S+$/.test(userEmail)) {
-      nextErrors.userEmail = "Enter a valid email."
+      nextErrors.userEmail = "We could not read your email. Please sign in again."
     }
 
     if (cardType === "NU") {
@@ -100,6 +101,7 @@ export function ConfirmPurchaseForm({
             setCardType(value)
             clearError("cardType")
           }}
+          disabled={isPurchasing}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select card type" />
@@ -107,28 +109,13 @@ export function ConfirmPurchaseForm({
           <SelectContent>
             <SelectItem value="VISA">VISA</SelectItem>
             <SelectItem value="MASTERCARD">Mastercard</SelectItem>
-            <SelectItem value="AMEX">American Express</SelectItem>
             <SelectItem value="NU">NU</SelectItem>
           </SelectContent>
         </Select>
         {errors.cardType && <p className="text-xs text-destructive">{errors.cardType}</p>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          required
-          disabled={!isCardTypeSelected}
-          value={userEmail}
-          onChange={(e) => {
-            setUserEmail(e.target.value)
-            clearError("userEmail")
-          }}
-        />
-        {errors.userEmail && <p className="text-xs text-destructive">{errors.userEmail}</p>}
-      </div>
+      {errors.userEmail && <p className="text-xs text-destructive">{errors.userEmail}</p>}
 
       {cardType === "NU" ? (
         <div className="space-y-2">
@@ -139,7 +126,7 @@ export function ConfirmPurchaseForm({
             inputMode="numeric"
             maxLength={cardConfig?.csvLength ?? 3}
             pattern="[0-9]*"
-            disabled={!isCardTypeSelected}
+            disabled={!isCardTypeSelected || isPurchasing}
             value={csv}
             onChange={(e) => {
               setCsv(e.target.value)
@@ -154,7 +141,7 @@ export function ConfirmPurchaseForm({
           <Input
             id="cardHolder"
             required
-            disabled={!isCardTypeSelected}
+            disabled={!isCardTypeSelected || isPurchasing}
             value={cardHolderName}
             onChange={(e) => {
               setCardHolderName(e.target.value)
@@ -176,7 +163,7 @@ export function ConfirmPurchaseForm({
           minLength={cardConfig ? Math.min(...cardConfig.numberLengths) : 13}
           maxLength={cardConfig ? Math.max(...cardConfig.numberLengths) : 19}
           pattern="[0-9\s]*"
-          disabled={!isCardTypeSelected}
+          disabled={!isCardTypeSelected || isPurchasing}
           value={cardNumber}
           onChange={(e) => {
             setCardNumber(e.target.value)

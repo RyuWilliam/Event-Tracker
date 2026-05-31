@@ -7,6 +7,7 @@ import { useTicketPurchase } from "../hooks/useTicketPurchase"
 import type { DirectPurchaseSelection, PaymentDetails } from "../types/ticket.types"
 import { getPurchaseErrorMessage } from "../utils/directPurchase"
 import { ConfirmPurchaseForm } from "../components/ConfirmPurchaseForm"
+import { useAuth } from "@/features/auth"
 
 interface ConfirmPurchaseState {
   selectedItems: DirectPurchaseSelection[]
@@ -19,6 +20,7 @@ export function ConfirmPurchasePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { purchase, loading: purchasing } = useTicketPurchase()
+  const { userEmail } = useAuth()
 
   const parsedEventId = Number(eventId)
   const state = location.state as ConfirmPurchaseState | undefined
@@ -49,6 +51,27 @@ export function ConfirmPurchasePage() {
               <div>
                 <p className="font-semibold text-foreground">No purchase details found</p>
                 <p className="text-sm">Please return to ticket selection and try again.</p>
+              </div>
+              <Button onClick={() => navigate(`/events/${parsedEventId}/purchase`)}>
+                Back to Ticket Selection
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (!userEmail) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto max-w-4xl px-4 py-8">
+          <Card>
+            <CardContent className="flex flex-col items-center gap-4 py-10 text-center text-muted-foreground">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <div>
+                <p className="font-semibold text-foreground">We could not read your email</p>
+                <p className="text-sm">Please sign in again and retry your purchase.</p>
               </div>
               <Button onClick={() => navigate(`/events/${parsedEventId}/purchase`)}>
                 Back to Ticket Selection
@@ -106,6 +129,8 @@ export function ConfirmPurchasePage() {
               <ConfirmPurchaseForm
                 formId={formId}
                 onConfirm={handleConfirmPayment}
+                userEmail={userEmail}
+                isPurchasing={purchasing}
               />
             </CardContent>
           </Card>
@@ -158,6 +183,7 @@ export function ConfirmPurchasePage() {
                   type="button"
                   variant="outline"
                   onClick={() => navigate(`/events/${parsedEventId}/purchase`)}
+                  disabled={purchasing}
                 >
                   Back
                 </Button>
@@ -166,6 +192,12 @@ export function ConfirmPurchasePage() {
           </Card>
         </div>
       </div>
+
+      {purchasing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
     </MainLayout>
   )
 }
