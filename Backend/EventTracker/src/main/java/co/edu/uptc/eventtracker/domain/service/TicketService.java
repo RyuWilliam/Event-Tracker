@@ -12,6 +12,8 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -22,6 +24,7 @@ import java.util.Optional;
 @Service
 public class TicketService {
 
+    private static final Logger log = LoggerFactory.getLogger(TicketService.class);
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
     private final TicketResumeBuilder ticketResumeBuilder;
@@ -155,13 +158,29 @@ public class TicketService {
 
         paymentRequest.setAmount(realAmount);
 
+        log.info("Iniciando compra — userId: {} — email: {} — items: {} — totalCalculado: {}",
+                purchase.getUser() != null ? purchase.getUser().getId() : "null",
+                paymentRequest.getUserEmail(),
+                resolvedItems.size(),
+                realAmount);
+
         PaymentResponse paymentResponse = paymentClient.processPayment(paymentRequest);
 
         if (paymentResponse == null || !"APPROVED".equalsIgnoreCase(paymentResponse.getStatus())) {
             String reason = paymentResponse != null ? paymentResponse.getReason() : "Sin respuesta del servicio de pagos";
+            log.warn("Pago no aprobado — status: {} — reason: '{}'",
+                    paymentResponse != null ? paymentResponse.getStatus() : "NULL",
+                    reason);
             throw new PaymentDeclinedException(reason);
         }
 
-        return registerSale(purchase);
+        log.info("Pago aprobado — registrando venta");
+        TicketResume resume = registerSale(purchase);
+        log.info("Venta registrada — evento: '{}' — total: {} — email: {}",
+                resume.getEventName(),
+                resume.getTotal(),
+                resume.getUserAddress());
+
+        return resume;
     }
 }
