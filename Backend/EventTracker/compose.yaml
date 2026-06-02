@@ -45,6 +45,9 @@ services:
       - APP_ADMIN_NAME=Admin
       - APP_ADMIN_EMAIL=admin@eventtracker.com
       - APP_ADMIN_PASSWORD=admin123
+      # Propayment
+      - PAYMENT_SERVICE_URL=http://host.docker.internal:7021/payment/api
+      - PAYMENT_SERVICE_API_KEY=pp_live_7fA92KxLmQ81zP4vNcT2eY
     ports:
       - '7022:7022'
     depends_on:

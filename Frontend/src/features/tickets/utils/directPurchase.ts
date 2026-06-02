@@ -24,6 +24,19 @@ export function getPurchaseErrorMessage(error: unknown): string {
       ? (error as { status?: number }).status
       : undefined
   const apiMessage = error instanceof Error ? error.message : ""
+  const normalizedMessage = apiMessage.toLowerCase()
+
+  if (normalizedMessage.includes("connection refused") || normalizedMessage.includes("payments/process")) {
+    return "The payment gateway is unavailable. Please try again in a few minutes."
+  }
+
+  if (normalizedMessage.includes("servicio visa no disponible")) {
+    return "Payment rejected: VISA service is unavailable."
+  }
+
+  if (normalizedMessage.includes("servicio mastercard no disponible")) {
+    return "Payment rejected: Mastercard service is unavailable."
+  }
 
   if (status === 401 || status === 403) {
     return "Your session is no longer valid. Please sign in again and retry."
@@ -38,7 +51,7 @@ export function getPurchaseErrorMessage(error: unknown): string {
   }
 
   if (status && status >= 500) {
-    return "We could not complete your purchase due to a server issue. Please try again in a moment."
+    return apiMessage || "We could not complete your purchase due to a server issue. Please try again in a moment."
   }
 
   return apiMessage || "Purchase failed. Please try again."

@@ -19,4 +19,5 @@ export interface AuthState {
   token: string | null
   isAuthenticated: boolean
   role: UserRole | null
+  userEmail: string | null
 }

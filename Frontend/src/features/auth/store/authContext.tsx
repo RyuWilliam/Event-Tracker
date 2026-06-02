@@ -66,15 +66,36 @@ function decodeRole(token: string): UserRole | null {
   return null
 }
 
+function decodeEmail(token: string): string | null {
+  const payload = decodePayload(token)
+  if (!payload) return null
+
+  const candidates = [
+    payload.email,
+    payload.preferred_username,
+    payload.username,
+    payload.sub,
+  ]
+
+  for (const value of candidates) {
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value
+    }
+  }
+
+  return null
+}
+
 function buildState(token: string | null): AuthState {
   if (!token || isTokenExpired(token)) {
     if (token) localStorage.removeItem(TOKEN_KEY)
-    return { token: null, isAuthenticated: false, role: null }
+    return { token: null, isAuthenticated: false, role: null, userEmail: null }
   }
   return {
     token,
     isAuthenticated: true,
     role: decodeRole(token),
+    userEmail: decodeEmail(token),
   }
 }
 

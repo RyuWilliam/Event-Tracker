@@ -12,4 +12,5 @@ public class EventTrackerApplication {
 		SpringApplication.run(EventTrackerApplication.class, args);
 	}
 
+
 }

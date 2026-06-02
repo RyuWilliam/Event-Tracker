@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate } from "react-router"
+import { useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { AlertCircle, ArrowLeft } from "lucide-react"
 import { Button, Card, CardContent } from "@/shared/ui"
 import { getEvent } from "@/features/events/services/eventsApi"
-import { useTicketPurchase } from "../hooks/useTicketPurchase"
 import type { DirectPurchaseSelection } from "../types/ticket.types"
 import type { Event, EventTicket } from "@/features/events"
-import { getAvailableQuantity, getPurchaseErrorMessage } from "../utils/directPurchase"
+import { getAvailableQuantity } from "../utils/directPurchase"
 import { EventDirectPurchaseHeader } from "./EventDirectPurchaseHeader"
 import { TicketSelectionList } from "./TicketSelectionList"
 import { DirectPurchaseSummaryCard } from "./DirectPurchaseSummaryCard"
@@ -20,7 +19,7 @@ type QuantityMap = Record<number, number>
 
 export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProps) {
   const navigate = useNavigate()
-  const { purchase, loading: purchasing } = useTicketPurchase()
+  const location = useLocation()
   const [event, setEvent] = useState<Event | null>(null)
   const [tickets, setTickets] = useState<EventTicket[]>([])
   const [quantities, setQuantities] = useState<QuantityMap>({})
@@ -75,6 +74,10 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
 
   const hasAvailableTickets = tickets.some((ticket) => getAvailableQuantity(ticket) > 0)
   const isEventPurchasable = event?.status === "ACTIVE"
+  const purchaseError =
+    typeof location.state === "object" && location.state !== null && "purchaseError" in location.state
+      ? String((location.state as { purchaseError?: string }).purchaseError ?? "")
+      : ""
 
   const handleQuantityDelta = (ticket: EventTicket, delta: number) => {
     if (!ticket.id) {
@@ -89,7 +92,7 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
     })
   }
 
-  const handlePurchase = async () => {
+  const handlePurchaseClick = () => {
     if (!isEventPurchasable) {
       toast.error("This event is no longer available for purchase")
       return
@@ -105,20 +108,13 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
       return
     }
 
-    try {
-      const ticketResume = await purchase({
-        items: selectedItems.map((item) => ({
-          quantity: item.quantity,
-          eventTicket: { id: item.eventTicketId },
-        })),
-      })
-
-      const totalPurchased = ticketResume?.totalQuantity ?? totalQuantity
-      toast.success(`Successfully purchased ${totalPurchased} ticket${totalPurchased > 1 ? "s" : ""}!`)
-      navigate("/my-purchases")
-    } catch (error) {
-      toast.error(getPurchaseErrorMessage(error))
-    }
+    navigate(`/events/${eventId}/confirm`, {
+      state: {
+        selectedItems,
+        totalQuantity,
+        totalAmount,
+      },
+    })
   }
 
   if (loadingData) {
@@ -178,10 +174,16 @@ export function EventDirectPurchaseView({ eventId }: EventDirectPurchaseViewProp
           totalAmount={totalAmount}
           hasAvailableTickets={hasAvailableTickets}
           isEventPurchasable={isEventPurchasable}
-          isPurchasing={purchasing}
-          onPurchase={handlePurchase}
+          isPurchasing={false}
+          onPurchase={handlePurchaseClick}
         />
       </div>
+
+      {purchaseError && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {purchaseError}
+        </div>
+      )}
     </div>
   )
 }
