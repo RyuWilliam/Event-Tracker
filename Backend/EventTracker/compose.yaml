@@ -22,32 +22,29 @@ services:
     build: .
     container_name: event_tracker_app
     environment:
-      # Database
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_tracker_db
       - SPRING_DATASOURCE_USERNAME=EventAdmin
       - SPRING_DATASOURCE_PASSWORD=0na93rF6WB
-      # JPA
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_SQL_INIT_MODE=always
       - SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=true
-      # Server
       - SERVER_PORT=7022
       - SERVER_SERVLET_CONTEXT_PATH=/tracker/api
-      # Security JWT
       - APPLICATION_SECURITY_JWT_SECRET_KEY=D4xN2pW9qY7sB0tL6vR1fZ8mE3hK5uJ2aC9rT4pV7dG
       - APPLICATION_SECURITY_JWT_EXPIRATION=86400000
       - APPLICATION_SECURITY_JWT_REFRESH_TOKEN_EXPIRATION=604800000
-      # Upload settings
       - APP_UPLOAD_DIR=uploads
       - APP_UPLOAD_MAX_SIZE=5242880
       - APP_UPLOAD_ALLOWED_TYPES=image/jpeg,image/png,image/webp
-      # Admin user
       - APP_ADMIN_NAME=Admin
       - APP_ADMIN_EMAIL=admin@eventtracker.com
       - APP_ADMIN_PASSWORD=admin123
-      # Propayment
       - PAYMENT_SERVICE_URL=http://host.docker.internal:7021/payment/api
       - PAYMENT_SERVICE_API_KEY=pp_live_7fA92KxLmQ81zP4vNcT2eY
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=admin
     ports:
       - '7022:7022'
     depends_on:
@@ -55,6 +52,14 @@ services:
         condition: service_healthy
     networks:
       - app_network
+      - rabbitmq-network
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/loki/api/v1/push"
+        loki-external-labels: "service=eventtracker,env=docker"
+        loki-retries: "3"
+        loki-batch-wait: "1s"
     restart: unless-stopped
 
 volumes:
@@ -63,3 +68,6 @@ volumes:
 networks:
   app_network:
     driver: bridge
+  rabbitmq-network:                          # ← nuevo
+    external: true
+    name: rabbitmq-network

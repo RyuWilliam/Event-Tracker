@@ -8,10 +8,15 @@ import co.edu.uptc.eventtracker.persistence.exceptions.QrException;
 import co.edu.uptc.eventtracker.web.PaymentClient;
 import co.edu.uptc.eventtracker.web.dto.PaymentRequest;
 import co.edu.uptc.eventtracker.web.dto.PaymentResponse;
+import co.edu.uptc.eventtracker.web.PaymentStatusHandler;
+import co.edu.uptc.eventtracker.web.dto.PaymentStatusMessage;
+import java.util.UUID;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -22,6 +27,8 @@ import java.util.Optional;
 @Service
 public class TicketService {
 
+    private static final Logger log = LoggerFactory.getLogger(TicketService.class);
+    private final PaymentStatusHandler paymentStatusHandler;
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
     private final TicketResumeBuilder ticketResumeBuilder;
@@ -30,9 +37,10 @@ public class TicketService {
     private final EventTicketRepository eventTicketRepository;
     private final PaymentClient paymentClient;
 
-    public TicketService(UserRepository userRepository, TicketRepository ticketRepository,
+    public TicketService(PaymentStatusHandler paymentStatusHandler, UserRepository userRepository, TicketRepository ticketRepository,
                          TicketResumeBuilder ticketResumeBuilder, PurchaseRepository purchaseRepository, EventRepository eventRepository,
                          EventTicketRepository eventTicketRepository, PaymentClient paymentClient) {
+        this.paymentStatusHandler = paymentStatusHandler;
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
         this.ticketResumeBuilder = ticketResumeBuilder;
@@ -155,13 +163,74 @@ public class TicketService {
 
         paymentRequest.setAmount(realAmount);
 
-        PaymentResponse paymentResponse = paymentClient.processPayment(paymentRequest);
+        String userId = purchase.getUser() != null ? String.valueOf(purchase.getUser().getId()) : null;
+        String correlationId = UUID.randomUUID().toString();
 
-        if (paymentResponse == null || !"APPROVED".equalsIgnoreCase(paymentResponse.getStatus())) {
-            String reason = paymentResponse != null ? paymentResponse.getReason() : "Sin respuesta del servicio de pagos";
-            throw new PaymentDeclinedException(reason);
+        log.info("Iniciando compra — userId: {} — email: {} — items: {} — totalCalculado: {}",
+                purchase.getUser() != null ? purchase.getUser().getId() : "null",
+                paymentRequest.getUserEmail(),
+                resolvedItems.size(),
+                realAmount);
+
+        if (userId != null) {
+            paymentStatusHandler.sendStatus(userId, new PaymentStatusMessage(
+                    "PROCESSING",
+                    "Pago enviado a la pasarela.",
+                    correlationId
+            ));
         }
 
-        return registerSale(purchase);
+        try {
+            PaymentResponse paymentResponse = paymentClient.processPayment(paymentRequest);
+
+            if (paymentResponse == null || !"APPROVED".equalsIgnoreCase(paymentResponse.getStatus())) {
+                String reason = paymentResponse != null ? paymentResponse.getReason() : "Sin respuesta del servicio de pagos";
+                log.warn("Pago no aprobado — status: {} — reason: '{}'",
+                        paymentResponse != null ? paymentResponse.getStatus() : "NULL",
+                        reason);
+
+                if (userId != null) {
+                    paymentStatusHandler.sendStatus(userId, new PaymentStatusMessage(
+                            "REJECTED",
+                            reason,
+                            correlationId
+                    ));
+                }
+
+                throw new PaymentDeclinedException(reason);
+            }
+
+            if (userId != null) {
+                paymentStatusHandler.sendStatus(userId, new PaymentStatusMessage(
+                        "APPROVED",
+                        paymentResponse.getReason() != null ? paymentResponse.getReason() : "Pago aprobado.",
+                        correlationId
+                ));
+            }
+
+            log.info("Pago aprobado — registrando venta");
+            TicketResume resume = registerSale(purchase);
+            log.info("Venta registrada — evento: '{}' — total: {} — email: {}",
+                    resume.getEventName(),
+                    resume.getTotal(),
+                    resume.getUserAddress());
+
+            return resume;
+
+        } catch (PaymentDeclinedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error procesando pago/venta: {}", e.getMessage(), e);
+
+            if (userId != null) {
+                paymentStatusHandler.sendStatus(userId, new PaymentStatusMessage(
+                        "FAILED",
+                        "Ocurrió un error procesando el pago.",
+                        correlationId
+                ));
+            }
+
+            throw e;
+        }
     }
 }
