@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
 import { AlertCircle, ArrowLeft, Ticket } from "lucide-react"
 import { toast } from "sonner"
@@ -8,6 +9,7 @@ import type { DirectPurchaseSelection, PaymentDetails } from "../types/ticket.ty
 import { getPurchaseErrorMessage } from "../utils/directPurchase"
 import { ConfirmPurchaseForm } from "../components/ConfirmPurchaseForm"
 import { useAuth } from "@/features/auth"
+import { usePaymentWebSocket, type PaymentStatusMessage } from "../hooks/usePaymentWebSocket"
 
 interface ConfirmPurchaseState {
   selectedItems: DirectPurchaseSelection[]
@@ -15,12 +17,84 @@ interface ConfirmPurchaseState {
   totalAmount: number
 }
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const payload = token.split(".")[1]
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/")
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=")
+    return JSON.parse(atob(padded)) as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+function resolveUserIdFromToken(token: string | null): string | null {
+  if (!token) {
+    return null
+  }
+
+  const payload = decodeJwtPayload(token)
+  if (!payload) {
+    return null
+  }
+
+  const candidate = payload.userId ?? payload.user_id ?? payload.id ?? payload.sub
+  if (typeof candidate === "number" && Number.isFinite(candidate)) {
+    return String(candidate)
+  }
+  if (typeof candidate === "string" && candidate.trim().length > 0) {
+    return candidate
+  }
+
+  return null
+}
+
+function isFinalPaymentStatus(status: string): boolean {
+  return ["APPROVED", "REJECTED", "FAILED"].includes(status.toUpperCase())
+}
+
 export function ConfirmPurchasePage() {
   const { eventId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
   const { purchase, loading: purchasing } = useTicketPurchase()
-  const { userEmail } = useAuth()
+  const { userEmail, token } = useAuth()
+  const [paymentUpdates, setPaymentUpdates] = useState<string[]>([])
+  const [finalStatus, setFinalStatus] = useState<PaymentStatusMessage | null>(null)
+
+  const socketUserId = useMemo(() => resolveUserIdFromToken(token), [token])
+
+  const handlePaymentMessage = useCallback((message: PaymentStatusMessage) => {
+    const normalizedStatus = message.status?.toUpperCase() ?? "UNKNOWN"
+    const isFinal = isFinalPaymentStatus(normalizedStatus)
+    const trimmedMessage = message.userMessage?.trim()
+
+    setPaymentUpdates((prev) => {
+      const next = [...prev]
+
+      if (trimmedMessage && !next.includes(trimmedMessage)) {
+        next.push(trimmedMessage)
+      }
+
+      if (isFinal) {
+        const finalLine = `Resultado final: ${normalizedStatus}${trimmedMessage ? ` - ${trimmedMessage}` : ""}`
+        if (!next.includes(finalLine)) {
+          next.push(finalLine)
+        }
+      }
+
+      return next
+    })
+
+    if (isFinal) {
+      setFinalStatus({ ...message, status: normalizedStatus })
+    }
+  }, [])
+
+  const { connect, disconnect } = usePaymentWebSocket({
+    userId: socketUserId,
+    onMessage: handlePaymentMessage,
+  })
 
   const parsedEventId = Number(eventId)
   const state = location.state as ConfirmPurchaseState | undefined
@@ -90,6 +164,10 @@ export function ConfirmPurchasePage() {
 
   const handleConfirmPayment = async (paymentDetails: PaymentDetails) => {
     try {
+      setPaymentUpdates(["Enviando solicitud de pago..."])
+      setFinalStatus(null)
+      connect()
+
       const ticketResume = await purchase({
         payment: paymentDetails,
         items: selectedItems.map((item) => ({
@@ -102,12 +180,19 @@ export function ConfirmPurchasePage() {
       toast.success(`Successfully purchased ${totalPurchased} ticket${totalPurchased > 1 ? "s" : ""}!`)
       navigate("/my-purchases")
     } catch (error) {
+      disconnect()
       const message = getPurchaseErrorMessage(error)
       navigate(`/events/${parsedEventId}/purchase`, {
         state: { purchaseError: message },
       })
     }
   }
+
+  useEffect(() => {
+    if (finalStatus) {
+      disconnect()
+    }
+  }, [finalStatus, disconnect])
 
   return (
     <MainLayout>
@@ -191,6 +276,26 @@ export function ConfirmPurchasePage() {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardContent className="space-y-3 p-5">
+            <h2 className="text-lg font-semibold">Payment Progress</h2>
+            {paymentUpdates.length > 0 ? (
+              <ol className="space-y-2 text-sm text-muted-foreground">
+                {paymentUpdates.map((line, index) => (
+                  <li key={`${line}-${index}`} className="flex items-center gap-2">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-muted-foreground/40 text-xs">
+                      {index + 1}
+                    </span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-sm text-muted-foreground">No payment updates yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {purchasing && (

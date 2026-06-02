@@ -75,6 +75,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/ws/payments/**").permitAll()
+                        .requestMatchers("/tracker/api/ws-test/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/events/total_sales").hasRole(ADMIN_ROLE)
                         .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
