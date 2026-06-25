@@ -2,6 +2,8 @@ package co.edu.uptc.eventtracker.domain.service;
 
 import co.edu.uptc.eventtracker.domain.model.*;
 import co.edu.uptc.eventtracker.domain.repository.*;
+import co.edu.uptc.eventtracker.messaging.PurchaseResultEvent;
+import co.edu.uptc.eventtracker.messaging.PurchaseResultPublisher;
 import co.edu.uptc.eventtracker.persistence.exceptions.InsufficientStockException;
 import co.edu.uptc.eventtracker.persistence.exceptions.PaymentDeclinedException;
 import co.edu.uptc.eventtracker.persistence.exceptions.QrException;
@@ -33,18 +35,20 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final TicketResumeBuilder ticketResumeBuilder;
     private final PurchaseRepository purchaseRepository;
+    private final PurchaseResultPublisher purchaseResultPublisher;
     private final EventRepository eventRepository;
     private final EventTicketRepository eventTicketRepository;
     private final PaymentClient paymentClient;
 
     public TicketService(PaymentStatusHandler paymentStatusHandler, UserRepository userRepository, TicketRepository ticketRepository,
-                         TicketResumeBuilder ticketResumeBuilder, PurchaseRepository purchaseRepository, EventRepository eventRepository,
+                         TicketResumeBuilder ticketResumeBuilder, PurchaseRepository purchaseRepository, PurchaseResultPublisher purchaseResultPublisher, EventRepository eventRepository,
                          EventTicketRepository eventTicketRepository, PaymentClient paymentClient) {
         this.paymentStatusHandler = paymentStatusHandler;
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
         this.ticketResumeBuilder = ticketResumeBuilder;
         this.purchaseRepository = purchaseRepository;
+        this.purchaseResultPublisher = purchaseResultPublisher;
         this.eventRepository = eventRepository;
         this.eventTicketRepository = eventTicketRepository;
         this.paymentClient = paymentClient;
@@ -184,7 +188,10 @@ public class TicketService {
             PaymentResponse paymentResponse = paymentClient.processPayment(paymentRequest);
 
             if (paymentResponse == null || !"APPROVED".equalsIgnoreCase(paymentResponse.getStatus())) {
-                String reason = paymentResponse != null ? paymentResponse.getReason() : "Sin respuesta del servicio de pagos";
+                String reason = paymentResponse != null
+                        ? paymentResponse.getReason()
+                        : "Sin respuesta del servicio de pagos";
+
                 log.warn("Pago no aprobado — status: {} — reason: '{}'",
                         paymentResponse != null ? paymentResponse.getStatus() : "NULL",
                         reason);
@@ -196,6 +203,16 @@ public class TicketService {
                             correlationId
                     ));
                 }
+
+                publishPurchaseResult(
+                        paymentRequest,
+                        purchase,
+                        null,
+                        "REJECTED",
+                        reason,
+                        realAmount,
+                        correlationId
+                );
 
                 throw new PaymentDeclinedException(reason);
             }
@@ -210,10 +227,21 @@ public class TicketService {
 
             log.info("Pago aprobado — registrando venta");
             TicketResume resume = registerSale(purchase);
+
             log.info("Venta registrada — evento: '{}' — total: {} — email: {}",
                     resume.getEventName(),
                     resume.getTotal(),
                     resume.getUserAddress());
+
+            publishPurchaseResult(
+                    paymentRequest,
+                    purchase,
+                    resume,
+                    "APPROVED",
+                    paymentResponse.getReason() != null ? paymentResponse.getReason() : "Pago aprobado",
+                    realAmount,
+                    correlationId
+            );
 
             return resume;
 
@@ -230,7 +258,61 @@ public class TicketService {
                 ));
             }
 
+            publishPurchaseResult(
+                    paymentRequest,
+                    purchase,
+                    null,
+                    "FAILED",
+                    e.getMessage() != null ? e.getMessage() : "Ocurrió un error procesando el pago.",
+                    realAmount,
+                    correlationId
+            );
+
             throw e;
         }
+    }
+    private void publishPurchaseResult(PaymentRequest paymentRequest,
+                                       TicketPurchase purchase,
+                                       TicketResume resume,
+                                       String paymentStatus,
+                                       String paymentReason,
+                                       Double totalAmount,
+                                       String correlationId) {
+        try {
+            PurchaseResultEvent event = new PurchaseResultEvent();
+            event.setUserEmail(paymentRequest.getUserEmail());
+            event.setUserName(purchase.getUser() != null ? purchase.getUser().getName() : null);
+            event.setPaymentStatus(paymentStatus);
+            event.setPaymentReason(paymentReason);
+            event.setPurchaseId(resume != null ? resume.getId() : null);
+            event.setEventName(resolveEventName(purchase, resume));
+            event.setTotalAmount(totalAmount);
+
+            purchaseResultPublisher.publish(event, correlationId);
+
+            log.info("Evento purchase.result publicado — status: {} — correlationId: {} — email: {}",
+                    paymentStatus, correlationId, paymentRequest.getUserEmail());
+
+        } catch (Exception ex) {
+            log.error("No se pudo publicar purchase.result — correlationId: {} — error: {}",
+                    correlationId, ex.getMessage(), ex);
+        }
+    }
+    private String resolveEventName(TicketPurchase purchase, TicketResume resume) {
+        if (resume != null && resume.getEventName() != null && !resume.getEventName().isBlank()) {
+            return resume.getEventName();
+        }
+
+        if (purchase != null && purchase.getItems() != null && !purchase.getItems().isEmpty()) {
+            EventTicket firstTicket = purchase.getItems().get(0).getEventTicket();
+            if (firstTicket != null) {
+                Event event = eventRepository.findByEventTicketId(firstTicket.getId());
+                if (event != null && event.getName() != null && !event.getName().isBlank()) {
+                    return event.getName();
+                }
+            }
+        }
+
+        return "Evento";
     }
 }

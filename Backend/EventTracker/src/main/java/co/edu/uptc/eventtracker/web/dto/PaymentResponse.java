@@ -1,9 +1,9 @@
-// co.edu.uptc.eventtracker.web.dto.PaymentResponse.java
+
 package co.edu.uptc.eventtracker.web.dto;
 
 public class PaymentResponse {
     private String status;
-    private String reason;  // ← era "message", cámbialo a "reason"
+    private String reason;
 
     public PaymentResponse() {}
 
