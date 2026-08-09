@@ -38,8 +38,10 @@ export function usePaymentWebSocket({ userId, onMessage }: UsePaymentWebSocketOp
       return
     }
 
+    const wsUrl = `${window.location.protocol}//${window.location.host}/tracker/api/ws/payments`
+
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:7022/tracker/api/ws/payments"),
+      webSocketFactory: () => new SockJS(wsUrl),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },

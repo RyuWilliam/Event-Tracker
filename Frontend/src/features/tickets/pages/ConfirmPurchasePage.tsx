@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
 import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Ticket, XCircle } from "lucide-react"
 import { toast } from "sonner"
@@ -9,8 +9,6 @@ import type { DirectPurchaseSelection, PaymentDetails } from "../types/ticket.ty
 import { getPurchaseErrorMessage } from "../utils/directPurchase"
 import { ConfirmPurchaseForm } from "../components/ConfirmPurchaseForm"
 import { useAuth } from "@/features/auth"
-import { usePaymentWebSocket, type PaymentStatusMessage } from "../hooks/usePaymentWebSocket"
-
 
 interface ConfirmPurchaseState {
   selectedItems: DirectPurchaseSelection[]
@@ -18,74 +16,28 @@ interface ConfirmPurchaseState {
   totalAmount: number
 }
 
-
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const payload = token.split(".")[1]
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/")
-    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=")
-    return JSON.parse(atob(padded)) as Record<string, unknown>
-  } catch {
-    return null
-  }
-}
-
-
-function resolveUserIdFromToken(token: string | null): string | null {
-  if (!token) return null
-  const payload = decodeJwtPayload(token)
-  if (!payload) return null
-  const candidate = payload.userId ?? payload.user_id ?? payload.id ?? payload.sub
-  if (typeof candidate === "number" && Number.isFinite(candidate)) return String(candidate)
-  if (typeof candidate === "string" && candidate.trim().length > 0) return candidate
-  return null
-}
-
-
-function isFinalPaymentStatus(status: string): boolean {
-  return ["APPROVED", "REJECTED", "FAILED"].includes(status.toUpperCase())
-}
-
-
 type PaymentPhase = "idle" | "waiting" | "done"
 
+interface FinalStatus {
+  status: "APPROVED" | "REJECTED" | "FAILED"
+  userMessage: string
+}
 
 export function ConfirmPurchasePage() {
   const { eventId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
   const { purchase } = useTicketPurchase()
-  const { userEmail, token } = useAuth()
+  const { userEmail } = useAuth()
 
   const [paymentPhase, setPaymentPhase] = useState<PaymentPhase>("idle")
-  const [paymentUpdates, setPaymentUpdates] = useState<PaymentStatusMessage[]>([])
-  const [finalStatus, setFinalStatus] = useState<PaymentStatusMessage | null>(null)
+  const [finalStatus, setFinalStatus] = useState<FinalStatus | null>(null)
   const purchasedQuantityRef = useRef<number>(0)
-
-  const socketUserId = useMemo(() => resolveUserIdFromToken(token), [token])
-
-  const handlePaymentMessage = useCallback((message: PaymentStatusMessage) => {
-    const normalizedStatus = message.status?.toUpperCase() ?? "UNKNOWN"
-    const normalized: PaymentStatusMessage = { ...message, status: normalizedStatus }
-
-    setPaymentUpdates((prev) => [...prev, normalized])
-
-    if (isFinalPaymentStatus(normalizedStatus)) {
-      setFinalStatus(normalized)
-      setPaymentPhase("done")
-    }
-  }, [])
-
-  const { connect, disconnect } = usePaymentWebSocket({
-    userId: socketUserId,
-    onMessage: handlePaymentMessage,
-  })
 
   const parsedEventId = Number(eventId)
   const state = location.state as ConfirmPurchaseState | undefined
   const hasState = Boolean(state?.selectedItems?.length)
 
-  // Early returns para estados inválidos
   if (!eventId || Number.isNaN(parsedEventId) || parsedEventId <= 0) {
     return (
       <MainLayout>
@@ -149,19 +101,10 @@ export function ConfirmPurchasePage() {
   const formId = "confirm-purchase-form"
 
   const handleConfirmPayment = async (paymentDetails: PaymentDetails) => {
+    setPaymentPhase("waiting")
+    setFinalStatus(null)
+
     try {
-      setPaymentUpdates([])
-      setFinalStatus(null)
-      setPaymentPhase("waiting")
-
-      // Conectar WebSocket ANTES de hacer el pago
-      connect()
-
-      setPaymentUpdates([{
-        status: "PROCESSING",
-        userMessage: "Enviando solicitud de pago...",
-      } as PaymentStatusMessage])
-
       const ticketResume = await purchase({
         payment: paymentDetails,
         items: selectedItems.map((item) => ({
@@ -171,42 +114,24 @@ export function ConfirmPurchasePage() {
       })
 
       purchasedQuantityRef.current = ticketResume?.totalQuantity ?? totalQuantity
+      setFinalStatus({ status: "APPROVED", userMessage: "¡Pago aprobado!" })
+      setPaymentPhase("done")
 
-      // NO navegar aquí: esperar a que el WebSocket entregue el estado final
     } catch (error) {
-      disconnect()
-      setPaymentPhase("idle")
       const message = getPurchaseErrorMessage(error)
-      navigate(`/events/${parsedEventId}/purchase`, {
-        state: { purchaseError: message },
-      })
+      setFinalStatus({ status: "REJECTED", userMessage: message })
+      setPaymentPhase("done")
     }
   }
 
-  // Efecto: cuando llega el estado final, desconectar y navegar si fue aprobado
   useEffect(() => {
-    if (!finalStatus) return
+    if (!finalStatus || finalStatus.status !== "APPROVED") return
 
-    disconnect()
-
-    const status = finalStatus.status.toUpperCase()
-
-    if (status === "APPROVED") {
-      const qty = purchasedQuantityRef.current
-      toast.success(`Successfully purchased ${qty} ticket${qty !== 1 ? "s" : ""}!`)
-      // Pequeño delay para que el usuario vea el estado final antes de navegar
-      const timer = setTimeout(() => navigate("/my-purchases"), 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [finalStatus, disconnect, navigate])
-
-  // Helper para ícono/color por status
-  const getStatusMeta = (status: string) => {
-    const s = status.toUpperCase()
-    if (s === "APPROVED") return { icon: <CheckCircle2 className="h-4 w-4 text-green-500" />, color: "text-green-600" }
-    if (["REJECTED", "FAILED"].includes(s)) return { icon: <XCircle className="h-4 w-4 text-destructive" />, color: "text-destructive" }
-    return { icon: <Loader2 className="h-4 w-4 animate-spin text-primary" />, color: "text-muted-foreground" }
-  }
+    const qty = purchasedQuantityRef.current
+    toast.success(`Successfully purchased ${qty} ticket${qty !== 1 ? "s" : ""}!`)
+    const timer = setTimeout(() => navigate("/my-purchases"), 2000)
+    return () => clearTimeout(timer)
+  }, [finalStatus, navigate])
 
   const isProcessing = paymentPhase === "waiting"
 
@@ -304,9 +229,15 @@ export function ConfirmPurchasePage() {
           </Card>
         </div>
 
-        {/* Payment Status - solo se muestra si ya se inició el pago */}
+        {/* Payment Status */}
         {paymentPhase !== "idle" && (
-          <Card className={finalStatus?.status === "APPROVED" ? "border-green-500" : finalStatus ? "border-destructive" : ""}>
+          <Card className={
+            finalStatus?.status === "APPROVED"
+              ? "border-green-500"
+              : finalStatus
+              ? "border-destructive"
+              : ""
+          }>
             <CardContent className="space-y-3 p-5">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Payment Status</h2>
@@ -315,52 +246,35 @@ export function ConfirmPurchasePage() {
                 {finalStatus && finalStatus.status !== "APPROVED" && <XCircle className="h-4 w-4 text-destructive" />}
               </div>
 
-              {paymentUpdates.length > 0 ? (
-                <ol className="space-y-2 text-sm">
-                  {paymentUpdates.map((update, index) => {
-                    const { icon, color } = getStatusMeta(update.status ?? "")
-                    return (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="mt-0.5 shrink-0">{icon}</span>
-                        <span className={color}>
-                          {update.userMessage ?? update.status}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ol>
-              ) : (
+              {isProcessing && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Connecting to payment service...</span>
+                  <span>Procesando pago, por favor espera...</span>
                 </div>
               )}
 
-              {/* Mensaje final si fue rechazado: opción de reintentar */}
+              {finalStatus?.status === "APPROVED" && (
+                <p className="text-sm text-green-600 font-medium">
+                  ¡Pago exitoso! Redirigiendo a tus compras...
+                </p>
+              )}
+
               {finalStatus && finalStatus.status !== "APPROVED" && (
                 <div className="pt-2 border-t">
                   <p className="text-sm text-destructive font-medium mb-2">
-                    {finalStatus.userMessage ?? "Payment could not be completed."}
+                    {finalStatus.userMessage}
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setPaymentPhase("idle")
-                      setPaymentUpdates([])
                       setFinalStatus(null)
                     }}
                   >
                     Try again
                   </Button>
                 </div>
-              )}
-
-              {/* Mensaje de éxito con redirect countdown */}
-              {finalStatus?.status === "APPROVED" && (
-                <p className="text-sm text-green-600 font-medium">
-                  ¡Pago exitoso! Redirigiendo a tus compras...
-                </p>
               )}
             </CardContent>
           </Card>
